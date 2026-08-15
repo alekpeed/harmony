@@ -1,26 +1,28 @@
 # Harmony Interface
 
-This directory is the handoff point for the Harmony Android tablet interface.
+This directory is the handoff point for visual interface assets for the Harmony Android tablet app.
 
-## Approved Figma source of truth
+The app implementation is already underway. Do not treat this directory as an instruction to restart or redesign the application. Its purpose is to tell the implementation agent where approved visual assets live and where they should be used.
+
+## Approved home-screen visual
 
 Figma file:
 https://www.figma.com/design/cD5gqV8A5gk94NVuGeJXg5
 
-Approved home screen frame:
+Approved frame:
 `Harmony Gates / FINAL Approved Home`
 
-Node URL:
+Direct node:
 https://www.figma.com/design/cD5gqV8A5gk94NVuGeJXg5?node-id=28-2
 
-Native design size:
+Native artwork size:
 `1536 × 1024` landscape
 
-## Implementation rule
+Use this approved frame as the home-screen visual asset/reference when the current app reaches the UI integration phase. Preserve existing application architecture, navigation, state handling, MIDI logic, game logic, and other work already completed unless a visual integration requires a small local adjustment.
 
-Treat the approved Figma frame as the visual source of truth for the tablet home screen. Do not substitute a generic reconstruction or redesign it from scratch. Preserve the composition, spacing, imagery, card positions, typography treatment, and overall appearance.
+## Interaction placement reference
 
-The Figma frame contains named transparent interaction regions over the approved visual. Important hit-target layers include:
+The Figma frame also contains transparent named regions showing where interactive controls correspond to the artwork. These are placement references for wiring the existing app behavior to the visual interface, not a request to rebuild the app around absolute coordinates.
 
 - `HIT / Menu`
 - `HIT / Nav Home`
@@ -43,8 +45,12 @@ The Figma frame contains named transparent interaction regions over the approved
 - `HIT / Continue`
 - `HIT / Streak Summary`
 
-## Android target
+## Intended workflow
 
-Implement natively in Kotlin with Jetpack Compose, landscape-first for Android tablets. Use responsive Compose layout logic rather than hard-coded screen coordinates where practical. For visually anchored regions that correspond directly to the approved artwork, derive interaction bounds from the Figma geometry and scale them consistently with the rendered design.
+1. Continue building the app normally.
+2. When implementing or replacing the home-screen presentation layer, use the approved Figma screen from this directory as the visual target.
+3. Use the named Figma hit regions to understand where the existing actions belong visually.
+4. Keep interaction/layout logic responsive in Jetpack Compose rather than baking in one-device pixel coordinates.
+5. Additional approved screens, backgrounds, illustrations, exported assets, and placement notes will be added under `interface/` as they are created.
 
-This directory can be expanded with exported assets, implementation notes, screenshots, and additional approved screens as the interface is developed.
+In short: this directory is where the finished visual assets and their placement references will live. The coder should integrate them into the app already being built, not start the project over.
