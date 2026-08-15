@@ -44,18 +44,24 @@ phase so a new session can pick up without re-deriving context.
 - `core:testing`: advanceable clocks, scripted random source, readable music assertions
 - Phase 1 harness screen in `app`: type a chord symbol, see degrees, spelling and a voicing
 
-**Interface handoff (added mid-phase at the user's request)**
+**Approved home screen (added mid-phase at the user's request)**
 
 - `ArtworkSpec` / `HitRegion` / `NormalizedRect` / `ArtworkGeometry` / `ArtworkScreen` in
-  `core:designsystem`
-- `HomeAction` binding all twenty `HIT / ...` regions from `interface/README.md` to app
-  destinations, with `HomeDestination` recording which phase each opens in
-- `HomeScreen` with an artwork presentation and a plain fallback
+  `core:designsystem`; regions stored as fractions of the artwork, artwork fitted not cropped
+- `HomeAction` binding all twenty regions to app destinations, keyed on both the Figma layer
+  name and the map's semantic action id, with `HomeDestination` recording the phase each opens in
+- `interface/harmony_home_approved.jpg` (1536 × 1024) is the home screen; all twenty controls
+  are live, and Theory Lab reaches the Phase 1 harness
+- `interface/maps/home.json` parsed at runtime, so a re-export updates the app by replacing one file
+- `syncInterfaceArtwork` (buildSrc, per variant) copies artwork and map into generated resources
+- `checkInterfaceAssets` validates handed-over assets at build time — added after the first
+  upload of the artwork arrived as 14,997 bytes carrying no JPEG markers
+- System back returns from the harness to home
 - See `docs/INTERFACE_INTEGRATION.md`
 
 ### Tests
 
-123 passing, 0 failing.
+129 passing, 0 failing.
 
 | Suite | Covers |
 | --- | --- |
@@ -69,13 +75,15 @@ phase so a new session can pick up without re-deriving context.
 | `FunctionalHarmonyTest` | The four specified roman-numeral cases, twelve keys, key signatures |
 | `PitchAndDeterminismTest` | MIDI bounds, enharmonic octaves, seeded reproducibility |
 | `ArtworkGeometryTest` | Region placement across five container sizes and both letterbox axes |
-| `HomeActionTest` | One-to-one mapping between actions and the twenty approved region names |
+| `HomeActionTest` | Two-way mapping against the supplied map, nested-region hit order, edge clamping |
 | `HarmonyLabAnalyzerTest` | Harness state mapping, unwritable-chord handling |
 
 ### Manual verification
 
 - `./gradlew verifyHarmony` — passes
 - `./gradlew assembleDebug` — produces `app/build/outputs/apk/debug/app-debug.apk`
+- Home-screen hit regions verified by rendering the artwork with every mapped region drawn over
+  it; all twenty sit on their intended control
 - **Not done:** installation on the target Samsung tablet, and any MIDI keyboard testing. No
   device is attached to this environment. 22_MANUAL_DEVICE_TEST_PLAN.md is still entirely
   outstanding and remains a release blocker.
@@ -86,9 +94,10 @@ phase so a new session can pick up without re-deriving context.
    reports this rather than respelling; content must use `Bdim7`. The Phase 6 content
    validator should reject such roots. Pinned by
    `TranspositionTest.a chord that standard notation cannot write is reported rather than respelled`.
-2. **Approved home artwork is absent.** `interface/` contains only `README.md`; the Figma file
-   is not reachable without an access token. The seam is built and tested; the artwork and its
-   region coordinates are outstanding. See `docs/INTERFACE_INTEGRATION.md`.
+2. **Only the home screen has approved artwork.** Every other destination reports the phase it
+   arrives in. `interface/maps/home.json` also points its `visualAsset` field at the malformed
+   hyphenated file that has since been removed; nothing reads that field, but it should be
+   corrected in the next export.
 3. **Quartal and So What voicings are not in the formula registry.** Region 9 material arrives
    with Phase 11, where the chord label is deliberately allowed to be ambiguous.
 4. **`targetSdk` is 36 against `compileSdk` 37**, per the planning baseline. The API 37

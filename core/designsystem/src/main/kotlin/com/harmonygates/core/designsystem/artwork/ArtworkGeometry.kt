@@ -25,6 +25,9 @@ public data class NormalizedRect(
 
     public val width: Float get() = right - left
     public val height: Float get() = bottom - top
+
+    /** Fraction of the artwork this region covers. Used to order nested regions. */
+    public val area: Float get() = width * height
 }
 
 /** A rectangle in device pixels, resolved against a particular container size. */
@@ -71,6 +74,17 @@ public data class ArtworkSpec(
     public val aspectRatio: Float get() = nativeWidth.toFloat() / nativeHeight.toFloat()
 
     public fun region(id: String): HitRegion? = regions.firstOrNull { it.id == id }
+
+    /**
+     * Regions ordered so that a nested one can still be tapped.
+     *
+     * The approved home frame has a Continue button sitting inside the Next Gate card. Laid out
+     * in declaration order the card would cover the button and swallow every tap on it, so the
+     * larger region is placed first and the smaller on top. Ties break on id, keeping the order
+     * stable rather than dependent on however the map happened to be written.
+     */
+    public val regionsInHitTestOrder: List<HitRegion>
+        get() = regions.sortedWith(compareByDescending<HitRegion> { it.bounds.area }.thenBy { it.id })
 }
 
 /**

@@ -128,4 +128,42 @@ off-screen on an unusual aspect ratio.
 
 The home fallback deliberately does not imitate the approved design.
 16_AGENT_EXECUTION_PROTOCOL.md §8 forbids approximating from prose once a Figma source of truth
-exists, and the artwork is not yet in the repository.
+exists; it is only reached when no usable artwork is present.
+
+---
+
+## D10 — Interface assets are validated by the build
+
+**Phase 1.** `checkInterfaceAssets` fails the build on a file named like an image that is not one.
+
+The first upload of the approved artwork arrived as 14,997 bytes containing no JPEG markers at
+all. Nothing in a normal build would have caught it: AAPT does not decode a file it only
+copies, so it would have surfaced as a blank home screen on a tablet, a long way from its
+cause. The check reads image headers directly rather than using a decoder, because the job is
+to say "this is not an image" about files no decoder would accept.
+
+---
+
+## D11 — The interaction map is parsed, not transcribed
+
+**Phase 1.** `interface/maps/home.json` is copied into `R.raw` and read at runtime.
+
+Transcribing twenty rectangles into Kotlin would work once and rot on the first re-export. The
+map carries a `schemaVersion`, which says it is meant to be consumed as data. Regions bind on
+the semantic `action` id first and the `figmaLayer` name second — a designer may rename a layer
+for tidiness, but `navigate_ear_trainer` says what it is for.
+
+An unknown layer is skipped rather than fatal, since a design file may gain a control before
+the app has a destination for it. `HomeActionTest` reads the supplied map directly and fails
+if the two drift apart, so a skip is never silent.
+
+---
+
+## D12 — Nested hit regions are ordered by area
+
+**Phase 1.** `ArtworkSpec.regionsInHitTestOrder` sorts largest first.
+
+The approved frame puts `HIT / Continue` inside `HIT / Next Gate Card`. Laid out in map order
+the card would cover the button and swallow every tap on it. Sorting by descending area fixes
+that case and any future nesting without either the map or the app needing to know about it;
+ties break on id so the order does not depend on how the map happened to be written.

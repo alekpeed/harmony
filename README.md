@@ -13,7 +13,7 @@ next. See `docs/IMPLEMENTATION_STATUS.md` for the detailed handoff and known lim
 
 | | |
 | --- | --- |
-| Tests | 123 passing |
+| Tests | 129 passing |
 | Debug APK | builds |
 | MIDI | Phase 2 |
 | Verified on hardware | not yet — no device attached to the build environment |
@@ -35,9 +35,10 @@ sdk.dir=/path/to/android-sdk
 
 ## What exists today
 
-The app opens on a home screen listing every mode. One of them — **Theory Lab** — is live: type
-a chord symbol and see its degrees, its spelling and a generated voicing, all answered by
-`core:music`. The rest report which phase they arrive in rather than opening an empty room.
+The app opens on the approved home screen from `interface/`, with all twenty of its controls
+live. One of them — **Theory Lab** — leads somewhere real: type a chord symbol and see its
+degrees, its spelling and a generated voicing, all answered by `core:music`. The rest report
+which phase they arrive in rather than opening an empty room.
 
 The theory engine handles 30 chord formulas across all twelve roots, jazz chord-symbol parsing
 (`Cm7b5`, `CΔ7`, `C7alt`, `Dbmaj9/F`), degree-aware enharmonic spelling, inversions, voicing

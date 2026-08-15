@@ -56,7 +56,8 @@ public fun ArtworkScreen(
             contentScale = ContentScale.Fit,
         )
 
-        for (region in spec.regions) {
+        // Largest first, so a region nested inside another still receives its taps.
+        for (region in spec.regionsInHitTestOrder) {
             val rect = ArtworkGeometry.resolve(region, spec, containerWidthPx, containerHeightPx)
             val interactionSource = remember(region.id) { MutableInteractionSource() }
 

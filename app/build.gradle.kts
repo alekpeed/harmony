@@ -1,7 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
 }
+
 
 android {
     namespace = "com.harmonygates"
@@ -59,6 +61,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(projects.core.testing)
     testImplementation(libs.kotlin.test.junit5)
@@ -70,6 +73,37 @@ dependencies {
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.compose.ui.test.junit4)
     debugImplementation(libs.compose.ui.test.manifest)
+}
+
+/**
+ * Pulls the approved artwork out of `interface/` into generated resources.
+ *
+ * `interface/` stays the single source of truth (see docs/INTERFACE_INTEGRATION.md): committing
+ * a new export there and rebuilding is the whole workflow, with no second copy to keep in step.
+ *
+ * Registered per variant through the variant API, which is how AGP 9 wires a generated
+ * directory together with its task dependency.
+ */
+androidComponents {
+    onVariants { variant ->
+        val syncArtwork = tasks.register<SyncInterfaceArtwork>(
+            "sync${variant.name.replaceFirstChar(Char::uppercase)}InterfaceArtwork",
+        ) {
+            group = "build"
+            description = "Copies the approved home artwork from interface/ into generated resources."
+            interfaceDirectory.set(rootProject.layout.projectDirectory.dir("interface"))
+            sourceFileName.set("harmony_home_approved.jpg")
+            mapFileName.set("maps/home.json")
+            resourceName.set("home_approved")
+            mapResourceName.set("home_interaction_map")
+            // Matches HarmonyColorTokens.background, so a pending artwork is never a bright flash.
+            placeholderColor.set("#12131A")
+        }
+        variant.sources.res?.addGeneratedSourceDirectory(
+            syncArtwork,
+            SyncInterfaceArtwork::generatedResourceDirectory,
+        )
+    }
 }
 
 tasks.withType<Test>().configureEach {

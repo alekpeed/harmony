@@ -18,42 +18,66 @@ import com.harmonygates.core.designsystem.artwork.NormalizedRect
 enum class HomeAction(
     /** The Figma layer name, exactly as written in the design file. */
     val figmaRegionId: String,
+    /** The semantic action id from `interface/maps/home.json`. */
+    val mapActionId: String,
     /** Spoken by accessibility services. */
     val label: String,
     val destination: HomeDestination,
 ) {
-    Menu("HIT / Menu", "Open menu", HomeDestination.Menu),
+    Menu("HIT / Menu", "toggle_menu", "Open menu", HomeDestination.Menu),
 
-    NavHome("HIT / Nav Home", "Home", HomeDestination.Home),
-    NavMap("HIT / Nav Map", "Campaign map", HomeDestination.Campaign),
-    NavPractice("HIT / Nav Practice", "Quick practice", HomeDestination.QuickPractice),
-    NavStats("HIT / Nav Stats", "Progress", HomeDestination.Progress),
-    NavLibrary("HIT / Nav Library", "Library", HomeDestination.Library),
-    NavProfile("HIT / Nav Profile", "Profile", HomeDestination.Profile),
-    NavSettings("HIT / Nav Settings", "Settings", HomeDestination.Settings),
+    NavHome("HIT / Nav Home", "navigate_home", "Home", HomeDestination.Home),
+    NavMap("HIT / Nav Map", "navigate_map", "Campaign map", HomeDestination.Campaign),
+    NavPractice("HIT / Nav Practice", "navigate_practice", "Quick practice", HomeDestination.QuickPractice),
+    NavStats("HIT / Nav Stats", "navigate_stats", "Progress", HomeDestination.Progress),
+    NavLibrary("HIT / Nav Library", "navigate_library", "Library", HomeDestination.Library),
+    NavProfile("HIT / Nav Profile", "navigate_profile", "Profile", HomeDestination.Profile),
+    NavSettings("HIT / Nav Settings", "navigate_settings", "Settings", HomeDestination.Settings),
 
-    ProfileSummary("HIT / Profile Summary", "Profile summary", HomeDestination.Profile),
+    ProfileSummary("HIT / Profile Summary", "open_profile_summary", "Profile summary", HomeDestination.Profile),
 
-    ChordGates("HIT / Chord Gates", "Chord gates", HomeDestination.ChordGate),
-    EarTrainer("HIT / Ear Trainer", "Ear trainer", HomeDestination.EarTraining),
-    SightReading("HIT / Sight Reading", "Sight reading", HomeDestination.SightReading),
-    ProgressionRun("HIT / Progression Run", "Progression run", HomeDestination.ProgressionLab),
-    VoiceLeading("HIT / Voice Leading", "Voice leading", HomeDestination.VoicingLab),
+    ChordGates("HIT / Chord Gates", "navigate_chord_gates", "Chord gates", HomeDestination.ChordGate),
+    EarTrainer("HIT / Ear Trainer", "navigate_ear_trainer", "Ear trainer", HomeDestination.EarTraining),
+    SightReading("HIT / Sight Reading", "navigate_sight_reading", "Sight reading", HomeDestination.SightReading),
+    ProgressionRun(
+        "HIT / Progression Run",
+        "navigate_progression_run",
+        "Progression run",
+        HomeDestination.ProgressionLab,
+    ),
+    VoiceLeading("HIT / Voice Leading", "navigate_voice_leading", "Voice leading", HomeDestination.VoicingLab),
 
     // The theory lab is the one destination that exists today: it is the Phase 1 harness over
-    // core:music. Wiring it up now means the artwork has at least one live control the moment
-    // it lands, rather than twenty dead ones.
-    TheoryLab("HIT / Theory Lab", "Theory lab", HomeDestination.TheoryLab),
+    // core:music. Wiring it up means the approved artwork has a live control from the moment it
+    // lands, rather than twenty dead ones.
+    TheoryLab("HIT / Theory Lab", "navigate_theory_lab", "Theory lab", HomeDestination.TheoryLab),
 
-    DailyChallenge("HIT / Daily Challenge", "Daily challenge", HomeDestination.DailyChallenge),
-    MyJourney("HIT / My Journey", "My journey", HomeDestination.Campaign),
-    NextGateCard("HIT / Next Gate Card", "Next gate", HomeDestination.NextGate),
-    Continue("HIT / Continue", "Continue where you left off", HomeDestination.Resume),
-    StreakSummary("HIT / Streak Summary", "Streak summary", HomeDestination.Progress),
+    DailyChallenge(
+        "HIT / Daily Challenge",
+        "navigate_daily_challenge",
+        "Daily challenge",
+        HomeDestination.DailyChallenge,
+    ),
+    MyJourney("HIT / My Journey", "navigate_my_journey", "My journey", HomeDestination.Campaign),
+    NextGateCard("HIT / Next Gate Card", "open_next_gate", "Next gate", HomeDestination.NextGate),
+    Continue("HIT / Continue", "continue_next_gate", "Continue where you left off", HomeDestination.Resume),
+    StreakSummary("HIT / Streak Summary", "open_progress_summary", "Streak summary", HomeDestination.Progress),
     ;
 
     companion object {
         fun forRegion(regionId: String): HomeAction? = entries.firstOrNull { it.figmaRegionId == regionId }
+
+        fun forMapAction(actionId: String): HomeAction? = entries.firstOrNull { it.mapActionId == actionId }
+
+        /**
+         * Resolves a mapped region, preferring the semantic action id.
+         *
+         * The map carries both. The action id is the more stable of the two — a designer may
+         * rename a layer for tidiness, but `navigate_ear_trainer` says what it is for — so it
+         * wins, with the layer name as the fallback.
+         */
+        fun forMappedRegion(actionId: String, figmaLayer: String): HomeAction? =
+            forMapAction(actionId) ?: forRegion(figmaLayer)
     }
 }
 
@@ -88,49 +112,21 @@ enum class HomeDestination(val isImplemented: Boolean, val arrivesInPhase: Int) 
 }
 
 /**
- * The approved home frame and where its controls sit.
+ * The approved home frame.
  *
- * The native size comes from `interface/README.md`: 1536 x 1024 landscape. [regionBounds] is
- * empty until the export supplies coordinates; see docs/INTERFACE_INTEGRATION.md for the
- * three-step process of dropping the asset in.
+ * Every piece is supplied through `interface/` and copied into resources by
+ * `syncInterfaceArtwork`, so nothing here is transcribed by hand:
  *
- * An empty table is not a stub that needs replacing — [spec] builds correctly from whatever is
- * present, so regions can be filled in a few at a time as they are measured.
+ * - the artwork as `R.drawable.home_approved`, always resolvable, real export or placeholder
+ * - whether it is the real one as `R.bool.home_approved_available`
+ * - its true pixel size as `R.integer.home_approved_native_*`
+ * - the twenty hit regions as `R.raw.home_interaction_map`
+ *
+ * See docs/INTERFACE_INTEGRATION.md.
  */
 object HomeArtwork {
 
-    const val NATIVE_WIDTH: Int = 1536
-    const val NATIVE_HEIGHT: Int = 1024
-
-    /**
-     * Drawable resource for the approved artwork, or null while it is pending.
-     *
-     * Set this to `R.drawable.home_approved` once the export is committed to
-     * `app/src/main/res/drawable-nodpi/`. It is a single named constant rather than a lookup by
-     * name so the reference is checked at compile time and shows up in a build failure if the
-     * asset is ever removed.
-     */
-    val drawableResId: Int? = null
-
-    /**
-     * Region bounds as fractions of the artwork, keyed by action.
-     *
-     * Measured from the Figma frame's transparent `HIT / ...` layers and converted with
-     * `ArtworkGeometry.normalize`. Fractions rather than pixels, so the same table serves every
-     * tablet size and both orientations.
-     */
-    val regionBounds: Map<HomeAction, NormalizedRect> = emptyMap()
-
-    /** True once both the artwork and at least one region are available. */
-    val isAvailable: Boolean get() = drawableResId != null && regionBounds.isNotEmpty()
-
-    val spec: ArtworkSpec = ArtworkSpec(
-        nativeWidth = NATIVE_WIDTH,
-        nativeHeight = NATIVE_HEIGHT,
-        regions = HomeAction.entries.mapNotNull { action ->
-            regionBounds[action]?.let { bounds ->
-                HitRegion(id = action.figmaRegionId, bounds = bounds, contentDescription = action.label)
-            }
-        },
-    )
+    /** Native artwork size promised by `interface/README.md`; a fallback, not an assumption. */
+    const val DECLARED_WIDTH: Int = 1536
+    const val DECLARED_HEIGHT: Int = 1024
 }

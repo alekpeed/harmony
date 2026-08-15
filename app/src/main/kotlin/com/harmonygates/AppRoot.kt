@@ -1,6 +1,8 @@
 package com.harmonygates
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.SnackbarHost
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -42,6 +44,10 @@ fun AppRoot() {
             pendingMessage = null
         }
     }
+
+    // The artwork has no drawn back control, so system back is the way home. Once Navigation 3
+    // arrives in Phase 6 this becomes an ordinary back stack.
+    BackHandler(enabled = screen != AppScreen.Home) { screen = AppScreen.Home }
 
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { insets ->
         when (screen) {

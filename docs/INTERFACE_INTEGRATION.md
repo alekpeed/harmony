@@ -9,20 +9,23 @@ what `interface/README.md` asks for.
 
 ## Current status
 
+**Integrated.** The home screen is the approved artwork, with all twenty controls live.
+
 | Item | State |
 | --- | --- |
-| Approved home frame (`Harmony Gates / FINAL Approved Home`, 1536 × 1024) | **Not yet in the repository.** `interface/` currently contains `README.md` only. |
-| Hit-region names | Supplied, all twenty wired (`HomeAction`) |
-| Hit-region coordinates | Not yet supplied |
-| Integration seam | Built and tested |
+| `interface/harmony_home_approved.jpg` | JPEG 1536 × 1024, verified at build time |
+| `interface/maps/home.json` | 20 regions, bounds and semantic actions |
+| Wiring | All 20 bound to `HomeAction`; Theory Lab reaches the Phase 1 harness |
+| Verified | Overlay render confirms every region sits on its control |
 
-The Figma file itself is not reachable from a build agent: `figma.com` returns HTTP 403 without
-an authenticated session, and no API token is configured. The artwork therefore has to arrive
-as a committed export, or via a Figma access token in the environment.
+A note on file names: an earlier `interface/harmony-home-approved.jpg` (hyphens) was a
+malformed upload — 14,997 bytes containing no JPEG markers at all. It has been removed, since
+leaving it would fail `checkInterfaceAssets` on every build. The valid asset is the
+underscored one, which is what `syncInterfaceArtwork` reads.
 
-Until it does, `HomeScreen` shows a plainly-styled list of the same actions. That fallback is
-deliberately not a mock-up of the approved design — 16_AGENT_EXECUTION_PROTOCOL.md §8 forbids
-approximating from prose once a Figma source of truth exists.
+`interface/maps/home.json` still points its `visualAsset` field at the removed hyphenated
+name. Nothing reads that field — the build takes the artwork path from the Gradle task — but
+it is worth correcting in the next map export.
 
 ## How the seam works
 
@@ -43,35 +46,45 @@ The artwork is fitted, not cropped. Cropping would push controls off-screen on a
 aspect ratio, and a control that has quietly left the screen is invisible in review and very
 obvious to a player.
 
-## Adding the approved home screen
+## Updating the artwork or the map
 
-1. **Commit the export.** Put the 1536 × 1024 PNG or WebP at
-   `app/src/main/res/drawable-nodpi/home_approved.webp`. Use `drawable-nodpi` so Android does
-   not rescale it per density — the fitting maths already handles size.
+Replace the file in `interface/` and rebuild. That is the whole workflow — there is no second
+copy to keep in step.
 
-2. **Point the app at it.** In `HomeArtwork`:
+`syncInterfaceArtwork` runs per variant and generates:
 
-   ```kotlin
-   val drawableResId: Int? = R.drawable.home_approved
-   ```
+| Generated | From |
+| --- | --- |
+| `R.drawable.home_approved` | the artwork, or a blank placeholder if none is usable |
+| `R.bool.home_approved_available` | whether it is the real export |
+| `R.integer.home_approved_native_width` / `_height` | the artwork's true pixel size |
+| `R.raw.home_interaction_map` | `interface/maps/home.json` |
 
-3. **Fill in the regions.** Measure each `HIT / ...` layer in the frame's own 1536 × 1024
-   space and convert once:
+Because the drawable is generated either way, `R.drawable` always resolves and the app needs
+no reflection and no conditional compilation. `HomeScreen` shows the artwork only when both
+halves are present, falling back to its action list otherwise — artwork with no regions is a
+screen of dead pixels, and regions with no artwork is invisible buttons over nothing.
 
-   ```kotlin
-   val regionBounds: Map<HomeAction, NormalizedRect> = mapOf(
-       HomeAction.Continue to ArtworkGeometry.normalize(spec, 384f, 256f, 768f, 512f),
-       // ...
-   )
-   ```
+The map is parsed at runtime rather than transcribed into Kotlin, so a re-export updates the
+app by replacing one file. Regions are matched on their semantic `action` id first and their
+`figmaLayer` name second: the action id is the more stable of the two, since a designer may
+rename a layer for tidiness but `navigate_ear_trainer` says what it is for.
 
-   Partial tables are fine. `HomeArtwork.spec` builds from whatever is present, so regions can
-   be filled in a few at a time, and `HomeArtwork.isAvailable` stays false until both the
-   artwork and at least one region exist — which prevents the half-integrated states of a
-   screen full of dead pixels, or invisible buttons over nothing.
+An unknown layer is skipped rather than fatal — a design file may gain a control before the app
+has a destination for it — but `HomeActionTest` fails the build if the map and the app drift
+apart, so a skip is never silent.
 
-Nothing else changes. `HomeScreen` switches presentation on `drawableResId`; every action
-already resolves through `HomeAction.forRegion`.
+### Adding a region
+
+Add it to the map with `figmaLayer`, `action` and `boundsNormalized`, then add a matching
+`HomeAction` entry. The test asserts a two-way match, so a half-done addition fails loudly.
+
+### Nested regions
+
+`HIT / Continue` sits inside `HIT / Next Gate Card`. Laid out in declaration order the card
+would cover the button and swallow every tap on it, so `ArtworkSpec.regionsInHitTestOrder`
+places larger regions first and smaller ones on top. Nesting needs no special handling in a
+map; it is handled generally.
 
 ## Keeping the contract honest
 
