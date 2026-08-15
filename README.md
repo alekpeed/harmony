@@ -8,15 +8,15 @@ Kotlin, Jetpack Compose, offline, tablet-first.
 
 ## Status
 
-**Phases 0, 1 and 2 complete.** Toolchain, music-theory domain, and the MIDI input engine.
-Performance capture and evaluation are next. See `docs/IMPLEMENTATION_STATUS.md` for the
-detailed handoff and known limitations.
+**Phases 0 through 3 complete.** Toolchain, music-theory domain, MIDI input engine, and
+performance capture and evaluation. A playable vertical slice is next. See
+`docs/IMPLEMENTATION_STATUS.md` for the detailed handoff and known limitations.
 
 | | |
 | --- | --- |
-| Tests | 194 passing |
+| Tests | 243 passing |
 | Debug APK | builds |
-| MIDI | input engine done; capture and evaluation are Phase 3 |
+| Playable exercise | Phase 4 |
 | Verified on hardware | not yet — no keyboard attached to the build environment |
 
 ## Quick start
@@ -57,7 +57,7 @@ roman-numeral functional harmony, and voice-leading analysis with optimal voice 
 ```text
 app/                    Android application, Phase 1 harness, home screen
 core/music/             Pure Kotlin/JVM: all music theory. No Android dependency.
-core/midi/              Input source, byte-stream parser, sustain and note tracking, simulator
+core/midi/              Input source, byte-stream parser, sustain, note tracking, chord capture
 core/designsystem/      Tokens, placeholder theme, components, artwork hit-region layer
 core/testing/           Test doubles and readable music assertions
 content/                Curriculum and exercise policies (Phase 6 onwards)

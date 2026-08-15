@@ -39,6 +39,20 @@ public interface ChordRealizer {
         degrees: Collection<ChordDegree> = spec.degrees,
     ): SpellingResult<Map<ChordDegree, SpelledPitchClass>>
 
+    /** Degree-to-spelling map for the chord's full stack. */
+    public fun spelledDegrees(spec: ChordSpec): Map<ChordDegree, SpelledPitchClass>
+
+    /** Which role a sounding pitch class plays in [spec], or null if it is not a chord tone. */
+    public fun degreeOf(spec: ChordSpec, pitchClass: PitchClass): ChordDegree?
+
+    /**
+     * Describes an already-played set of notes in terms of [spec].
+     *
+     * This is how the evaluator explains a performance and how a generated voicing gets its
+     * metadata, so both paths agree by construction.
+     */
+    public fun analyze(spec: ChordSpec, pitches: List<MidiNote>, family: VoicingFamily? = null): Voicing
+
     /** Concrete playable renderings of [spec] that satisfy [policy]. */
     public fun generateVoicings(spec: ChordSpec, policy: VoicingPolicy): List<Voicing>
 }
@@ -59,8 +73,7 @@ public class DefaultChordRealizer(
     override fun chordTones(spec: ChordSpec): List<SpelledPitchClass> =
         spec.degrees.map { degree -> spellOrThrow(spec, degree) }
 
-    /** Degree-to-spelling map for the chord's full stack. */
-    public fun spelledDegrees(spec: ChordSpec): Map<ChordDegree, SpelledPitchClass> =
+    override fun spelledDegrees(spec: ChordSpec): Map<ChordDegree, SpelledPitchClass> =
         spec.degrees.associateWith { degree -> spellOrThrow(spec, degree) }
 
     override fun trySpell(
@@ -77,8 +90,7 @@ public class DefaultChordRealizer(
         return SpellingResult.Spelled(spelled)
     }
 
-    /** Which role a sounding pitch class plays in [spec], or null if it is not a chord tone. */
-    public fun degreeOf(spec: ChordSpec, pitchClass: PitchClass): ChordDegree? =
+    override fun degreeOf(spec: ChordSpec, pitchClass: PitchClass): ChordDegree? =
         degreeByPitchClass(spec)[pitchClass]
 
     /**
@@ -87,10 +99,10 @@ public class DefaultChordRealizer(
      * This is how the evaluator will later explain a performance and how a generated voicing
      * gets its metadata, so both paths agree by construction.
      */
-    public fun analyze(
+    override fun analyze(
         spec: ChordSpec,
         pitches: List<MidiNote>,
-        family: VoicingFamily? = null,
+        family: VoicingFamily?,
     ): Voicing {
         require(pitches.isNotEmpty()) { "Cannot analyse an empty performance as a voicing" }
         val spelledByDegree = spelledDegrees(spec)

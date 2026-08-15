@@ -5,6 +5,91 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 3 — Performance capture and evaluator
+
+**Commit:** see `git log` for `phase/3-capture-and-evaluation`
+
+### Implemented
+
+**Capture (`core:midi`)**
+
+- `OnsetAggregator` — the state machine from 05_MIDI_INPUT_ENGINE.md §6. Never submits on the
+  first note; completes on a quiet window, on every key being lifted, on the roll window running
+  out, or on an explicit submit.
+- `CapturePolicy` — quiet window, roll window, stabilisation, accidental-note grace, sustain
+  policy, accepted range. The spec's values are defaults, not constants, because §6 says so.
+- `MidiPerformanceCapture` — the `PerformanceCapture` contract over a `MidiInputSource`. The
+  heartbeat only runs while a capture is armed.
+
+**Evaluation (`core:music`)**
+
+- `PerformanceAttempt` and `NormalizedNoteEvent` — the reduction *and* the full history, because
+  accidental-note diagnosis needs the note that was dropped
+- `OnsetPolicy` — simultaneous, rolled-allowed, unrestricted
+- `DefaultPerformanceEvaluator` — three matching modes: pitch-class, exact voicing (multiset,
+  so a doubled voice counts), and degree-aware policy matching
+- `PerformanceError` with an educational ranking, so a player reads the useful thing first
+- `Verdict`, `TimingEvaluation`, `PerformanceMetrics`, `FeedbackModel`
+- `ChordRealizer` gained `analyze`, `spelledDegrees` and `degreeOf` — the evaluator needs them
+  and they belong on the interface rather than only on the implementation
+
+### Tests
+
+243 passing, 0 failing. 49 of them are new.
+
+| Suite | Covers |
+| --- | --- |
+| `OnsetAggregatorTest` | All nine scripted scenarios from 14_TESTING_AND_QUALITY.md §5, plus the roll threshold at its edges |
+| `PerformanceEvaluatorTest` | The three matching modes, error ordering, device loss, register and bass constraints |
+| `MidiPerformanceCaptureTest` | Source-to-aggregator wiring on virtual time |
+
+### Manual verification
+
+- `./gradlew verifyHarmony assembleDebug` from a clean checkout — passes
+- **Not done:** anything with a real keyboard. The capture thresholds in `CapturePolicy` are the
+  specification's starting values and 05_MIDI_INPUT_ENGINE.md §6 explicitly calls them
+  "starting default values for user testing, not permanent constants". They have never been
+  played on. Instrument-testing them is a hardware task.
+
+### Known limitations
+
+1. **The capture thresholds are unvalidated.** 80 ms quiet window, 300 ms roll, 40 ms
+   stabilisation, 70 ms accidental grace. All plausible, none measured against fingers.
+2. **No exercise UI yet.** Capture and evaluation exist and are tested, but nothing on screen
+   drives them — that is Phase 4's vertical slice.
+3. **Timed sequences and sight-reading phrases return `NO_ATTEMPT`.** Those requirement types
+   are graded step by step by a session engine, which arrives with Phases 9 and 10.
+4. **Voice-leading targets are evaluated only for harmonic validity.** The movement scoring in
+   06_PERFORMANCE_EVALUATION_AND_SCORING.md §11 belongs to Phase 10; today a voice-leading
+   requirement is judged as a chord-policy match against its destination.
+5. **No mastery weighting.** §9's evidence model is Phase 5 and reads these results rather than
+   replacing them.
+
+### Design notes worth carrying forward
+
+Two bugs found by the scripted scenarios, both of which would have marked correct answers wrong:
+
+- The accidental-note grace period initially discarded *every* note of a short chord, because
+  letting go is how a player finishes. The filter now asks whether the key was released while
+  the chord was still arriving, not merely whether it was released quickly.
+- Lifting every key completed the attempt even with the pedal down, which ended capture on a
+  note that was only a sustained remnant. Capture now waits for the quiet window when the pedal
+  is held.
+
+### Next phase prerequisites
+
+Phase 4 — the minimal playable vertical slice. Needs:
+
+- An exercise session engine per 10_ANDROID_ARCHITECTURE.md §4, wrapping arm → capture →
+  evaluate → feedback → next
+- A deliberately plain exercise screen: show `Cmaj7`, play it, see the verdict
+- Exercise generation from a seed, using the `SeededRandomFactory` already in `core:music`
+- Several qualities, roots and inversions, per the phase's acceptance criteria
+
+Everything Phase 4 needs from capture and evaluation now exists.
+
+---
+
 ## Phase: 2 — MIDI foundation
 
 **Commit:** see `git log` for `phase/2-midi-foundation`

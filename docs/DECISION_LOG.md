@@ -231,3 +231,54 @@ project's situation throughout. It also makes the disconnect path testable by ha
 cable" exercises the reconnect flow without anyone touching a cable. Both sources implement the
 same interface, so the screen cannot tell which it has — which is the same property that makes
 CI work.
+
+---
+
+## D18 — A note is a slip only if it was released while the chord was still arriving
+
+**Phase 3.** The accidental-note filter tests *when* a key came up, not only how briefly.
+
+The first version discarded any note released inside the grace period, which discarded every
+note of a short chord: letting go is how a player finishes. The scripted scenarios caught it
+immediately — a correct Cmaj7 evaluated as an empty attempt.
+
+The rule that works asks whether the release happened before the final onset. Released early and
+briefly is a slip, like catching the black key next door. Released after the last note arrived is
+the player finishing. The same test governs pedal remnants: released early, under the pedal, is
+something ringing rather than something being played.
+
+---
+
+## D19 — Lifting your hands with the pedal down does not end a chord
+
+**Phase 3.** Capture waits for the quiet window while the sustain pedal is held.
+
+Completing on "every key released" ended the attempt on a note that was only a sustained
+remnant, before the real chord had been played. It is also just wrong musically: with the pedal
+down the notes are still sounding and the player may still be playing. Waiting for silence is
+what lets a remnant be recognised as a remnant.
+
+---
+
+## D20 — Three matching modes, not one comparison
+
+**Phase 3.** The evaluator branches on the requirement type rather than reducing everything to
+a note comparison.
+
+"Play any Cmaj7" is a question about pitch classes; the octave is not part of the answer. "Play
+this voicing" is about exact notes *including doublings*, so it compares multisets — a set would
+silently agree that a doubled root is the same as a single one. "Play a rootless G13" is about
+degrees, and a generic "root missing means incorrect" rule would fail the whole of Region 7.
+
+One comparison routine would have to pick one of the three and be wrong about the other two.
+
+---
+
+## D21 — Errors are ranked, not listed
+
+**Phase 3.** `PerformanceError.rank` orders feedback by educational importance.
+
+06_PERFORMANCE_EVALUATION_AND_SCORING.md §8 asks for this explicitly. A player who is on the
+wrong chord *and* spread it too wide should be told about the chord; mentioning the spread first
+would be technically complete and pedagogically useless. Missing a guide tone outranks missing a
+fifth for the same reason — one changes what the chord is, the other usually does not.
