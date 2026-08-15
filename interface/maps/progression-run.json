@@ -1,29 +1,95 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "screen": "progression-run",
   "designSize": {"width": 1536, "height": 1024},
   "figma": {
     "fileKey": "cD5gqV8A5gk94NVuGeJXg5",
     "frameName": "Harmony Gates / Progression Run / FINAL",
     "nodeId": "49:2",
+    "prototypeOnly": true,
+    "prototypePurpose": "Demonstrate track motion and interaction timing only. The chords shown in Figma are sample data and MUST NOT be hard-coded into the production app.",
+    "demoSequence": ["Dm7", "G7", "Cmaj7", "Am7"],
     "prototypeStates": [
-      {"nodeId":"49:2","chord":"Dm7"},
-      {"nodeId":"49:20","chord":"G7"},
-      {"nodeId":"49:38","chord":"Cmaj7"},
-      {"nodeId":"49:56","chord":"Am7"}
-    ]
+      {"nodeId":"49:2","demoActiveIndex":0},
+      {"nodeId":"49:20","demoActiveIndex":1},
+      {"nodeId":"49:38","demoActiveIndex":2},
+      {"nodeId":"49:56","demoActiveIndex":3}
+    ],
+    "transition": {"type":"smart_animate","durationMs":650,"easing":"ease-in-out"}
   },
   "visualSource": "Figma node 44:5 / SOURCE / Progression Run Approved",
-  "interactionModel": "Real app trigger is MIDI chord recognition. Figma prototype simulates advance by clicking the active chord, Next, or Play/Pause. Smart Animate duration is 650ms with ease-in-out.",
-  "track": {
-    "advanceAction": "advance_progression_track",
-    "previousAction": "previous_progression_chord",
-    "states": [
-      {"chord":"Dm7","centerPx":{"x":493,"y":455}},
-      {"chord":"G7","centerPx":{"x":720,"y":390}},
-      {"chord":"Cmaj7","centerPx":{"x":888,"y":440}},
-      {"chord":"Am7","centerPx":{"x":1016,"y":474}}
+  "productionRule": "The production screen is one reusable renderer. It accepts arbitrary progression data at runtime. Never create a separate Compose screen or hard-coded layout per progression.",
+  "runtimeModel": {
+    "progression": {
+      "id": "string",
+      "title": "string",
+      "source": "preset | curriculum | standard | generated | custom",
+      "loop": "boolean",
+      "tempoBpm": "number",
+      "meter": "string",
+      "events": "ChordEvent[]"
+    },
+    "ChordEvent": {
+      "id": "string",
+      "symbol": "string",
+      "rootPitchClass": "0..11",
+      "quality": "string",
+      "extensions": "string[]",
+      "alterations": "string[]",
+      "bassPitchClass": "0..11 | null",
+      "durationBeats": "number",
+      "rootPolicy": "required | optional | forbidden",
+      "bassPolicy": "required | optional | ignored",
+      "inversionPolicy": "any | root | specified",
+      "allowedInversions": "number[]",
+      "requiredPitchClasses": "number[]",
+      "optionalPitchClasses": "number[]",
+      "allowedOmissions": "number[]",
+      "acceptableVoicingFamilyIds": "string[]",
+      "exactMode": "boolean"
+    }
+  },
+  "trackRenderer": {
+    "activeIndex": "integer runtime state",
+    "visibleWindow": {"previous":2,"current":1,"upcoming":4},
+    "recyclingRule": "Render only the visible window. Reuse orb slots as activeIndex changes so a 3-chord progression and a 64-chord progression use the same renderer.",
+    "slotPath": [
+      {"relativeIndex":-2,"centerPx":{"x":300,"y":565},"scale":0.55,"opacity":0.25},
+      {"relativeIndex":-1,"centerPx":{"x":390,"y":515},"scale":0.72,"opacity":0.50},
+      {"relativeIndex":0,"centerPx":{"x":493,"y":455},"scale":1.00,"opacity":1.00,"role":"play-point"},
+      {"relativeIndex":1,"centerPx":{"x":720,"y":390},"scale":0.88,"opacity":0.92},
+      {"relativeIndex":2,"centerPx":{"x":888,"y":440},"scale":0.75,"opacity":0.78},
+      {"relativeIndex":3,"centerPx":{"x":1016,"y":474},"scale":0.64,"opacity":0.62},
+      {"relativeIndex":4,"centerPx":{"x":1095,"y":520},"scale":0.54,"opacity":0.42}
+    ],
+    "advanceAnimation": {
+      "durationMs":650,
+      "easing":"cubic-bezier(0.22, 1, 0.36, 1)",
+      "behavior":"Every visible chord orb moves one slot toward the play-point. The completed chord moves into previous history and dims. The next chord arrives at relativeIndex 0, grows to full scale, and becomes active. A new upcoming chord enters at the far end. The environment stays fixed.",
+      "interruptPolicy":"Do not start a second advance while an advance animation is in progress. Queue at most one valid advance event."
+    }
+  },
+  "midiAdvance": {
+    "primaryTrigger":"recognized_current_chord_correctly",
+    "action":"advance_progression_track",
+    "requirements":[
+      "Matcher evaluates the ChordEvent at activeIndex, not the text rendered in the orb.",
+      "Wrong or incomplete chords never advance the track.",
+      "Do not advance twice from the same held chord or sustain state.",
+      "Require a new qualifying note-state after each accepted advance.",
+      "Respect root, bass, inversion, omission and voicing-family policies defined by the ChordEvent.",
+      "The Figma click trigger is simulation only; production advancement comes from MIDI recognition or explicit manual Next."
     ]
+  },
+  "assistanceModes": {
+    "full_help":"Show current chord plus multiple upcoming symbols and voicing guidance.",
+    "symbol_only":"Show chord symbols without keyboard/voicing guidance.",
+    "audio_only":"Hide upcoming symbols; reveal/advance based on heard target and MIDI answer.",
+    "advanced":"Show minimal look-ahead, optionally only one approaching orb."
+  },
+  "endBehavior": {
+    "loopFalse":"When activeIndex reaches the final event and it is completed, run finish animation and show run results.",
+    "loopTrue":"Recycle the first event into the far-upcoming slot and continue seamlessly without resetting the screen."
   },
   "regions": [
     {"id":"back","figmaLayer":"HIT / Back","action":"navigate_back","boundsPx":{"x":18,"y":22,"width":58,"height":58}},
@@ -31,13 +97,13 @@
     {"id":"tempo","figmaLayer":"HIT / Tempo","action":"set_tempo","boundsPx":{"x":463,"y":231,"width":110,"height":62}},
     {"id":"play_pause","figmaLayer":"HIT / Play Pause","action":"toggle_run_playback","boundsPx":{"x":543,"y":594,"width":64,"height":64}},
     {"id":"previous_chord","figmaLayer":"HIT / Previous Chord","action":"previous_progression_chord","boundsPx":{"x":488,"y":604,"width":48,"height":48}},
-    {"id":"next_chord","figmaLayer":"HIT / Next Chord","action":"advance_progression_track","boundsPx":{"x":614,"y":604,"width":48,"height":48}},
+    {"id":"next_chord","figmaLayer":"HIT / Next Chord","action":"advance_progression_track_manual","boundsPx":{"x":614,"y":604,"width":48,"height":48}},
     {"id":"sound","figmaLayer":"HIT / Sound","action":"open_sound_settings","boundsPx":{"x":1144,"y":260,"width":322,"height":86}},
     {"id":"timing","figmaLayer":"HIT / Timing","action":"open_timing_settings","boundsPx":{"x":1144,"y":354,"width":322,"height":86}},
     {"id":"metronome","figmaLayer":"HIT / Metronome","action":"toggle_metronome","boundsPx":{"x":1144,"y":448,"width":322,"height":86}},
     {"id":"auto_advance","figmaLayer":"HIT / Auto Advance","action":"toggle_auto_advance","boundsPx":{"x":1144,"y":542,"width":322,"height":86}},
     {"id":"voicing_guide","figmaLayer":"HIT / Show Voicing Guide","action":"toggle_voicing_guide","boundsPx":{"x":1144,"y":636,"width":322,"height":86}},
     {"id":"loop_progression","figmaLayer":"HIT / Loop Progression","action":"toggle_loop_progression","boundsPx":{"x":1144,"y":730,"width":322,"height":86}},
-    {"id":"active_chord","figmaLayer":"HIT / Track Active Chord","action":"advance_progression_track","dynamicBounds":"Use the active state center from track.states with a 124x124 hit box."}
+    {"id":"active_chord","figmaLayer":"HIT / Track Active Chord","action":"advance_progression_track_manual","dynamicBounds":"Bind to relativeIndex 0/play-point. Do not bind to a specific chord name."}
   ]
 }
