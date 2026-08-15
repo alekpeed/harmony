@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "screen": "progression-run",
   "designSize": {"width": 1536, "height": 1024},
   "figma": {
@@ -54,14 +54,15 @@
     "visibleWindow": {"previous":1,"current":1,"upcoming":5},
     "recyclingRule": "Render the seven visible positions and recycle items as activeIndex changes. Progression length does not change screen architecture.",
     "slotPath": [
-      {"relativeIndex":-1,"centerPx":{"x":380,"y":572},"diameterPx":104,"role":"previous"},
-      {"relativeIndex":0,"centerPx":{"x":565,"y":546},"diameterPx":108,"role":"play-point"},
-      {"relativeIndex":1,"centerPx":{"x":760,"y":495},"diameterPx":88},
-      {"relativeIndex":2,"centerPx":{"x":920,"y":445},"diameterPx":84},
-      {"relativeIndex":3,"centerPx":{"x":1020,"y":395},"diameterPx":76},
-      {"relativeIndex":4,"centerPx":{"x":1135,"y":365},"diameterPx":72},
-      {"relativeIndex":5,"centerPx":{"x":1245,"y":345},"diameterPx":70}
+      {"relativeIndex":-1,"centerPx":{"x":380,"y":570},"diameterPx":100,"role":"previous"},
+      {"relativeIndex":0,"centerPx":{"x":565,"y":548},"diameterPx":102,"role":"play-point"},
+      {"relativeIndex":1,"centerPx":{"x":759,"y":502},"diameterPx":88},
+      {"relativeIndex":2,"centerPx":{"x":914,"y":458},"diameterPx":82},
+      {"relativeIndex":3,"centerPx":{"x":1026,"y":405},"diameterPx":74},
+      {"relativeIndex":4,"centerPx":{"x":1137,"y":374},"diameterPx":68},
+      {"relativeIndex":5,"centerPx":{"x":1245,"y":353},"diameterPx":68}
     ],
+    "alignmentRule":"Orb center, diameter and pedestal are calibrated against approved source node 44:5. All prototype states reuse these same seven slot geometries exactly.",
     "advanceAnimation": {
       "durationMs":650,
       "easing":"cubic-bezier(0.22, 1, 0.36, 1)",
@@ -92,6 +93,6 @@
     {"id":"play_pause","figmaLayer":"HIT / Play Pause","action":"toggle_run_playback","boundsPx":{"x":543,"y":594,"width":64,"height":64}},
     {"id":"previous_chord","figmaLayer":"HIT / Previous Chord","action":"previous_progression_chord","boundsPx":{"x":488,"y":604,"width":48,"height":48}},
     {"id":"next_chord","figmaLayer":"HIT / Next Chord","action":"advance_progression_track_manual","boundsPx":{"x":614,"y":604,"width":48,"height":48}},
-    {"id":"active_chord","figmaLayer":"HIT / Track Active Chord","action":"advance_progression_track_manual","boundsPx":{"x":503,"y":484,"width":124,"height":124},"bindTo":"relativeIndex 0 / play-point"}
+    {"id":"active_chord","figmaLayer":"HIT / Track Active Chord","action":"advance_progression_track_manual","boundsPx":{"x":503,"y":486,"width":124,"height":124},"bindTo":"relativeIndex 0 / play-point"}
   ]
 }
