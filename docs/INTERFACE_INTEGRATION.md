@@ -23,9 +23,48 @@ malformed upload — 14,997 bytes containing no JPEG markers at all. It has been
 leaving it would fail `checkInterfaceAssets` on every build. The valid asset is the
 underscored one, which is what `syncInterfaceArtwork` reads.
 
+That deletion is local to this branch. The hyphenated file is still present on `main`, so
+merging without deleting it there re-breaks `checkInterfaceAssets` for everyone. It needs to
+go from `main` as well.
+
 `interface/maps/home.json` still points its `visualAsset` field at the removed hyphenated
 name. Nothing reads that field — the build takes the artwork path from the Gradle task — but
 it is worth correcting in the next map export.
+
+## Progression Run — handed over, not yet built
+
+`interface/PROGRESSION_RUN_HANDOFF.md` and `interface/maps/progression-run.json` describe the
+Progression Run screen. Progression Run is **Phase 10** work, so nothing in the app consumes
+either file yet; `HomeAction.ProgressionRun` resolves to
+`HomeDestination.ProgressionLab(isImplemented = false, arrivesInPhase = 10)` and says so on the
+home screen.
+
+The handoff invalidates the coordinates that came from the deleted `49:*` prototype frames.
+Nothing in this repository ever read them — the only interaction map the build consumes is
+`maps/home.json`, from frame `28:2`, which is unaffected — so there is nothing to unwind.
+`syncInterfaceArtwork` is wired to that one map by name, not to `interface/maps/**`, so a new
+map file cannot leak into the app by simply existing.
+
+Three points in the handoff are architectural rather than cosmetic, and are recorded here so
+Phase 10 does not have to rediscover them:
+
+- **The background is a plate, not the screen.** Track, orbs, pedestals and labels are drawn by
+  Compose over a clean background. This is the same split the home screen deliberately did not
+  need — home is flat artwork because nothing on it moves — so `ArtworkScreen` supplies the
+  plate and framing only, and the track gets its own renderer.
+- **Eight slots are a viewport, not a limit.** The progression is an arbitrary-length
+  `ChordEvent` list; the eight visible positions are recycled orb instances. The four Figma
+  frames are Smart Animate snapshots, not four screens and not a four-chord exercise.
+- **Advancement is a domain decision, not a UI one.** The track advances when the evaluator
+  accepts the `ChordEvent` at `activeChordIndex` — never from the label rendered in the orb, and
+  never twice from one held chord or a sustained pedal. That is the same rule `AGENTS.md`
+  already imposes ("UI must never decide whether a chord is musically correct") and the same
+  new-qualifying-note-state requirement `OnsetAggregator` enforces today, so Phase 10 reuses
+  the capture and evaluation path rather than growing a second one.
+
+The `ChordEvent` contract in §8 of the handoff overlaps heavily with types that already exist
+(`ChordSpec`, `ChordDegree`, `Inversion`, `ExerciseRequirement`). Per the handoff's own
+instruction, Phase 10 maps onto those rather than duplicating them.
 
 ## How the seam works
 
