@@ -2,6 +2,8 @@
 
 This file is the visual and structural design constitution for Harmony Gates. Read it before creating, revising, or implementing any major screen.
 
+Also read `SCREEN_DESIGN_WORKFLOW.md` for the required new-screen process, including how to create a screen JSON and wire the approved design in Figma.
+
 ## Project source of truth
 
 - GitHub: `alekpeed/harmony`
@@ -10,6 +12,7 @@ This file is the visual and structural design constitution for Harmony Gates. Re
 - Approved Progression Run: Figma node `77:2`
 - Interface documentation: `interface/README.md`
 - Screen maps: `interface/maps/`
+- New-screen workflow: `SCREEN_DESIGN_WORKFLOW.md`
 
 ## Visual language
 
@@ -45,7 +48,7 @@ A designer or coding agent may be creative about the environment, composition, l
 
 A designer or coding agent may not silently invent, remove, rename, replace, or omit required controls or product behavior.
 
-Before creating a screen, inspect the relevant repository documentation, Figma references, and screen map and determine every required:
+Before creating a screen, inspect the relevant repository documentation, Figma references, implementation/spec sources, and screen map when one exists, and determine every required:
 
 - control
 - state
@@ -57,13 +60,29 @@ Before creating a screen, inspect the relevant repository documentation, Figma r
 
 The required feature inventory must survive the visual design process intact.
 
+### Missing-map rule
+
+A missing `interface/maps/<screen>.json` is **not a blocker** and is not evidence that the screen cannot be designed.
+
+For a new screen, the map is created as part of the design workflow. Follow `SCREEN_DESIGN_WORKFLOW.md`:
+
+1. derive the functional inventory from existing product/spec/code sources
+2. create a draft JSON contract without invented Figma IDs or coordinates
+3. create the Figma design while preserving the inventory
+4. after structural approval, finalize the JSON using the actual Figma frame, layers, interaction regions, runtime rules, and semantic actions
+
+If a genuine product decision remains unresolved after source inspection, identify that specific choice. Do not stop merely because the JSON did not already exist.
+
 ## Source-of-truth priority
 
 When sources differ or a new screen is being designed, use this order:
 
-1. Product/functionality documentation and screen JSON determine what must exist and what it does.
-2. Approved Figma screens determine the established Harmony Gates visual quality, atmosphere, materials, density, typography, and world-building language.
-3. New creative design ideas determine how a new environment expresses those requirements.
+1. Existing product/functionality documentation and implemented behavior determine what the product must do.
+2. A current approved screen JSON, when one exists, is the machine-readable handoff for that approved screen.
+3. Approved Figma screens determine the established Harmony Gates visual quality, atmosphere, materials, density, typography, and world-building language.
+4. New creative design ideas determine how a new environment expresses those requirements.
+
+For a screen without an existing JSON, do not treat the absent file as higher authority than the product sources. Create the draft/final map as part of the design process.
 
 Do not use a new visual concept as justification for changing product behavior.
 
@@ -104,12 +123,15 @@ The Progression Run background is a clean static plate. The track and chord orbs
 Before generating or building a new screen:
 
 1. Read this file.
-2. Read `interface/README.md`.
-3. Inspect the relevant file under `interface/maps/` if it exists.
-4. Inspect the approved Home and Progression Run Figma screens for visual reference.
-5. Identify the complete required control and feature inventory for the target screen.
-6. Propose the environment and composition without changing that inventory.
-7. Verify that no required control or state has been omitted before considering the screen complete.
+2. Read `SCREEN_DESIGN_WORKFLOW.md`.
+3. Read `interface/README.md`.
+4. Inspect the relevant file under `interface/maps/` if it exists.
+5. If it does not exist, derive the functional inventory and create a draft screen contract rather than stopping.
+6. Inspect the relevant product/spec/code sources.
+7. Inspect the approved Home and Progression Run Figma screens for visual reference.
+8. Identify the complete required control and feature inventory for the target screen.
+9. Propose the environment and composition without changing that inventory.
+10. Verify that no required control or state has been omitted before considering the screen complete.
 
 For exploratory design work, creative freedom is encouraged after these constraints are satisfied.
 
@@ -117,7 +139,7 @@ For exploratory design work, creative freedom is encouraged after these constrai
 
 `Figma / approved artwork = what it looks like`
 
-`interface/maps/*.json = where interactive regions are and what they mean`
+`interface/maps/*.json = semantic/layout/runtime handoff for approved screens`
 
 `existing Kotlin / Compose architecture = what the app actually does`
 
@@ -125,4 +147,6 @@ Do not restart or replace existing application architecture simply to match a vi
 
 ## New-session instruction
 
-Any new design session, coding agent, or AI working on Harmony Gates should read this file before proposing a major screen. If a prompt asks for a new screen without enough functional detail, inspect the repository first rather than inventing a feature set from the visual theme alone.
+Any new design session, coding agent, or AI working on Harmony Gates should read this file and `SCREEN_DESIGN_WORKFLOW.md` before proposing a major screen.
+
+If a prompt asks for a new screen without an existing screen JSON, inspect the repository and create the draft contract as part of the task. Do not reply that design must stop because the map is missing.
