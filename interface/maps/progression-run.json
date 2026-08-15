@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 2,
+  "screen": "progression-run",
+  "designSize": {"width": 1536, "height": 1024},
+  "figma": {
+    "fileKey": "cD5gqV8A5gk94NVuGeJXg5",
+    "frameName": "Harmony Gates / Progression Run / FINAL",
+    "nodeId": "49:2",
+    "prototypeStates": [
+      {"nodeId":"49:2","chord":"Dm7"},
+      {"nodeId":"49:20","chord":"G7"},
+      {"nodeId":"49:38","chord":"Cmaj7"},
+      {"nodeId":"49:56","chord":"Am7"}
+    ]
+  },
+  "visualSource": "Figma node 44:5 / SOURCE / Progression Run Approved",
+  "interactionModel": "Real app trigger is MIDI chord recognition. Figma prototype simulates advance by clicking the active chord, Next, or Play/Pause. Smart Animate duration is 650ms with ease-in-out.",
+  "track": {
+    "advanceAction": "advance_progression_track",
+    "previousAction": "previous_progression_chord",
+    "states": [
+      {"chord":"Dm7","centerPx":{"x":493,"y":455}},
+      {"chord":"G7","centerPx":{"x":720,"y":390}},
+      {"chord":"Cmaj7","centerPx":{"x":888,"y":440}},
+      {"chord":"Am7","centerPx":{"x":1016,"y":474}}
+    ]
+  },
+  "regions": [
+    {"id":"back","figmaLayer":"HIT / Back","action":"navigate_back","boundsPx":{"x":18,"y":22,"width":58,"height":58}},
+    {"id":"key_selector","figmaLayer":"HIT / Key Selector","action":"select_key","boundsPx":{"x":337,"y":231,"width":109,"height":62}},
+    {"id":"tempo","figmaLayer":"HIT / Tempo","action":"set_tempo","boundsPx":{"x":463,"y":231,"width":110,"height":62}},
+    {"id":"play_pause","figmaLayer":"HIT / Play Pause","action":"toggle_run_playback","boundsPx":{"x":543,"y":594,"width":64,"height":64}},
+    {"id":"previous_chord","figmaLayer":"HIT / Previous Chord","action":"previous_progression_chord","boundsPx":{"x":488,"y":604,"width":48,"height":48}},
+    {"id":"next_chord","figmaLayer":"HIT / Next Chord","action":"advance_progression_track","boundsPx":{"x":614,"y":604,"width":48,"height":48}},
+    {"id":"sound","figmaLayer":"HIT / Sound","action":"open_sound_settings","boundsPx":{"x":1144,"y":260,"width":322,"height":86}},
+    {"id":"timing","figmaLayer":"HIT / Timing","action":"open_timing_settings","boundsPx":{"x":1144,"y":354,"width":322,"height":86}},
+    {"id":"metronome","figmaLayer":"HIT / Metronome","action":"toggle_metronome","boundsPx":{"x":1144,"y":448,"width":322,"height":86}},
+    {"id":"auto_advance","figmaLayer":"HIT / Auto Advance","action":"toggle_auto_advance","boundsPx":{"x":1144,"y":542,"width":322,"height":86}},
+    {"id":"voicing_guide","figmaLayer":"HIT / Show Voicing Guide","action":"toggle_voicing_guide","boundsPx":{"x":1144,"y":636,"width":322,"height":86}},
+    {"id":"loop_progression","figmaLayer":"HIT / Loop Progression","action":"toggle_loop_progression","boundsPx":{"x":1144,"y":730,"width":322,"height":86}},
+    {"id":"active_chord","figmaLayer":"HIT / Track Active Chord","action":"advance_progression_track","dynamicBounds":"Use the active state center from track.states with a 124x124 hit box."}
+  ]
+}
