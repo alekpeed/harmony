@@ -1,0 +1,100 @@
+{
+  "_comment": [
+    "Golden chord fixtures (14_TESTING_AND_QUALITY.md §3).",
+    "Every expected spelling here was derived by hand from theory, not produced by the engine,",
+    "so the file is an independent check rather than a snapshot of current behaviour.",
+    "Awkward spellings are deliberate: Bbb, Dbb, E# and B# exist here specifically to catch",
+    "logic that has quietly collapsed into pitch-class arithmetic.",
+    "expectedDegrees and expectedSpellings are parallel arrays in stack order."
+  ],
+  "cases": [
+    { "symbol": "C", "expectedDegrees": ["1", "3", "5"], "expectedSpellings": ["C", "E", "G"] },
+    { "symbol": "Cm", "expectedDegrees": ["1", "b3", "5"], "expectedSpellings": ["C", "Eb", "G"] },
+    { "symbol": "Cdim", "expectedDegrees": ["1", "b3", "b5"], "expectedSpellings": ["C", "Eb", "Gb"] },
+    { "symbol": "Caug", "expectedDegrees": ["1", "3", "#5"], "expectedSpellings": ["C", "E", "G#"] },
+    { "symbol": "Csus4", "expectedDegrees": ["1", "4", "5"], "expectedSpellings": ["C", "F", "G"] },
+    { "symbol": "Csus2", "expectedDegrees": ["1", "2", "5"], "expectedSpellings": ["C", "D", "G"] },
+    { "symbol": "Db", "expectedDegrees": ["1", "3", "5"], "expectedSpellings": ["Db", "F", "Ab"] },
+    { "symbol": "F#", "expectedDegrees": ["1", "3", "5"], "expectedSpellings": ["F#", "A#", "C#"] },
+    { "symbol": "Gb", "expectedDegrees": ["1", "3", "5"], "expectedSpellings": ["Gb", "Bb", "Db"] },
+    { "symbol": "B", "expectedDegrees": ["1", "3", "5"], "expectedSpellings": ["B", "D#", "F#"] },
+    { "symbol": "Ebm", "expectedDegrees": ["1", "b3", "5"], "expectedSpellings": ["Eb", "Gb", "Bb"] },
+    { "symbol": "C#m", "expectedDegrees": ["1", "b3", "5"], "expectedSpellings": ["C#", "E", "G#"] },
+    { "symbol": "F#m", "expectedDegrees": ["1", "b3", "5"], "expectedSpellings": ["F#", "A", "C#"] },
+    { "symbol": "Bbm", "expectedDegrees": ["1", "b3", "5"], "expectedSpellings": ["Bb", "Db", "F"] },
+    { "symbol": "G#dim", "expectedDegrees": ["1", "b3", "b5"], "expectedSpellings": ["G#", "B", "D"] },
+    { "symbol": "Ebaug", "expectedDegrees": ["1", "3", "#5"], "expectedSpellings": ["Eb", "G", "B"] },
+    { "symbol": "Abaug", "expectedDegrees": ["1", "3", "#5"], "expectedSpellings": ["Ab", "C", "E"] },
+
+    { "symbol": "Cmaj7", "expectedDegrees": ["1", "3", "5", "7"], "expectedSpellings": ["C", "E", "G", "B"] },
+    { "symbol": "F#maj7", "expectedDegrees": ["1", "3", "5", "7"], "expectedSpellings": ["F#", "A#", "C#", "E#"] },
+    { "symbol": "Dbmaj7", "expectedDegrees": ["1", "3", "5", "7"], "expectedSpellings": ["Db", "F", "Ab", "C"] },
+    { "symbol": "Bbmaj7", "expectedDegrees": ["1", "3", "5", "7"], "expectedSpellings": ["Bb", "D", "F", "A"] },
+    { "symbol": "Gbmaj7", "expectedDegrees": ["1", "3", "5", "7"], "expectedSpellings": ["Gb", "Bb", "Db", "F"] },
+    { "symbol": "Abmaj7", "expectedDegrees": ["1", "3", "5", "7"], "expectedSpellings": ["Ab", "C", "Eb", "G"] },
+
+    { "symbol": "C7", "expectedDegrees": ["1", "3", "5", "b7"], "expectedSpellings": ["C", "E", "G", "Bb"] },
+    { "symbol": "Db7", "expectedDegrees": ["1", "3", "5", "b7"], "expectedSpellings": ["Db", "F", "Ab", "Cb"] },
+    { "symbol": "F#7", "expectedDegrees": ["1", "3", "5", "b7"], "expectedSpellings": ["F#", "A#", "C#", "E"] },
+    { "symbol": "B7", "expectedDegrees": ["1", "3", "5", "b7"], "expectedSpellings": ["B", "D#", "F#", "A"] },
+    { "symbol": "Eb7", "expectedDegrees": ["1", "3", "5", "b7"], "expectedSpellings": ["Eb", "G", "Bb", "Db"] },
+
+    { "symbol": "Cm7", "expectedDegrees": ["1", "b3", "5", "b7"], "expectedSpellings": ["C", "Eb", "G", "Bb"] },
+    { "symbol": "C#m7", "expectedDegrees": ["1", "b3", "5", "b7"], "expectedSpellings": ["C#", "E", "G#", "B"] },
+    { "symbol": "Ebm7", "expectedDegrees": ["1", "b3", "5", "b7"], "expectedSpellings": ["Eb", "Gb", "Bb", "Db"] },
+
+    { "symbol": "Cm7b5", "expectedDegrees": ["1", "b3", "b5", "b7"], "expectedSpellings": ["C", "Eb", "Gb", "Bb"] },
+    { "symbol": "Ebm7b5", "expectedDegrees": ["1", "b3", "b5", "b7"], "expectedSpellings": ["Eb", "Gb", "Bbb", "Db"] },
+    { "symbol": "F#m7b5", "expectedDegrees": ["1", "b3", "b5", "b7"], "expectedSpellings": ["F#", "A", "C", "E"] },
+    { "symbol": "Bm7b5", "expectedDegrees": ["1", "b3", "b5", "b7"], "expectedSpellings": ["B", "D", "F", "A"] },
+
+    { "symbol": "Cdim7", "expectedDegrees": ["1", "b3", "b5", "bb7"], "expectedSpellings": ["C", "Eb", "Gb", "Bbb"] },
+    { "symbol": "C#dim7", "expectedDegrees": ["1", "b3", "b5", "bb7"], "expectedSpellings": ["C#", "E", "G", "Bb"] },
+    { "symbol": "Ebdim7", "expectedDegrees": ["1", "b3", "b5", "bb7"], "expectedSpellings": ["Eb", "Gb", "Bbb", "Dbb"] },
+    { "symbol": "Bdim7", "expectedDegrees": ["1", "b3", "b5", "bb7"], "expectedSpellings": ["B", "D", "F", "Ab"] },
+
+    { "symbol": "Cm(maj7)", "expectedDegrees": ["1", "b3", "5", "7"], "expectedSpellings": ["C", "Eb", "G", "B"] },
+    { "symbol": "C#m(maj7)", "expectedDegrees": ["1", "b3", "5", "7"], "expectedSpellings": ["C#", "E", "G#", "B#"] },
+
+    { "symbol": "C6", "expectedDegrees": ["1", "3", "5", "6"], "expectedSpellings": ["C", "E", "G", "A"] },
+    { "symbol": "Cm6", "expectedDegrees": ["1", "b3", "5", "6"], "expectedSpellings": ["C", "Eb", "G", "A"] },
+    { "symbol": "Ebm6", "expectedDegrees": ["1", "b3", "5", "6"], "expectedSpellings": ["Eb", "Gb", "Bb", "C"] },
+    { "symbol": "C6/9", "expectedDegrees": ["1", "3", "5", "6", "9"], "expectedSpellings": ["C", "E", "G", "A", "D"] },
+
+    { "symbol": "C7#5", "expectedDegrees": ["1", "3", "#5", "b7"], "expectedSpellings": ["C", "E", "G#", "Bb"] },
+    { "symbol": "Cmaj7#5", "expectedDegrees": ["1", "3", "#5", "7"], "expectedSpellings": ["C", "E", "G#", "B"] },
+    { "symbol": "G7#5", "expectedDegrees": ["1", "3", "#5", "b7"], "expectedSpellings": ["G", "B", "D#", "F"] },
+
+    { "symbol": "C9", "expectedDegrees": ["1", "3", "5", "b7", "9"], "expectedSpellings": ["C", "E", "G", "Bb", "D"] },
+    { "symbol": "Cmaj9", "expectedDegrees": ["1", "3", "5", "7", "9"], "expectedSpellings": ["C", "E", "G", "B", "D"] },
+    { "symbol": "Cm9", "expectedDegrees": ["1", "b3", "5", "b7", "9"], "expectedSpellings": ["C", "Eb", "G", "Bb", "D"] },
+    { "symbol": "Db9", "expectedDegrees": ["1", "3", "5", "b7", "9"], "expectedSpellings": ["Db", "F", "Ab", "Cb", "Eb"] },
+    { "symbol": "Ebmaj9", "expectedDegrees": ["1", "3", "5", "7", "9"], "expectedSpellings": ["Eb", "G", "Bb", "D", "F"] },
+    { "symbol": "F#m9", "expectedDegrees": ["1", "b3", "5", "b7", "9"], "expectedSpellings": ["F#", "A", "C#", "E", "G#"] },
+
+    { "symbol": "C7b9", "expectedDegrees": ["1", "3", "5", "b7", "b9"], "expectedSpellings": ["C", "E", "G", "Bb", "Db"] },
+    { "symbol": "C7#9", "expectedDegrees": ["1", "3", "5", "b7", "#9"], "expectedSpellings": ["C", "E", "G", "Bb", "D#"] },
+    { "symbol": "Db7b9", "expectedDegrees": ["1", "3", "5", "b7", "b9"], "expectedSpellings": ["Db", "F", "Ab", "Cb", "Ebb"] },
+    { "symbol": "Eb7#9", "expectedDegrees": ["1", "3", "5", "b7", "#9"], "expectedSpellings": ["Eb", "G", "Bb", "Db", "F#"] },
+    { "symbol": "A7b9", "expectedDegrees": ["1", "3", "5", "b7", "b9"], "expectedSpellings": ["A", "C#", "E", "G", "Bb"] },
+    { "symbol": "C7#11", "expectedDegrees": ["1", "3", "5", "b7", "#11"], "expectedSpellings": ["C", "E", "G", "Bb", "F#"] },
+    { "symbol": "C7b13", "expectedDegrees": ["1", "3", "5", "b7", "b13"], "expectedSpellings": ["C", "E", "G", "Bb", "Ab"] },
+
+    { "symbol": "C11", "expectedDegrees": ["1", "3", "5", "b7", "9", "11"], "expectedSpellings": ["C", "E", "G", "Bb", "D", "F"] },
+    { "symbol": "Cm11", "expectedDegrees": ["1", "b3", "5", "b7", "9", "11"], "expectedSpellings": ["C", "Eb", "G", "Bb", "D", "F"] },
+    { "symbol": "C13", "expectedDegrees": ["1", "3", "5", "b7", "9", "13"], "expectedSpellings": ["C", "E", "G", "Bb", "D", "A"] },
+    { "symbol": "Cmaj13", "expectedDegrees": ["1", "3", "5", "7", "9", "13"], "expectedSpellings": ["C", "E", "G", "B", "D", "A"] },
+    { "symbol": "Cm13", "expectedDegrees": ["1", "b3", "5", "b7", "9", "13"], "expectedSpellings": ["C", "Eb", "G", "Bb", "D", "A"] },
+    { "symbol": "Bb13", "expectedDegrees": ["1", "3", "5", "b7", "9", "13"], "expectedSpellings": ["Bb", "D", "F", "Ab", "C", "G"] },
+
+    { "symbol": "C7sus4", "expectedDegrees": ["1", "4", "5", "b7"], "expectedSpellings": ["C", "F", "G", "Bb"] },
+    { "symbol": "C13sus4", "expectedDegrees": ["1", "4", "5", "b7", "9", "13"], "expectedSpellings": ["C", "F", "G", "Bb", "D", "A"] },
+
+    { "symbol": "C7alt", "expectedDegrees": ["1", "3", "b7", "b9", "#9", "#11", "b13"], "expectedSpellings": ["C", "E", "Bb", "Db", "D#", "F#", "Ab"] },
+
+    { "symbol": "C/E", "expectedDegrees": ["1", "3", "5"], "expectedSpellings": ["C", "E", "G"], "expectedBass": "E" },
+    { "symbol": "C/A", "expectedDegrees": ["1", "3", "5"], "expectedSpellings": ["C", "E", "G"], "expectedBass": "A" },
+    { "symbol": "Am7/G", "expectedDegrees": ["1", "b3", "5", "b7"], "expectedSpellings": ["A", "C", "E", "G"], "expectedBass": "G" },
+    { "symbol": "Dbmaj9/F", "expectedDegrees": ["1", "3", "5", "7", "9"], "expectedSpellings": ["Db", "F", "Ab", "C", "Eb"], "expectedBass": "F" }
+  ]
+}

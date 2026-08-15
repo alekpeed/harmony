@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Placeholder launcher mark: a gate opening onto three keys.
+
+  Drawn as a vector so it scales to every density without a bitmap set. It will be replaced
+  from the Figma system in Phase 12, along with everything else visual; see interface/README.md.
+  Artwork sits inside the inner 66dp safe zone of the 108dp adaptive-icon canvas.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Gate posts -->
+    <path
+        android:fillColor="#7FA6FF"
+        android:pathData="M32,30 h7 v48 h-7 z" />
+    <path
+        android:fillColor="#7FA6FF"
+        android:pathData="M69,30 h7 v48 h-7 z" />
+    <!-- Lintel -->
+    <path
+        android:fillColor="#7FA6FF"
+        android:pathData="M32,30 h44 v8 h-44 z" />
+    <!-- Three keys in the opening -->
+    <path
+        android:fillColor="#EDEEF2"
+        android:pathData="M43,46 h6 v32 h-6 z" />
+    <path
+        android:fillColor="#EDEEF2"
+        android:pathData="M51,46 h6 v32 h-6 z" />
+    <path
+        android:fillColor="#EDEEF2"
+        android:pathData="M59,46 h6 v32 h-6 z" />
+    <!-- Sharp key, so the mark reads as a keyboard rather than a fence -->
+    <path
+        android:fillColor="#12131A"
+        android:pathData="M47,46 h5 v18 h-5 z" />
+    <path
+        android:fillColor="#12131A"
+        android:pathData="M56,46 h5 v18 h-5 z" />
+</vector>

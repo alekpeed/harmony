@@ -1,0 +1,70 @@
+name: CI
+
+# 17_BUILD_CI_INSTALL_RELEASE.md §2: run on pull requests and on main; test, lint, assemble
+# debug, upload the APK. Instrumented emulator jobs are added once this base pipeline is stable.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Test, lint and assemble
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          # Must match javaToolchain in gradle/libs.versions.toml.
+          java-version: '21'
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Music domain tests
+        # Run first and on their own: 14_TESTING_AND_QUALITY.md §1 says the costliest failures
+        # are musically incorrect judgments, so a theory regression should fail the build before
+        # anything spends time on the Android toolchain.
+        run: ./gradlew :core:music:test --no-daemon
+
+      - name: Unit tests
+        run: ./gradlew test --no-daemon
+
+      - name: Lint
+        run: ./gradlew lint --no-daemon
+
+      - name: Assemble debug
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: harmony-gates-debug
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/reports/lint-results-*.html
+          if-no-files-found: ignore

@@ -1,0 +1,157 @@
+[
+  {
+    "path": "00_README_START_HERE.md",
+    "bytes": 4850,
+    "sha256": "6f9b59a32834045a2bee04eb097c084fb4c7f95f4abada5f6dce24e3539d0113"
+  },
+  {
+    "path": "01_PRODUCT_AND_FUNCTIONAL_SCOPE.md",
+    "bytes": 5327,
+    "sha256": "4aad5fc14be11fdc1aaf73aacfa43a5e3695b424bb4e86d20faeb3051d2c032d"
+  },
+  {
+    "path": "02_GAME_LOOP_AND_PROGRESSION.md",
+    "bytes": 4383,
+    "sha256": "77ba34a8b2404e3cfd4c73aa44e2ef4a1244173d5ecc620ee0912b3bdcadb086"
+  },
+  {
+    "path": "03_JAZZ_CURRICULUM.md",
+    "bytes": 5710,
+    "sha256": "5019eb9f75d58f2300f6ebf04f6b030b9e3ca81ff53163e1f2bee74a0fa46abc"
+  },
+  {
+    "path": "04_HARMONY_DOMAIN_ENGINE.md",
+    "bytes": 5555,
+    "sha256": "cc46c6c839750dfdf56ddde6e7762b973fa774d9cf4aa12723e8837208b2ad6f"
+  },
+  {
+    "path": "05_MIDI_INPUT_ENGINE.md",
+    "bytes": 4836,
+    "sha256": "3d712a76d59d2eeab3edb687233fc4aeed48e00d9ea7b528cd2918b33082bb6a"
+  },
+  {
+    "path": "06_PERFORMANCE_EVALUATION_AND_SCORING.md",
+    "bytes": 4319,
+    "sha256": "60ea5a3e6c8824395ec931a12c0ced5a2961c1d30b41133656534e64f82b72f0"
+  },
+  {
+    "path": "07_EAR_TRAINING_ENGINE.md",
+    "bytes": 2440,
+    "sha256": "d916a64bf49779b2d4f7619df59eb783f6b411cccd41336bed9990c3a66a04af"
+  },
+  {
+    "path": "08_SIGHT_READING_ENGINE.md",
+    "bytes": 3027,
+    "sha256": "dbe04951105efcc78d49abd48a4741a18c156ac37e392bfa93b222676edca913"
+  },
+  {
+    "path": "09_AUDIO_SAMPLER_ENGINE.md",
+    "bytes": 2757,
+    "sha256": "86e412846046b8b1dd3c3c43ca61242e442fb2554239f55630350ff12b8c3c05"
+  },
+  {
+    "path": "10_ANDROID_ARCHITECTURE.md",
+    "bytes": 4044,
+    "sha256": "1621ea95c1aa921cff714c765d6d1966f2d0d2e77ff1770cad42447cfedb91da"
+  },
+  {
+    "path": "11_DATA_MODEL_AND_PERSISTENCE.md",
+    "bytes": 2045,
+    "sha256": "d459ba8d3dbd8fb05ce961ee9c7bcb69695935e9eac69e9b1a664cdc8711864c"
+  },
+  {
+    "path": "12_UI_UX_AND_FIGMA_HANDOFF.md",
+    "bytes": 5195,
+    "sha256": "7757ac2f94090cbf3033e3b36032f2573c25780d6f0037846b392d774c2c8b87"
+  },
+  {
+    "path": "13_SCREEN_BEHAVIOR_SPEC.md",
+    "bytes": 3411,
+    "sha256": "0186b243e7133b61a5be01dbea27d87e6e6d5caf3809b8b42f9b484bebb51ca2"
+  },
+  {
+    "path": "14_TESTING_AND_QUALITY.md",
+    "bytes": 3212,
+    "sha256": "7f99a06145fce1594e84b063c39a0658258d26111bc7a79421b49b7027f5ca8a"
+  },
+  {
+    "path": "15_IMPLEMENTATION_PHASES.md",
+    "bytes": 4510,
+    "sha256": "3c52e5792d7fa9200559a8df4299ee1b66214042d35a4e1b7b846b390965522f"
+  },
+  {
+    "path": "16_AGENT_EXECUTION_PROTOCOL.md",
+    "bytes": 2489,
+    "sha256": "c1048ac3dff3ae4a454ab2450d7b920434e72e11261f0695af28020c584a3906"
+  },
+  {
+    "path": "17_BUILD_CI_INSTALL_RELEASE.md",
+    "bytes": 1609,
+    "sha256": "fcde9ae864a9f58a037139bcca382a30ae073df1847507944172c8e1db295d0b"
+  },
+  {
+    "path": "18_ACCEPTANCE_CRITERIA.md",
+    "bytes": 2453,
+    "sha256": "3ffa07e0ee93003483a4d89cc559b88b0c283f2bd8a39561a88006c5dd8aa53a"
+  },
+  {
+    "path": "19_BACKLOG_AFTER_V1.md",
+    "bytes": 1107,
+    "sha256": "0b537d31e6deee7667f684b2ada7b6fb5e0953abcd44333f7ed6de813f12440d"
+  },
+  {
+    "path": "20_BOOTSTRAP_AND_MODULE_CONTRACTS.md",
+    "bytes": 5490,
+    "sha256": "3fedbb0268f58797dbacf6b389039fb48a1edafa591b092773fd7dc5bb41f562"
+  },
+  {
+    "path": "21_CONTENT_AUTHORING_GUIDE.md",
+    "bytes": 2528,
+    "sha256": "3c750290af42e967b995694c5a4f6087c33911ee37e6bffc60d38ef977e50f5e"
+  },
+  {
+    "path": "22_MANUAL_DEVICE_TEST_PLAN.md",
+    "bytes": 2179,
+    "sha256": "928e84b8926719140bb9ba12446a6c85854abce31294d5b3f1f4fbea537c639b"
+  },
+  {
+    "path": "AGENTS.md",
+    "bytes": 1617,
+    "sha256": "f358ac6fd410f947c65f14abb6a7e6aa53ffba4b42453c5361186efe1d1993e0"
+  },
+  {
+    "path": "HARMONY_GATES_MASTER_SPEC.md",
+    "bytes": 90284,
+    "sha256": "f054790061143324a3bfbd09491616a749bfdd868c9799ad1a729c974e505f1c"
+  },
+  {
+    "path": "PROMPT_TO_CODING_AGENT.md",
+    "bytes": 2164,
+    "sha256": "d94690f86fbc4bee90f6bd1928a93821fbf53f1c7d60783a847b46ea05e9b8fa"
+  },
+  {
+    "path": "REFERENCES.md",
+    "bytes": 1439,
+    "sha256": "984971eb2882cf821d3f124a4b4184446c144bac89a29e807826633b6a37735d"
+  },
+  {
+    "path": "content/examples/curriculum.sample.json",
+    "bytes": 976,
+    "sha256": "54b901111ad6094ebe9e2ac8027416bd0bacccf2d585bb92a415208c31b38f5c"
+  },
+  {
+    "path": "content/examples/exercise_policy.sample.json",
+    "bytes": 553,
+    "sha256": "955493bfb372bb698db2c88bf327ddf3e0f97513c79add9b8040f4e6880cf528"
+  },
+  {
+    "path": "docs/DECISION_LOG_TEMPLATE.md",
+    "bytes": 172,
+    "sha256": "8e1d486dda59a7e60a3985c420e39ebc7ede44f1cadb598510d041b4cac9b2bf"
+  },
+  {
+    "path": "docs/IMPLEMENTATION_STATUS_TEMPLATE.md",
+    "bytes": 132,
+    "sha256": "7f714c297e4af3519c75047c1b695507c7dd697b79d4a594a404b7cd92da391f"
+  }
+]

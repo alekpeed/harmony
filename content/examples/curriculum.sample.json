@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "0.1.0",
+  "regions": [
+    {
+      "id": "seventh-harmony",
+      "title": "Seventh Harmony",
+      "gates": [
+        {
+          "id": "dom7-build",
+          "title": "Dominant Seventh",
+          "skills": ["seventh.dom7.build"],
+          "prerequisites": [],
+          "exercisePolicyId": "dom7-all-roots-guided-to-symbol",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.9,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "dom7-inversions",
+          "title": "Dominant Seventh Inversions",
+          "skills": ["seventh.dom7.inversions"],
+          "prerequisites": ["dom7-build"],
+          "exercisePolicyId": "dom7-inversions-all-roots",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.9,
+            "minimumRootCoverage": 8
+          }
+        }
+      ]
+    }
+  ]
+}
