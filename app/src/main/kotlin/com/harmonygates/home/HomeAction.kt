@@ -94,6 +94,15 @@ enum class HomeDestination(val isImplemented: Boolean, val arrivesInPhase: Int) 
 
     Home(isImplemented = true, arrivesInPhase = 1),
 
+    /**
+     * MIDI setup and diagnostics, from Phase 2.
+     *
+     * The approved home frame has no MIDI region of its own, and MIDI setup genuinely belongs
+     * under settings, so the Settings control opens it. When the full settings screen arrives
+     * in Phase 6 this becomes a row inside it rather than the whole destination.
+     */
+    Settings(isImplemented = true, arrivesInPhase = 2),
+
     Menu(isImplemented = false, arrivesInPhase = 6),
     Campaign(isImplemented = false, arrivesInPhase = 6),
     NextGate(isImplemented = false, arrivesInPhase = 6),
@@ -108,7 +117,6 @@ enum class HomeDestination(val isImplemented: Boolean, val arrivesInPhase: Int) 
     ProgressionLab(isImplemented = false, arrivesInPhase = 10),
     VoicingLab(isImplemented = false, arrivesInPhase = 10),
     Library(isImplemented = false, arrivesInPhase = 13),
-    Settings(isImplemented = false, arrivesInPhase = 6),
 }
 
 /**

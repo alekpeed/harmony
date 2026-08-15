@@ -167,3 +167,67 @@ The approved frame puts `HIT / Continue` inside `HIT / Next Gate Card`. Laid out
 the card would cover the button and swallow every tap on it. Sorting by descending area fixes
 that case and any future nesting without either the map or the app needing to know about it;
 ties break on id so the order does not depend on how the map happened to be written.
+
+---
+
+## D13 — Meaning is parsed outside the Android layer
+
+**Phase 2.** `MidiMessageParser` and `ActiveNoteTracker` are plain Kotlin inside `core:midi`;
+`AndroidMidiInputSource` only discovers devices, opens a port and forwards bytes.
+
+The parser is where the real difficulty is — running status, real-time bytes landing between
+the data bytes of another message, messages split across reads — and none of it needs a device
+to test. Keeping it out of the platform class turned the whole problem into 24 ordinary unit
+tests. What remains in the Android class is thin enough that its untested state is a much
+smaller risk.
+
+---
+
+## D14 — Three note sets, not one
+
+**Phase 2.** `ActiveNotes` carries `physicallyHeld`, `pedalSustained` and a derived `sounding`.
+
+05_MIDI_INPUT_ENGINE.md §5 asks for the distinction, and the reason shows up immediately: with
+the pedal down, "did you play a C major seventh?" and "are your fingers on a C major seventh?"
+have different answers, and an exercise needs the second while a listener hears the first. A
+single "active notes" collection would have to pick one and be silently wrong about the other —
+which is exactly how a correct answer gets marked wrong after a pedal is held across a chord
+change.
+
+`clearSustainedRemnants` exists for the same reason: arming a new attempt should drop the
+previous chord's pedal wash without lifting fingers off keys.
+
+---
+
+## D15 — The MIDI callback never suspends
+
+**Phase 2.** The receive path uses `tryEmit`, not a suspending `emit`.
+
+10_ANDROID_ARCHITECTURE.md §10 requires the MIDI callback to normalise quickly and get out of
+the way. A suspending emit could block the transport thread behind a slow collector and skew
+the onset timestamps a chord is later judged by. Active-note state is updated before the emit,
+so what is sounding stays correct even in the case where a log line is dropped — the state is
+authoritative, the event stream is a notification.
+
+---
+
+## D16 — MIDI setup lives behind the Settings control
+
+**Phase 2.** `HIT / Nav Settings` opens the diagnostics screen.
+
+The approved home frame has no MIDI region, and inventing one would mean editing artwork that
+has been signed off. MIDI setup genuinely belongs under settings, so the Settings control opens
+the one setting that exists today. When the full settings screen arrives in Phase 6 this becomes
+a row inside it rather than the whole destination.
+
+---
+
+## D17 — The simulator ships in the app, not only in tests
+
+**Phase 2.** The diagnostics screen can swap the real source for `FakeMidiInputSource`.
+
+The screen has to be checkable on a tablet with nothing plugged in, which has been this
+project's situation throughout. It also makes the disconnect path testable by hand: "pull the
+cable" exercises the reconnect flow without anyone touching a cable. Both sources implement the
+same interface, so the screen cannot tell which it has — which is the same property that makes
+CI work.

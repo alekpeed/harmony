@@ -8,15 +8,16 @@ Kotlin, Jetpack Compose, offline, tablet-first.
 
 ## Status
 
-**Phases 0 and 1 complete.** The toolchain and the music-theory domain are in place; MIDI is
-next. See `docs/IMPLEMENTATION_STATUS.md` for the detailed handoff and known limitations.
+**Phases 0, 1 and 2 complete.** Toolchain, music-theory domain, and the MIDI input engine.
+Performance capture and evaluation are next. See `docs/IMPLEMENTATION_STATUS.md` for the
+detailed handoff and known limitations.
 
 | | |
 | --- | --- |
-| Tests | 129 passing |
+| Tests | 194 passing |
 | Debug APK | builds |
-| MIDI | Phase 2 |
-| Verified on hardware | not yet — no device attached to the build environment |
+| MIDI | input engine done; capture and evaluation are Phase 3 |
+| Verified on hardware | not yet — no keyboard attached to the build environment |
 
 ## Quick start
 
@@ -36,9 +37,15 @@ sdk.dir=/path/to/android-sdk
 ## What exists today
 
 The app opens on the approved home screen from `interface/`, with all twenty of its controls
-live. One of them — **Theory Lab** — leads somewhere real: type a chord symbol and see its
-degrees, its spelling and a generated voicing, all answered by `core:music`. The rest report
-which phase they arrive in rather than opening an empty room.
+live. Two lead somewhere real:
+
+- **Theory Lab** — type a chord symbol and see its degrees, its spelling and a generated
+  voicing, all answered by `core:music`.
+- **Settings** — MIDI setup and diagnostics: connection state, device picker, a live keyboard
+  showing held and pedal-sustained notes apart, the raw event stream, and a simulator so the
+  whole screen can be exercised with nothing plugged in.
+
+The rest report which phase they arrive in rather than opening an empty room.
 
 The theory engine handles 30 chord formulas across all twelve roots, jazz chord-symbol parsing
 (`Cm7b5`, `CΔ7`, `C7alt`, `Dbmaj9/F`), degree-aware enharmonic spelling, inversions, voicing
@@ -50,6 +57,7 @@ roman-numeral functional harmony, and voice-leading analysis with optimal voice 
 ```text
 app/                    Android application, Phase 1 harness, home screen
 core/music/             Pure Kotlin/JVM: all music theory. No Android dependency.
+core/midi/              Input source, byte-stream parser, sustain and note tracking, simulator
 core/designsystem/      Tokens, placeholder theme, components, artwork hit-region layer
 core/testing/           Test doubles and readable music assertions
 content/                Curriculum and exercise policies (Phase 6 onwards)
@@ -57,7 +65,7 @@ docs/spec/              The full specification — the source of truth
 interface/              Approved visual assets and placement references
 ```
 
-`core:midi`, `core:audio` and `core:data` arrive with Phases 2, 8 and 5.
+`core:audio` and `core:data` arrive with Phases 8 and 5.
 
 ## Design rules that shape the code
 

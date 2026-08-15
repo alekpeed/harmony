@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import com.harmonygates.harness.HarmonyLabRoute
+import com.harmonygates.midi.MidiDiagnosticsRoute
 import com.harmonygates.home.HomeDestination
 import com.harmonygates.home.HomeScreen
 
@@ -22,6 +23,7 @@ import com.harmonygates.home.HomeScreen
 enum class AppScreen {
     Home,
     TheoryLab,
+    MidiSetup,
 }
 
 /**
@@ -57,6 +59,9 @@ fun AppRoot() {
                     when {
                         action.destination == HomeDestination.TheoryLab ->
                             screen = AppScreen.TheoryLab
+
+                        action.destination == HomeDestination.Settings ->
+                            screen = AppScreen.MidiSetup
                         // Saying "not yet" is better than navigating into an empty room. The
                         // phase number turns a dead end into a schedule.
                         !action.destination.isImplemented ->
@@ -68,6 +73,8 @@ fun AppRoot() {
             )
 
             AppScreen.TheoryLab -> HarmonyLabRoute(modifier = Modifier.padding(insets))
+
+            AppScreen.MidiSetup -> MidiDiagnosticsRoute(modifier = Modifier.padding(insets))
         }
     }
 }

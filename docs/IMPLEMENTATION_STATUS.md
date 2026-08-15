@@ -5,6 +5,82 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 2 — MIDI foundation
+
+**Commit:** see `git log` for `phase/2-midi-foundation`
+
+### Implemented
+
+- `core:midi`, an Android library. Everything that decides meaning is plain Kotlin inside it;
+  only discovery and transport touch the platform.
+- `MidiInputSource` — the single seam the rest of the app sees, per AGENTS.md
+- `AndroidMidiInputSource` — `android.media.midi`, transport-specific enumeration on API 33+
+  with the older path below it, a dedicated callback thread, hotplug via `DeviceCallback`
+- `FakeMidiInputSource` — the simulator. Same interface, injected clock, scriptable notes,
+  pedal, raw bytes, disconnect and reconnect. CI never needs hardware.
+- `MidiMessageParser` — running status, real-time bytes interleaved mid-message, messages split
+  across reads, SysEx skipping, note-on-at-velocity-zero, pitch bend centred at zero
+- `ActiveNoteTracker` — the three sets 05_MIDI_INPUT_ENGINE.md §5 requires kept apart:
+  physically held, pedal-sustained, and what a listener actually hears
+- `MidiConnectionState` and typed `MidiError`, exposed as `StateFlow`
+- `PianoKeyboard` in `core:designsystem` — Compose Canvas, held and sustained drawn differently
+- MIDI diagnostics screen: connection guidance, device picker, live keyboard, observed range,
+  capped event log, and an on-device simulator including a "pull the cable" control
+- Reached from the home screen's Settings control; `HomeDestination.Settings` is now live
+
+### Tests
+
+194 passing, 0 failing. 65 of them are new.
+
+| Suite | Covers |
+| --- | --- |
+| `MidiMessageParserTest` | 24 cases: running status, interleaved clock bytes, split reads, SysEx, orphan bytes |
+| `ActiveNoteTrackerTest` | 18 cases: sustain across a chord change, duplicate note-on, remnant clearing |
+| `FakeMidiInputSourceTest` | 15 cases: hotplug, multi-device selection, timestamps from an injected clock |
+| `KeyboardLayoutTest` | 8 cases: black-key placement, octave repetition, out-of-range anchors |
+
+### Manual verification
+
+- `./gradlew verifyHarmony assembleDebug` from a clean checkout — passes
+- **Not done:** anything involving a real keyboard. No MIDI device is attached to this build
+  environment, so the Phase 2 acceptance criteria "real keyboard note-on/off appears correctly"
+  and "hotplug works" are **unverified**. The simulator exercises the same code paths, which is
+  not the same thing as a physical test. 22_MANUAL_DEVICE_TEST_PLAN.md remains outstanding.
+
+### Known limitations
+
+1. **Phase 2 acceptance is only partly demonstrable here.** "CI uses fake source" is met and
+   tested. The two hardware criteria need a tablet and a keyboard.
+2. **No onset aggregation yet.** 05_MIDI_INPUT_ENGINE.md §6 and §7 — the chord capture window,
+   the roll tolerance, `OnsetPolicy` — belong to Phase 3 with the evaluator, and are not built.
+   Today the tracker reports what is sounding; nothing decides when a chord is "submitted".
+3. **Keyboard range discovery is partial.** The diagnostics screen reports the observed low and
+   high notes (§10's raw material), but the calibration flow and the 25/49/61/76/88 presets are
+   not built. Nothing depends on them yet.
+4. **Latency telemetry is not instrumented.** §11 asks for four timestamps through the pipeline;
+   only the arrival timestamp exists. The others need the evaluator and the UI hop, so this
+   lands with Phase 3 and Phase 4.
+5. **The event log is capped at 60 lines.** A diagnostics screen left open for a practice
+   session would otherwise grow without bound.
+6. **Under extreme backpressure an event may be dropped** from the `events` flow — `tryEmit`
+   rather than a suspending emit, because the MIDI callback must never block. Active-note state
+   is updated regardless, so what is sounding stays correct even if a log line is missed.
+
+### Next phase prerequisites
+
+Phase 3 — performance capture and evaluator. Needs:
+
+- The onset aggregation state machine from §6, driven by `TestMonotonicClock`
+- `OnsetPolicy` — simultaneous, rolled-allowed, unrestricted
+- `PerformanceAttempt` per 20_BOOTSTRAP_AND_MODULE_CONTRACTS.md §2, keeping the full event
+  history and not only the reduced note set
+- `PerformanceEvaluator` over the `ExerciseRequirement` types already defined in `core:music`
+- The scripted MIDI scenarios in 14_TESTING_AND_QUALITY.md §5, each with an expected attempt
+
+Everything Phase 3 needs from MIDI now exists.
+
+---
+
 ## Phase: 0 — Repository and toolchain, and 1 — Pure music domain
 
 **Commit:** see `git log` for `phase/0-1-toolchain-and-music-domain`
