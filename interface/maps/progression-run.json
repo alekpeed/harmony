@@ -4,18 +4,19 @@
   "designSize": {"width": 1536, "height": 1024},
   "figma": {
     "fileKey": "cD5gqV8A5gk94NVuGeJXg5",
-    "frameName": "Harmony Gates / Progression Run / FINAL",
+    "frameName": "Harmony Gates / Progression Run / FINAL / DEMO 01",
     "nodeId": "49:2",
     "prototypeOnly": true,
     "prototypePurpose": "Demonstrate track motion and interaction timing only. The chords shown in Figma are sample data and MUST NOT be hard-coded into the production app.",
     "demoSequence": ["Dm7", "G7", "Cmaj7", "Am7"],
     "prototypeStates": [
-      {"nodeId":"49:2","demoActiveIndex":0},
-      {"nodeId":"49:20","demoActiveIndex":1},
-      {"nodeId":"49:38","demoActiveIndex":2},
-      {"nodeId":"49:56","demoActiveIndex":3}
+      {"nodeId":"49:2","demoActiveIndex":0,"frameName":"Harmony Gates / Progression Run / FINAL / DEMO 01"},
+      {"nodeId":"49:20","demoActiveIndex":1,"frameName":"Harmony Gates / Progression Run / DEMO 02 G7"},
+      {"nodeId":"49:38","demoActiveIndex":2,"frameName":"Harmony Gates / Progression Run / DEMO 03 Cmaj7"},
+      {"nodeId":"49:56","demoActiveIndex":3,"frameName":"Harmony Gates / Progression Run / DEMO 04 Am7"}
     ],
-    "transition": {"type":"smart_animate","durationMs":650,"easing":"ease-in-out"}
+    "transition": {"type":"smart_animate","durationMs":650,"easing":"ease-in-out"},
+    "trackSlotLayers":"Each prototype frame contains transparent TRACK SLOT / -2 through TRACK SLOT / 4 guides matching the production moving-window geometry."
   },
   "visualSource": "Figma node 44:5 / SOURCE / Progression Run Approved",
   "productionRule": "The production screen is one reusable renderer. It accepts arbitrary progression data at runtime. Never create a separate Compose screen or hard-coded layout per progression.",
@@ -54,13 +55,13 @@
     "visibleWindow": {"previous":2,"current":1,"upcoming":4},
     "recyclingRule": "Render only the visible window. Reuse orb slots as activeIndex changes so a 3-chord progression and a 64-chord progression use the same renderer.",
     "slotPath": [
-      {"relativeIndex":-2,"centerPx":{"x":300,"y":565},"scale":0.55,"opacity":0.25},
-      {"relativeIndex":-1,"centerPx":{"x":390,"y":515},"scale":0.72,"opacity":0.50},
-      {"relativeIndex":0,"centerPx":{"x":493,"y":455},"scale":1.00,"opacity":1.00,"role":"play-point"},
-      {"relativeIndex":1,"centerPx":{"x":720,"y":390},"scale":0.88,"opacity":0.92},
-      {"relativeIndex":2,"centerPx":{"x":888,"y":440},"scale":0.75,"opacity":0.78},
-      {"relativeIndex":3,"centerPx":{"x":1016,"y":474},"scale":0.64,"opacity":0.62},
-      {"relativeIndex":4,"centerPx":{"x":1095,"y":520},"scale":0.54,"opacity":0.42}
+      {"relativeIndex":-2,"figmaLayer":"TRACK SLOT / -2","centerPx":{"x":300,"y":565},"scale":0.55,"opacity":0.25},
+      {"relativeIndex":-1,"figmaLayer":"TRACK SLOT / -1","centerPx":{"x":390,"y":515},"scale":0.72,"opacity":0.50},
+      {"relativeIndex":0,"figmaLayer":"TRACK SLOT / 0","centerPx":{"x":493,"y":455},"scale":1.00,"opacity":1.00,"role":"play-point"},
+      {"relativeIndex":1,"figmaLayer":"TRACK SLOT / 1","centerPx":{"x":720,"y":390},"scale":0.88,"opacity":0.92},
+      {"relativeIndex":2,"figmaLayer":"TRACK SLOT / 2","centerPx":{"x":888,"y":440},"scale":0.75,"opacity":0.78},
+      {"relativeIndex":3,"figmaLayer":"TRACK SLOT / 3","centerPx":{"x":1016,"y":474},"scale":0.64,"opacity":0.62},
+      {"relativeIndex":4,"figmaLayer":"TRACK SLOT / 4","centerPx":{"x":1095,"y":520},"scale":0.54,"opacity":0.42}
     ],
     "advanceAnimation": {
       "durationMs":650,
@@ -104,6 +105,6 @@
     {"id":"auto_advance","figmaLayer":"HIT / Auto Advance","action":"toggle_auto_advance","boundsPx":{"x":1144,"y":542,"width":322,"height":86}},
     {"id":"voicing_guide","figmaLayer":"HIT / Show Voicing Guide","action":"toggle_voicing_guide","boundsPx":{"x":1144,"y":636,"width":322,"height":86}},
     {"id":"loop_progression","figmaLayer":"HIT / Loop Progression","action":"toggle_loop_progression","boundsPx":{"x":1144,"y":730,"width":322,"height":86}},
-    {"id":"active_chord","figmaLayer":"HIT / Track Active Chord","action":"advance_progression_track_manual","dynamicBounds":"Bind to relativeIndex 0/play-point. Do not bind to a specific chord name."}
+    {"id":"active_chord","figmaLayer":"HIT / Track Active Chord","action":"advance_progression_track_manual","dynamicBounds":"Bind to TRACK SLOT / 0. Do not bind to a specific chord name."}
   ]
 }
