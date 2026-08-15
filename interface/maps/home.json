@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "screen": "home",
+  "designSize": {"width": 1536, "height": 1024},
+  "figma": {
+    "fileKey": "cD5gqV8A5gk94NVuGeJXg5",
+    "frameName": "Harmony Gates / FINAL Approved Home",
+    "nodeId": "28:2"
+  },
+  "visualAsset": "../harmony-home-approved.jpg",
+  "coordinateRule": "Scale normalized bounds into the actual rendered artwork rectangle; if aspect-fit creates letterboxing, offset by the rendered artwork origin before hit testing.",
+  "regions": [
+    {"id":"toggle_menu","figmaLayer":"HIT / Menu","action":"toggle_menu","boundsPx":{"x":10,"y":72,"width":70,"height":82},"boundsNormalized":{"x":0.006510,"y":0.070312,"width":0.045573,"height":0.080078}},
+    {"id":"navigate_home","figmaLayer":"HIT / Nav Home","action":"navigate_home","boundsPx":{"x":0,"y":160,"width":90,"height":110},"boundsNormalized":{"x":0,"y":0.156250,"width":0.058594,"height":0.107422}},
+    {"id":"navigate_map","figmaLayer":"HIT / Nav Map","action":"navigate_map","boundsPx":{"x":0,"y":270,"width":90,"height":110},"boundsNormalized":{"x":0,"y":0.263672,"width":0.058594,"height":0.107422}},
+    {"id":"navigate_practice","figmaLayer":"HIT / Nav Practice","action":"navigate_practice","boundsPx":{"x":0,"y":380,"width":90,"height":110},"boundsNormalized":{"x":0,"y":0.371094,"width":0.058594,"height":0.107422}},
+    {"id":"navigate_stats","figmaLayer":"HIT / Nav Stats","action":"navigate_stats","boundsPx":{"x":0,"y":490,"width":90,"height":105},"boundsNormalized":{"x":0,"y":0.478516,"width":0.058594,"height":0.102539}},
+    {"id":"navigate_library","figmaLayer":"HIT / Nav Library","action":"navigate_library","boundsPx":{"x":0,"y":595,"width":90,"height":105},"boundsNormalized":{"x":0,"y":0.581055,"width":0.058594,"height":0.102539}},
+    {"id":"navigate_profile","figmaLayer":"HIT / Nav Profile","action":"navigate_profile","boundsPx":{"x":0,"y":700,"width":90,"height":100},"boundsNormalized":{"x":0,"y":0.683594,"width":0.058594,"height":0.097656}},
+    {"id":"navigate_settings","figmaLayer":"HIT / Nav Settings","action":"navigate_settings","boundsPx":{"x":0,"y":800,"width":90,"height":110},"boundsNormalized":{"x":0,"y":0.781250,"width":0.058594,"height":0.107422}},
+    {"id":"open_profile_summary","figmaLayer":"HIT / Profile Summary","action":"open_profile_summary","boundsPx":{"x":1170,"y":24,"width":345,"height":112},"boundsNormalized":{"x":0.761719,"y":0.023438,"width":0.224609,"height":0.109375}},
+    {"id":"navigate_chord_gates","figmaLayer":"HIT / Chord Gates","action":"navigate_chord_gates","boundsPx":{"x":618,"y":202,"width":200,"height":278},"boundsNormalized":{"x":0.402344,"y":0.197266,"width":0.130208,"height":0.271484}},
+    {"id":"navigate_ear_trainer","figmaLayer":"HIT / Ear Trainer","action":"navigate_ear_trainer","boundsPx":{"x":831,"y":202,"width":214,"height":278},"boundsNormalized":{"x":0.541016,"y":0.197266,"width":0.139323,"height":0.271484}},
+    {"id":"navigate_sight_reading","figmaLayer":"HIT / Sight Reading","action":"navigate_sight_reading","boundsPx":{"x":1057,"y":202,"width":210,"height":278},"boundsNormalized":{"x":0.688151,"y":0.197266,"width":0.136719,"height":0.271484}},
+    {"id":"navigate_progression_run","figmaLayer":"HIT / Progression Run","action":"navigate_progression_run","boundsPx":{"x":1280,"y":202,"width":190,"height":278},"boundsNormalized":{"x":0.833333,"y":0.197266,"width":0.123698,"height":0.271484}},
+    {"id":"navigate_voice_leading","figmaLayer":"HIT / Voice Leading","action":"navigate_voice_leading","boundsPx":{"x":618,"y":494,"width":200,"height":268},"boundsNormalized":{"x":0.402344,"y":0.482422,"width":0.130208,"height":0.261719}},
+    {"id":"navigate_theory_lab","figmaLayer":"HIT / Theory Lab","action":"navigate_theory_lab","boundsPx":{"x":831,"y":494,"width":214,"height":268},"boundsNormalized":{"x":0.541016,"y":0.482422,"width":0.139323,"height":0.261719}},
+    {"id":"navigate_daily_challenge","figmaLayer":"HIT / Daily Challenge","action":"navigate_daily_challenge","boundsPx":{"x":1057,"y":494,"width":210,"height":268},"boundsNormalized":{"x":0.688151,"y":0.482422,"width":0.136719,"height":0.261719}},
+    {"id":"navigate_my_journey","figmaLayer":"HIT / My Journey","action":"navigate_my_journey","boundsPx":{"x":1280,"y":494,"width":190,"height":268},"boundsNormalized":{"x":0.833333,"y":0.482422,"width":0.123698,"height":0.261719}},
+    {"id":"open_next_gate","figmaLayer":"HIT / Next Gate Card","action":"open_next_gate","boundsPx":{"x":120,"y":867,"width":670,"height":132},"boundsNormalized":{"x":0.078125,"y":0.846680,"width":0.436198,"height":0.128906}},
+    {"id":"continue_next_gate","figmaLayer":"HIT / Continue","action":"continue_next_gate","boundsPx":{"x":608,"y":905,"width":160,"height":58},"boundsNormalized":{"x":0.395833,"y":0.883789,"width":0.104167,"height":0.056641}},
+    {"id":"open_progress_summary","figmaLayer":"HIT / Streak Summary","action":"open_progress_summary","boundsPx":{"x":820,"y":867,"width":648,"height":132},"boundsNormalized":{"x":0.533854,"y":0.846680,"width":0.421875,"height":0.128906}}
+  ]
+}
