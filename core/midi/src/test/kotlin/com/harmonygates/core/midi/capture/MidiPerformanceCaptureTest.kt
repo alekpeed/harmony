@@ -3,6 +3,9 @@ package com.harmonygates.core.midi.capture
 import app.cash.turbine.test
 import com.harmonygates.core.midi.FakeMidiInputSource
 import com.harmonygates.core.music.performance.CaptureCompletion
+import com.harmonygates.core.music.performance.CapturePolicy
+import com.harmonygates.core.music.performance.CaptureState
+import com.harmonygates.core.music.performance.SustainCapturePolicy
 import com.harmonygates.core.music.time.MonotonicClock
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy

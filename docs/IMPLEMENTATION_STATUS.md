@@ -5,6 +5,78 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 4 — Minimal playable vertical slice
+
+**Commit:** see `git log` for `phase/4-vertical-slice`
+
+### Implemented
+
+- `ExercisePolicy` — root pool, formula pool, inversion pool, answer mode, presentation
+  channels, register, onset policy, session length. The authoring checklist from
+  21_CONTENT_AUTHORING_GUIDE.md §4 as data.
+- `DefaultExerciseGenerator` — deterministic from a seed. Prefers untested roots (the coverage
+  term from 02 §9), avoids an immediate repeat, and never emits a chord standard notation
+  cannot write.
+- `ExerciseSessionEngine` and `DefaultExerciseSessionEngine` — the loop from 01 §2, once:
+  present → arm → capture → evaluate → feedback → next, with pause, resume, skip and hints.
+- `ExercisePresentationModel` — the mapper from 10 §5. A channel the exercise did not enable is
+  absent from the model, not merely hidden, so a screen cannot leak the answer.
+- Chord gate screen: chord symbol, live keyboard, verdict with a worded musical diagnosis,
+  session summary. Reached from the home screen's Chord Gates and Quick Practice controls.
+- `CapturePolicy`, `CaptureState` and the `PerformanceCapture` contract moved from `core:midi`
+  into `core:music`. They are domain concepts, not transport ones, and the move lets the session
+  engine live in pure Kotlin with no Android dependency.
+
+### Tests
+
+268 passing, 0 failing. 25 of them are new.
+
+| Suite | Covers |
+| --- | --- |
+| `ExerciseSessionEngineTest` | The loop end to end, seed reproducibility, pause/resume re-arm, device loss, hint recording |
+| `ExerciseGeneratorTest` | Determinism, root coverage across a session, inversion requirements, writability over 200 seeds |
+
+### Manual verification
+
+- `./gradlew verifyHarmony assembleDebug` from a clean checkout — passes
+- **Not done, and this is the phase's whole acceptance criterion.** 15_IMPLEMENTATION_PHASES.md
+  requires "20-exercise session works on tablet with real keyboard" and "no false submissions
+  from ordinary chord spread". Neither can be demonstrated here: no tablet and no MIDI keyboard
+  are attached to this environment. The loop is exercised end to end against a fake capture, and
+  the capture itself against scripted MIDI, but a person has not played it.
+
+### Known limitations
+
+1. **Phase 4's acceptance is unmet.** See above. Everything up to it has been verified; this one
+   genuinely cannot be, from a build server.
+2. **The capture thresholds are still unmeasured.** The "no false submissions" criterion is
+   precisely a test of those numbers, so the two open items are the same item.
+3. **Arming is automatic.** Once a target is on screen and a keyboard is connected, capture arms
+   without a tap. That is right for a practice loop and may be wrong for a timed gate; Phase 6's
+   gate rules will decide per exercise rather than globally.
+4. **The exercise policy lives in the view model.** It is data, but it is data in Kotlin. Phase 6
+   moves it into `content/` where a curriculum author owns it.
+5. **No mastery, no progress, no persistence.** A session summary is shown and then discarded.
+   Phase 5 stores it.
+6. **Only one answer mode is used in the app.** The generator and evaluator support exact
+   voicings and degree-aware policy matching; the Phase 4 policy asks for pitch classes, which
+   is what a first chord gate should ask for.
+
+### Next phase prerequisites
+
+Phase 5 — persistence and mastery. Needs:
+
+- `core:data` as an Android library: Room schema, attempt storage, migrations
+- `ProgressRepository` and `ContentRepository` per 20_BOOTSTRAP_AND_MODULE_CONTRACTS.md §5
+- The `SkillMastery` evidence model from 06 §9, with its weighting: independent correct 1.0,
+  correct with reduced hint 0.8, correct after hint 0.5, incorrect 0.0
+- DataStore preferences
+
+`AttemptRecord` already carries the instance, the attempt, the result and the hint count, which
+is everything the mastery update needs.
+
+---
+
 ## Phase: 3 — Performance capture and evaluator
 
 **Commit:** see `git log` for `phase/3-capture-and-evaluation`

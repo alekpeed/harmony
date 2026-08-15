@@ -2,7 +2,10 @@ package com.harmonygates.core.midi.capture
 
 import com.harmonygates.core.midi.MidiConnectionState
 import com.harmonygates.core.midi.MidiInputSource
+import com.harmonygates.core.music.performance.CapturePolicy
+import com.harmonygates.core.music.performance.CaptureState
 import com.harmonygates.core.music.performance.PerformanceAttempt
+import com.harmonygates.core.music.performance.PerformanceCapture
 import com.harmonygates.core.music.time.MonotonicClock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -15,29 +18,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-
-/**
- * Turns a stream of MIDI events into discrete attempts.
- *
- * The contract from 20_BOOTSTRAP_AND_MODULE_CONTRACTS.md §4. All the judgement lives in
- * [OnsetAggregator]; this is the plumbing that gives it events and a heartbeat, and that
- * notices when the keyboard disappears.
- */
-public interface PerformanceCapture {
-    public val state: StateFlow<CaptureState>
-
-    /** Completed attempts, one per armed capture. */
-    public val attempts: Flow<PerformanceAttempt>
-
-    /** Begins listening for an answer. */
-    public fun arm(policy: CapturePolicy)
-
-    /** Abandons the current capture without producing an attempt. */
-    public fun cancel()
-
-    /** Ends the current capture now — a beat boundary, or a submit button. */
-    public fun submitNow()
-}
 
 /**
  * The production capture, over a [MidiInputSource].

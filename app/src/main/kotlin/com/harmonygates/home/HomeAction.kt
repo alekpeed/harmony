@@ -103,13 +103,17 @@ enum class HomeDestination(val isImplemented: Boolean, val arrivesInPhase: Int) 
      */
     Settings(isImplemented = true, arrivesInPhase = 2),
 
+    /** The Phase 4 vertical slice: show a chord, play it, get a verdict. */
+    ChordGate(isImplemented = true, arrivesInPhase = 4),
+
+    /** Quick practice runs the same loop with no gate around it. */
+    QuickPractice(isImplemented = true, arrivesInPhase = 4),
+
     Menu(isImplemented = false, arrivesInPhase = 6),
     Campaign(isImplemented = false, arrivesInPhase = 6),
     NextGate(isImplemented = false, arrivesInPhase = 6),
     Resume(isImplemented = false, arrivesInPhase = 6),
     DailyChallenge(isImplemented = false, arrivesInPhase = 6),
-    ChordGate(isImplemented = false, arrivesInPhase = 4),
-    QuickPractice(isImplemented = false, arrivesInPhase = 4),
     Progress(isImplemented = false, arrivesInPhase = 5),
     Profile(isImplemented = false, arrivesInPhase = 5),
     EarTraining(isImplemented = false, arrivesInPhase = 8),

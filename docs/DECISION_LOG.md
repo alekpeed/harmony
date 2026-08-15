@@ -282,3 +282,51 @@ One comparison routine would have to pick one of the three and be wrong about th
 wrong chord *and* spread it too wide should be told about the chord; mentioning the spread first
 would be technically complete and pedagogically useless. Missing a guide tone outranks missing a
 fifth for the same reason — one changes what the chord is, the other usually does not.
+
+---
+
+## D22 — The capture contract is domain, the capture implementation is transport
+
+**Phase 4.** `CapturePolicy`, `CaptureState` and the `PerformanceCapture` interface moved from
+`core:midi` into `core:music`; `OnsetAggregator` and `MidiPerformanceCapture` stayed.
+
+The session engine needs capture and evaluation, and putting it in `core:midi` would have made
+the whole game loop depend on an Android library for no reason. Splitting on "is this about MIDI
+or about performance" put the line in the right place: a quiet window is a musical decision, and
+a byte stream is not. The engine is now plain Kotlin and fully unit-tested.
+
+---
+
+## D23 — A presentation model omits, rather than hides
+
+**Phase 4.** `ExercisePresentationModel` carries null for a channel the exercise did not enable.
+
+10_ANDROID_ARCHITECTURE.md §5 makes the mapper responsible for which assistance channels are
+visible. Handing a screen the note names and trusting it not to draw them would put the
+assistance system's correctness in the UI layer, where one careless composable leaks the answer.
+Absent is safer than hidden.
+
+---
+
+## D24 — Arming is automatic
+
+**Phase 4.** Capture arms as soon as a target is on screen and a keyboard is connected.
+
+A "ready?" tap before every chord would put a finger-off-the-keys interruption between the
+player and the instrument twenty times a session. 06_PERFORMANCE_EVALUATION_AND_SCORING.md §7
+already prevents the failure this would guard against — capture never submits on a first note —
+so the tap would cost something and buy nothing.
+
+A timed gate may want it back, which is why arming is an engine call rather than a rule inside
+the screen.
+
+---
+
+## D25 — Test collectors need an eager dispatcher
+
+**Phase 4.** The session engine's tests run on `UnconfinedTestDispatcher`.
+
+With the default `StandardTestDispatcher`, the engine's `SharedFlow` collectors had not yet
+subscribed when the test delivered an attempt, and a replay-free `SharedFlow` drops what nobody
+is listening for — so six tests failed against correct production code. Worth recording because
+the symptom (state stuck at `Armed`) looks exactly like an engine bug and is not one.

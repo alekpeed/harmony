@@ -3,24 +3,12 @@ package com.harmonygates.core.midi.capture
 import com.harmonygates.core.midi.Controller
 import com.harmonygates.core.midi.MidiEvent
 import com.harmonygates.core.music.performance.CaptureCompletion
+import com.harmonygates.core.music.performance.CapturePolicy
+import com.harmonygates.core.music.performance.CaptureState
+import com.harmonygates.core.music.performance.SustainCapturePolicy
 import com.harmonygates.core.music.performance.NormalizedNoteEvent
 import com.harmonygates.core.music.performance.PerformanceAttempt
 import com.harmonygates.core.music.pitch.MidiNote
-
-/** Where the aggregator is in its cycle (05_MIDI_INPUT_ENGINE.md §6). */
-public enum class CaptureState {
-    /** Not capturing. */
-    IDLE,
-
-    /** Armed, waiting for the first note. */
-    ARMED,
-
-    /** Notes are arriving. */
-    COLLECTING,
-
-    /** Collection is finished and the attempt has been handed over. */
-    COMPLETED,
-}
 
 /**
  * Decides when a chord has been played.

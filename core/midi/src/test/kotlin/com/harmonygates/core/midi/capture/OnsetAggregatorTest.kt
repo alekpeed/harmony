@@ -3,6 +3,9 @@ package com.harmonygates.core.midi.capture
 import com.harmonygates.core.midi.Controller
 import com.harmonygates.core.midi.MidiEvent
 import com.harmonygates.core.music.performance.CaptureCompletion
+import com.harmonygates.core.music.performance.CapturePolicy
+import com.harmonygates.core.music.performance.CaptureState
+import com.harmonygates.core.music.performance.SustainCapturePolicy
 import com.harmonygates.core.music.performance.OnsetPolicy
 import com.harmonygates.core.music.performance.PerformanceAttempt
 import com.harmonygates.core.music.pitch.MidiNote

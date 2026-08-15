@@ -1,7 +1,5 @@
-package com.harmonygates.core.midi.capture
+package com.harmonygates.core.music.performance
 
-import com.harmonygates.core.music.performance.OnsetPolicy
-import com.harmonygates.core.music.performance.PerformanceAttempt
 
 /**
  * What to do about notes still ringing from the previous attempt (05_MIDI_INPUT_ENGINE.md §5).
@@ -56,10 +54,10 @@ public data class CapturePolicy(
         require(accidentalNoteGraceMillis >= 0) { "The grace period cannot be negative" }
     }
 
-    internal val quietWindowNanos: Long get() = quietWindowMillis * PerformanceAttempt.NANOS_PER_MILLI
-    internal val maxRollWindowNanos: Long get() = maxRollWindowMillis * PerformanceAttempt.NANOS_PER_MILLI
-    internal val stabilisationNanos: Long get() = stabilisationMillis * PerformanceAttempt.NANOS_PER_MILLI
-    internal val graceNanos: Long get() = accidentalNoteGraceMillis * PerformanceAttempt.NANOS_PER_MILLI
+    public val quietWindowNanos: Long get() = quietWindowMillis * PerformanceAttempt.NANOS_PER_MILLI
+    public val maxRollWindowNanos: Long get() = maxRollWindowMillis * PerformanceAttempt.NANOS_PER_MILLI
+    public val stabilisationNanos: Long get() = stabilisationMillis * PerformanceAttempt.NANOS_PER_MILLI
+    public val graceNanos: Long get() = accidentalNoteGraceMillis * PerformanceAttempt.NANOS_PER_MILLI
 
     public companion object {
         // The starting values from §6. Instrument-test these on real hardware before treating

@@ -8,16 +8,16 @@ Kotlin, Jetpack Compose, offline, tablet-first.
 
 ## Status
 
-**Phases 0 through 3 complete.** Toolchain, music-theory domain, MIDI input engine, and
-performance capture and evaluation. A playable vertical slice is next. See
+**Phases 0 through 4 complete.** Toolchain, music-theory domain, MIDI input engine, capture and
+evaluation, and a playable exercise loop. Persistence and mastery are next. See
 `docs/IMPLEMENTATION_STATUS.md` for the detailed handoff and known limitations.
 
 | | |
 | --- | --- |
-| Tests | 243 passing |
+| Tests | 268 passing |
 | Debug APK | builds |
-| Playable exercise | Phase 4 |
-| Verified on hardware | not yet — no keyboard attached to the build environment |
+| Playable exercise | yes — show a chord, play it, get a verdict |
+| Verified on hardware | **not yet** — no keyboard attached to the build environment |
 
 ## Quick start
 
@@ -44,6 +44,9 @@ live. Two lead somewhere real:
 - **Settings** — MIDI setup and diagnostics: connection state, device picker, a live keyboard
   showing held and pedal-sustained notes apart, the raw event stream, and a simulator so the
   whole screen can be exercised with nothing plugged in.
+- **Chord Gates** and **Quick Practice** — the exercise loop. A chord symbol appears, you play it
+  on the keyboard, and the verdict names what was actually wrong: which degree is missing, which
+  note does not belong, whether the chord was spread too wide.
 
 The rest report which phase they arrive in rather than opening an empty room.
 
