@@ -47,6 +47,36 @@ fun curriculumField(name: String): String =
 val harmonyContentVersion: String = curriculumField("contentVersion")
 val harmonyContentSchema: Int = curriculumField("schemaVersion").toInt()
 
+/**
+ * A build identity that changes when the build changes.
+ *
+ * Every debug build used to be `0.1.0`, `versionCode 1`, in a file called `app-debug.apk`. Three
+ * different builds reached a tablet under that one name, and there was no way — on the device or
+ * off it — to tell which one was installed. Two of them differed by a few hundred bytes inside a
+ * 19 MB package, so even the file size was not a clue. That is not a cosmetic problem: it makes
+ * "did my fix reach the device" unanswerable, and every question after it a guess.
+ *
+ * So the commit count is the version code and the short SHA is in the version name, the APK is
+ * named after both, and the app prints them on screen in a debug build. A build can now be
+ * identified from across the room.
+ *
+ * `providers.exec` rather than a direct process call: it is what keeps the configuration cache
+ * usable, and it re-runs when the repository moves.
+ */
+fun gitOutput(command: List<String>, fallback: String): String {
+    val output = runCatching {
+        providers.exec { commandLine(command) }.standardOutput.asText.get().trim()
+    }.getOrNull()
+    return if (output.isNullOrEmpty()) fallback else output
+}
+
+val gitCommitCount: Int =
+    gitOutput(listOf("git", "rev-list", "--count", "HEAD"), fallback = "1").toIntOrNull() ?: 1
+val gitShortSha: String = gitOutput(listOf("git", "rev-parse", "--short", "HEAD"), fallback = "nogit")
+val gitDirty: Boolean = gitOutput(listOf("git", "status", "--porcelain"), fallback = "").isNotEmpty()
+val buildIdentity: String = gitShortSha + if (gitDirty) "+dirty" else ""
+val harmonyVersionName: String = "0.1.0.$gitCommitCount-$buildIdentity"
+
 val canSignRelease: Boolean = listOf(
     releaseKeystorePath,
     releaseKeystorePassword,
@@ -63,13 +93,15 @@ android {
         applicationId = "com.harmonygates"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
+        // One per commit, so the installer can always tell an older build from a newer one.
+        versionCode = gitCommitCount
 
         // 17 §6: a semantic app version, and a content version that moves independently of it.
         // Both are readable at runtime so a bug report can say which of the two it came from.
-        versionName = "0.1.0"
+        versionName = harmonyVersionName
         buildConfigField("String", "CONTENT_VERSION", "\"$harmonyContentVersion\"")
         buildConfigField("int", "CONTENT_SCHEMA", harmonyContentSchema.toString())
+        buildConfigField("String", "BUILD_IDENTITY", "\"$buildIdentity\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -218,4 +250,36 @@ androidComponents {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+}
+
+/**
+ * A copy of each APK named after the build that produced it.
+ *
+ * AGP always writes `app-debug.apk`, whatever the version is. Three files under one name is how
+ * a fix that never reached the device looks identical to a fix that did, so every build also
+ * lands under a name that says which build it is.
+ */
+androidComponents {
+    onVariants { variant ->
+        // Both pulled out of the variant here: capturing the variant itself inside the task's
+        // rename lambda drags the whole AGP object graph into the configuration cache with it.
+        val variantName = variant.name
+        val taskName = variantName.replaceFirstChar(Char::uppercase)
+        val targetName = "harmony-gates-$harmonyVersionName-$variantName.apk"
+
+        val nameApk = tasks.register<Copy>("nameHarmony${taskName}Apk") {
+            group = "build"
+            description = "Copies the $variantName APK to a filename carrying its version and commit."
+            from(layout.buildDirectory.dir("outputs/apk/$variantName")) {
+                include("*.apk")
+                // A previous run's named copy must not be picked up and renamed onto itself.
+                exclude("harmony-gates-*.apk")
+                rename { targetName }
+            }
+            // Its own directory, not AGP's: writing a second file into `outputs/apk` makes
+            // Gradle's own listing task read a directory another task is still writing to.
+            into(layout.buildDirectory.dir("outputs/harmony"))
+        }
+        tasks.matching { it.name == "assemble$taskName" }.configureEach { finalizedBy(nameApk) }
+    }
 }

@@ -2,8 +2,12 @@ package com.harmonygates
 
 import android.app.Application
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -13,8 +17,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.harmonygates.campaign.CampaignRoute
 import com.harmonygates.core.music.campaign.GateId
@@ -80,6 +88,8 @@ fun AppRoot() {
     }
 
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { insets ->
+        BuildStamp()
+
         when (screen) {
             // Handed the whole window, not the insets: the home frame insets itself, so that
             // the artwork is fitted inside the safe area rather than fitted to the window and
@@ -164,6 +174,35 @@ fun AppRoot() {
         }
     }
 }
+
+/**
+ * Which build this is, in the corner, on every screen.
+ *
+ * Debug only, and small. It exists because three different debug builds reached a tablet under
+ * one version number and one filename, and there was no way to tell from the device which of
+ * them was running — so "is my fix in this build" could not be answered, and every question
+ * after it was a guess. A build that cannot identify itself cannot be tested.
+ *
+ * The version name carries the commit count and the short SHA, and `+dirty` when the build came
+ * from a working tree with uncommitted changes in it.
+ */
+@Composable
+private fun BuildStamp() {
+    if (!BuildConfig.DEBUG) return
+    Box(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+        Text(
+            text = "build ${BuildConfig.VERSION_NAME} · content ${BuildConfig.CONTENT_VERSION}",
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(horizontal = 6.dp, vertical = 2.dp),
+            color = Color.White.copy(alpha = STAMP_ALPHA),
+            fontSize = STAMP_SIZE,
+        )
+    }
+}
+
+private const val STAMP_ALPHA = 0.55f
+private val STAMP_SIZE = 10.sp
 
 /**
  * A chord-gate session, for a gate or for free practice.
