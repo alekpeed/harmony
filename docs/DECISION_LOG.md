@@ -515,3 +515,39 @@ disagree with the others. Each entry is a set because `C7#9b13` is one exercise:
 alterations would have read as an instruction to sound all of them at once. A pool applied to a
 chord that is not a dominant leaves it alone, since the authored formula is the lesson and
 inventing a `Cmaj7b9` to satisfy the pool would be teaching something else.
+
+---
+
+## D41 — The palette is sampled from the approved artwork, and there is one of it
+
+**Phase 12.** `ApprovedColors` in `Tokens.kt`; `HarmonyTheme` no longer switches on system dark
+mode.
+
+The two approved screens in `interface/` are painted plates. A Compose layer drawn over one has
+to be in the plate's own palette or it sits beside the artwork rather than on it, so the colours
+were sampled out of the plates rather than chosen — warm near-blacks, brass and amber accents,
+warm off-white text. For the same reason there is no light theme to switch to: a Compose layer
+that turned pale in light mode would be drawn on artwork that did not turn with it. Contrast is
+met inside the dark palette instead, and `TokenTest` measures every text-on-surface pair against
+WCAG AA rather than trusting that it looks fine.
+
+Two token groups are not in the artwork — feedback colours and piano key surfaces, since neither
+approved screen contains a verdict or a keyboard. They are marked provisional in the file. That
+they can be provisional at all is the point of the next entry.
+
+---
+
+## D42 — Key state maps to shape before it maps to colour
+
+**Phase 12.** `KeyPaintings.of()` is a pure function in a file with no access to the palette.
+
+12 §7 says "do not encode these states only by color" and lists nine layered states. Making the
+mapping return a fill *name*, a marker and an outline — rather than a `Color` — turns that rule
+into something a test can check: `KeyPaintingTest` asserts that no two of the nine share both a
+marker and an outline, so the set stays distinguishable with the colour removed entirely. It also
+means the provisional key palette can be replaced by the Figma pass without any state becoming
+ambiguous in the meantime.
+
+The precedence — verdict over held over role — is pedagogical rather than technical. A required
+tone played wrong must stop saying "required" the moment the player has been told the answer;
+what they need then is the marker about what they did.

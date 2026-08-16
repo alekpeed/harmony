@@ -5,6 +5,70 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 12 — Design system
+
+**Commit:** see `git log` for `phase/12-design-system`
+
+### Implemented
+
+- **Tokens.** `Tokens.kt` now covers every group 12 §4 names: background and surface levels,
+  primary and secondary accents, feedback, text hierarchy, notation colours, piano key states,
+  gate states, spacing, corner radii, elevation, typography and motion. The colours are sampled
+  from the approved artwork in `interface/` rather than chosen — see D41.
+- **One palette.** The approved screens are painted plates in a dark world, so there is no light
+  theme to switch to. Contrast is met inside the dark palette and measured by `TokenTest`.
+- **Reduced motion.** `HarmonyMotionTokens.reduced()` collapses every duration; `MainActivity`
+  reads `Settings.Global.ANIMATOR_DURATION_SCALE` and passes it in, so the system preference is
+  honoured rather than duplicated as an in-app switch.
+- **Components.** All 27 names in 12 §5 now exist in Compose: `Shell.kt` (shell, status bar,
+  MIDI chip, rail, countdown, sheet, dialog), `Controls.kt` (buttons, icon button, segmented
+  control, filter chip, difficulty slider), `Campaign.kt` (gate card, gate node, progress meter,
+  skill badge, result card), `Exercise.kt` (header, chord symbol, roman numeral, note names,
+  feedback panel, metronome, assistance indicator). Three are renamed to avoid colliding with a
+  Material 3 symbol; `docs/DESIGN_SYSTEM.md` §3 is the mapping table.
+- **Mapped states.** `PianoKeyState` carries 12 §7's nine states as independent layered facts,
+  and `KeyPaintings.of()` maps them to a fill, a marker and an outline without touching the
+  palette. `MidiPresentation`, `GatePresentation` and `FeedbackPresentation` each carry a glyph,
+  a label and a screen-reader description.
+- **`docs/DESIGN_SYSTEM.md`** — the token export and component mapping 12 §11 asks for.
+
+### Acceptance
+
+- *design tokens* — done, structurally complete against §4.
+- *Compose design-system components* — done, all 27 of §5.
+- *mapped states* — done: piano keys (§7), MIDI (§8), gates and verdicts.
+- *final Figma screens/components* — **not done.** Two screens are approved as painted plates;
+  the rest have not been drawn. This is design work, not code work.
+- *screenshot comparisons* — **not done.** There are no Figma baselines to compare against, and
+  a JVM Compose renderer (Robolectric or Paparazzi) is not set up because there is no emulator
+  in this environment.
+
+### Tests
+
+568 passing, 0 failing. 28 new: `TokenTest` (14), `KeyPaintingTest` (9),
+`StatusPresentationTest` (5).
+
+### What the tests caught
+
+- Nothing failed on the first run, which is worth saying plainly rather than dressing up: the
+  contrast and distinctness tests were written against a palette that had already been sampled
+  from approved artwork, so they confirmed a choice rather than correcting one. Their value is
+  forward-looking — they are what will tell the Figma pass whether a new value is still legible.
+
+### Known limitations
+
+1. **The Figma file is still the missing half.** Screens beyond Home and Progression Run are not
+   designed, node IDs cannot be mapped, and screenshot baselines do not exist.
+2. **Feedback and piano palettes are provisional.** Neither approved plate contains a verdict or
+   a keyboard. Nothing depends on the exact values — every state carries a glyph or an outline —
+   but they are the first thing the design pass should replace.
+3. **No typefaces.** The type scale is set; the families are not identified or licensed.
+4. **The components are not yet used by the screens.** The existing screens still compose their
+   own layouts from panels and chips. Rewiring them onto the new components is visual work, and
+   the user has asked for UI work to be held.
+
+---
+
 ## Phase: 11 — Advanced harmony
 
 **Commit:** see `git log` for `phase/11-advanced-harmony`

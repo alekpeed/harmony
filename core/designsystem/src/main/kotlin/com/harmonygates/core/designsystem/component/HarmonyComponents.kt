@@ -17,16 +17,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import com.harmonygates.core.designsystem.state.FeedbackPresentation
 import com.harmonygates.core.designsystem.theme.HarmonyTheme
 
 /**
- * Component contracts for the pre-Figma phases.
+ * The base components every screen is built from.
  *
- * These exist so features can be built with stable state contracts before the visual system is
- * designed (20_BOOTSTRAP_AND_MODULE_CONTRACTS.md §7). Phase 12 refines the implementations and
- * leaves the signatures alone.
+ * 12_UI_UX_AND_FIGMA_HANDOFF.md §5 lists the components Figma and Compose should both define;
+ * these and the ones in `Controls.kt`, `Shell.kt`, `Campaign.kt` and `Exercise.kt` are that
+ * list. They read tokens rather than literals, so the Figma pass changes `Tokens.kt` and not
+ * these files.
  */
+
+/** How an answer was judged. The old name for [FeedbackPresentation], kept for call sites. */
+public typealias FeedbackTone = FeedbackPresentation
 
 /** A raised panel. The app's basic content container. */
 @Composable
@@ -34,26 +38,24 @@ public fun HarmonyPanel(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    val shape = RoundedCornerShape(HarmonyTheme.shapes.radiusMedium)
     Column(
         modifier = modifier
-            .background(HarmonyTheme.colors.surfaceRaised, RoundedCornerShape(12.dp))
-            .border(
-                HarmonyTheme.spacing.hairline,
-                HarmonyTheme.colors.outline,
-                RoundedCornerShape(12.dp),
-            )
+            .background(HarmonyTheme.colors.surfaceRaised, shape)
+            .border(HarmonyTheme.spacing.hairline, HarmonyTheme.colors.outline, shape)
             .padding(HarmonyTheme.spacing.medium),
     ) {
         content()
     }
 }
 
-/** How an answer was judged. Mirrors the verdicts in 06_PERFORMANCE_EVALUATION_AND_SCORING.md §2. */
-public enum class FeedbackTone {
-    CORRECT,
-    INCORRECT,
-    PARTIAL,
-    NEUTRAL,
+/** The colour a feedback tone is drawn in. One place, so a verdict never disagrees with itself. */
+@Composable
+public fun FeedbackPresentation.color(): Color = when (this) {
+    FeedbackPresentation.CORRECT -> HarmonyTheme.colors.feedbackSuccess
+    FeedbackPresentation.PARTIAL -> HarmonyTheme.colors.feedbackWarning
+    FeedbackPresentation.INCORRECT -> HarmonyTheme.colors.feedbackError
+    FeedbackPresentation.NEUTRAL -> HarmonyTheme.colors.feedbackNeutral
 }
 
 /**
@@ -69,25 +71,20 @@ public fun HarmonyStatusChip(
     tone: FeedbackTone,
     modifier: Modifier = Modifier,
 ) {
-    val colors = HarmonyTheme.colors
-    val (accent: Color, glyph: String) = when (tone) {
-        FeedbackTone.CORRECT -> colors.correct to "✓"
-        FeedbackTone.INCORRECT -> colors.incorrect to "✕"
-        FeedbackTone.PARTIAL -> colors.partial to "~"
-        FeedbackTone.NEUTRAL -> colors.awaitingInput to "•"
-    }
+    val shape = RoundedCornerShape(HarmonyTheme.shapes.radiusPill)
+    val accent = tone.color()
 
     Row(
         modifier = modifier
-            .background(colors.surface, RoundedCornerShape(999.dp))
-            .border(HarmonyTheme.spacing.hairline, accent, RoundedCornerShape(999.dp))
+            .background(HarmonyTheme.colors.surface, shape)
+            .border(HarmonyTheme.spacing.hairline, accent, shape)
             .padding(horizontal = HarmonyTheme.spacing.medium, vertical = HarmonyTheme.spacing.small)
-            .semantics { contentDescription = "$label, ${tone.name.lowercase()}" },
+            .semantics { contentDescription = "$label, ${tone.shortLabel.lowercase()}" },
         horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = glyph, color = accent, fontWeight = FontWeight.Bold)
-        Text(text = label, color = colors.onSurface)
+        Text(text = tone.glyph, color = accent, fontWeight = FontWeight.Bold)
+        Text(text = label, color = HarmonyTheme.colors.textPrimary)
     }
 }
 
@@ -105,7 +102,7 @@ public fun HarmonyChordSymbol(
     Text(
         text = symbol,
         modifier = modifier.semantics { contentDescription = "Chord symbol $symbol" },
-        color = HarmonyTheme.colors.onSurface,
+        color = HarmonyTheme.colors.textPrimary,
         fontSize = HarmonyTheme.typography.chordSymbol,
         fontWeight = FontWeight.SemiBold,
     )
@@ -127,12 +124,12 @@ public fun HarmonyLabelledValue(
     ) {
         Text(
             text = label,
-            color = HarmonyTheme.colors.onSurfaceMuted,
+            color = HarmonyTheme.colors.textSecondary,
             fontSize = HarmonyTheme.typography.caption,
         )
         Text(
             text = value,
-            color = HarmonyTheme.colors.onSurface,
+            color = HarmonyTheme.colors.textPrimary,
             fontSize = HarmonyTheme.typography.body,
         )
     }
