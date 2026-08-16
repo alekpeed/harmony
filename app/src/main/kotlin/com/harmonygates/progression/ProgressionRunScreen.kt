@@ -9,6 +9,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,13 +52,10 @@ import com.harmonygates.core.music.progression.VoicingStyle
 import com.harmonygates.home.HomeDestination
 
 /**
- * Progression Run is intentionally three layers:
- * 1. a clean full-screen room plate;
- * 2. the live chord track plus a minimal practice HUD;
- * 3. transient navigation/setup drawers that exist only when the player asks for them.
- *
- * No variable value is baked into the background, and no permanent control slab is allowed to
- * cover the practice corridor.
+ * Three-layer production screen:
+ * 1. clean full-screen room plate;
+ * 2. moving chord track plus a deliberately small live practice HUD;
+ * 3. transient navigation/setup drawers opened only on request.
  */
 @Composable
 fun ProgressionRunRoute(
@@ -87,6 +84,15 @@ fun ProgressionRunScreen(
     modifier: Modifier = Modifier,
 ) {
     var drawer by remember { mutableStateOf<Drawer?>(null) }
+    var resumeAfterSetup by remember { mutableStateOf(false) }
+
+    fun closeSetup() {
+        drawer = null
+        if (resumeAfterSetup && state.run.status == ProgressionRunStatus.PAUSED) {
+            onIntent(ProgressionRunIntent.TogglePlaying)
+        }
+        resumeAfterSetup = false
+    }
 
     Box(
         modifier = modifier
@@ -106,9 +112,8 @@ fun ProgressionRunScreen(
             state = state,
             onMenu = { drawer = Drawer.Navigation },
             onSetup = {
-                if (state.run.status == ProgressionRunStatus.RUNNING) {
-                    onIntent(ProgressionRunIntent.TogglePlaying)
-                }
+                resumeAfterSetup = state.run.status == ProgressionRunStatus.RUNNING
+                if (resumeAfterSetup) onIntent(ProgressionRunIntent.TogglePlaying)
                 drawer = Drawer.Setup
             },
             onPlayPause = { onIntent(ProgressionRunIntent.TogglePlaying) },
@@ -119,7 +124,9 @@ fun ProgressionRunScreen(
                 Modifier
                     .fillMaxSize()
                     .background(HarmonyTheme.colors.background.copy(alpha = 0.42f))
-                    .clickable { drawer = null },
+                    .clickable {
+                        if (openDrawer == Drawer.Setup) closeSetup() else drawer = null
+                    },
             )
             when (openDrawer) {
                 Drawer.Navigation -> NavigationDrawer(
@@ -133,13 +140,8 @@ fun ProgressionRunScreen(
                 Drawer.Setup -> SetupDrawer(
                     state = state,
                     onIntent = onIntent,
-                    onDone = {
-                        drawer = null
-                        if (state.run.status == ProgressionRunStatus.PAUSED) {
-                            onIntent(ProgressionRunIntent.TogglePlaying)
-                        }
-                    },
-                    onDismiss = { drawer = null },
+                    onDone = ::closeSetup,
+                    onDismiss = ::closeSetup,
                     modifier = Modifier.align(Alignment.CenterEnd),
                 )
             }
@@ -173,14 +175,12 @@ private fun animatedOrbs(state: ProgressionRunUiState, track: TrackSpec): List<C
 }
 
 @Composable
-private fun PracticeHud(
+private fun BoxScope.PracticeHud(
     state: ProgressionRunUiState,
     onMenu: () -> Unit,
     onSetup: () -> Unit,
     onPlayPause: () -> Unit,
 ) {
-    // Top-left and top-right are deliberately used for status; the track's central perspective
-    // corridor remains untouched from the near play point through the far upcoming chords.
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -227,7 +227,11 @@ private fun PracticeHud(
                     )
                     Text(
                         "${state.midiStatus}  ·  ${state.accuracyPercent}%  ·  ${state.elapsedLabel}",
-                        color = if (state.midiConnected) HarmonyTheme.colors.accent else HarmonyTheme.colors.onSurfaceMuted,
+                        color = if (state.midiConnected) {
+                            HarmonyTheme.colors.accent
+                        } else {
+                            HarmonyTheme.colors.onSurfaceMuted
+                        },
                         fontSize = HarmonyTheme.typography.caption,
                     )
                     Text(
@@ -286,7 +290,11 @@ private fun HudPanel(
         modifier = modifier
             .clip(RoundedCornerShape(18.dp))
             .background(HarmonyTheme.colors.background.copy(alpha = 0.78f))
-            .border(1.dp, HarmonyTheme.colors.outline.copy(alpha = 0.75f), RoundedCornerShape(18.dp))
+            .border(
+                1.dp,
+                HarmonyTheme.colors.outline.copy(alpha = 0.75f),
+                RoundedCornerShape(18.dp),
+            )
             .padding(horizontal = 12.dp, vertical = 9.dp),
     ) {
         content()
@@ -456,7 +464,7 @@ private fun SetupDrawer(
 
         Spacer(Modifier.height(8.dp))
         Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
-            Text(if (state.run.status == ProgressionRunStatus.PAUSED) "DONE · RESUME PRACTICE" else "DONE")
+            Text("DONE")
         }
         OutlinedButton(
             onClick = { onIntent(ProgressionRunIntent.Restart) },
