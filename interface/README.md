@@ -39,6 +39,10 @@ Depending on the screen, a map may describe:
 
 Do not invent or reuse stale hit coordinates. If a screen has been structurally rebuilt, old interaction-region coordinates are invalid until remapped against the new approved frame.
 
+### Canonization rule
+
+When a screen is approved or materially rewired, finish the handoff in the same task: update its JSON map and all repository reference/instruction documents that identify canonical screens. A Figma frame is not considered fully handed off until future sessions can discover it from the repo without relying on conversation history.
+
 ### Draft JSON status
 
 For a screen that has not yet been structurally approved in Figma, use a draft status such as:
@@ -52,6 +56,7 @@ After Figma approval, replace the placeholders with the actual frame/layer infor
 Current maps:
 - `interface/maps/home.json`
 - `interface/maps/progression-run.json`
+- `interface/maps/chord-gates.json`
 
 ## Home screen
 
@@ -63,6 +68,36 @@ https://www.figma.com/design/cD5gqV8A5gk94NVuGeJXg5?node-id=28-2
 
 Interaction map:
 `interface/maps/home.json`
+
+## Chord Gates
+
+Canonical wired frame:
+`Harmony Gates / Chord Gates / CANON / WIRED 01`
+
+Figma node:
+`101:76`
+
+Direct node:
+https://www.figma.com/design/cD5gqV8A5gk94NVuGeJXg5?node-id=101-76
+
+Interaction/runtime map:
+`interface/maps/chord-gates.json`
+
+Production background asset path:
+`interface/assets/chord-gates-canon.png`
+
+Chord Gates uses the same layered implementation rule as the rest of Harmony Gates:
+
+1. static environment plate
+2. runtime-changing UI
+3. semantic hit/interaction layer
+4. Kotlin/Compose behavior and state
+
+Runtime values include the center completion percentage, gates unlocked, lessons completed, mastery, streak, current focus, current gate/selected state, gate lock/completion state, Enter Gate label, MIDI connection state, and MIDI device name. These values must not be baked into the production background image.
+
+Interactive regions include Home, Gates, Practice, Journal, Profile, Settings, View Progress, all eight Gate cards, Current Focus, Enter Current Gate, and MIDI Status. The exact current bounds and Figma node IDs are authoritative in `interface/maps/chord-gates.json`.
+
+The eight Gate cards are laid out symmetrically at the 1536 × 1024 reference size: 140 px wide, 230 px high, 12 px gaps, and 166 px left/right margins. Preserve that alignment unless an explicit redesign replaces it and the JSON is remapped.
 
 ## Progression Run
 
@@ -143,6 +178,7 @@ For a new/unmapped screen:
 4. Design/build the Figma screen without losing required functionality.
 5. Name interaction and dynamic layers semantically.
 6. After structural approval, measure/map the current frame and finalize the JSON.
-7. Then hand the approved Figma + finalized JSON to the Kotlin/Compose implementation.
+7. Update canonical-screen references in the repo in the same task.
+8. Then hand the approved Figma + finalized JSON to the Kotlin/Compose implementation.
 
 In short: Figma defines the approved appearance and motion language; JSON defines the semantic/layout/runtime contract; the existing Kotlin/Compose app supplies the real behavior.
