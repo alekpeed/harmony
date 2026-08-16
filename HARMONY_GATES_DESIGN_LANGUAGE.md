@@ -10,6 +10,9 @@ Also read `SCREEN_DESIGN_WORKFLOW.md` for the required new-screen process, inclu
 - Figma: `https://www.figma.com/design/cD5gqV8A5gk94NVuGeJXg5`
 - Approved Home: Figma node `28:2`
 - Approved Progression Run: Figma node `77:2`
+- Canonical Chord Gates: Figma node `101:76`
+- Chord Gates map: `interface/maps/chord-gates.json`
+- Chord Gates production background: `interface/assets/chord-gates-canon.png`
 - Interface documentation: `interface/README.md`
 - Screen maps: `interface/maps/`
 - New-screen workflow: `SCREEN_DESIGN_WORKFLOW.md`
@@ -73,6 +76,10 @@ For a new screen, the map is created as part of the design workflow. Follow `SCR
 
 If a genuine product decision remains unresolved after source inspection, identify that specific choice. Do not stop merely because the JSON did not already exist.
 
+### Canonization rule
+
+Whenever a major screen is approved or materially rewired, complete the full handoff in the same task. Update its `interface/maps/<screen>.json` and every relevant canonical-screen/reference document. Future sessions must be able to identify the approved Figma frame, asset path, runtime/static split, and interaction contract from the repository alone. Do not rely on conversation history to establish which design is canonical.
+
 ## Source-of-truth priority
 
 When sources differ or a new screen is being designed, use this order:
@@ -104,6 +111,28 @@ Use it as a reference for:
 
 Do not assume future screens must reuse its exact layout.
 
+### Chord Gates
+
+Canonical wired frame:
+`Harmony Gates / Chord Gates / CANON / WIRED 01`
+
+Figma node:
+`101:76`
+
+Machine-readable contract:
+`interface/maps/chord-gates.json`
+
+Production background asset path:
+`interface/assets/chord-gates-canon.png`
+
+Chord Gates is the canonical landing screen for the Chord Gates module. Preserve its room/environment concept, gate-path hierarchy, and bottom action/status structure unless the user explicitly approves a redesign.
+
+Its production implementation must remain layered. The static environment is separate from runtime state and semantic hit regions. The center completion percentage, gates unlocked, lessons completed, mastery, streak, current focus, selected/current gate, individual gate completion/lock state, Enter Gate label, MIDI connection state, and MIDI device name are runtime-driven and must not be permanently baked into the production background.
+
+All navigation, View Progress, each of the eight Gate cards, Current Focus, Enter Current Gate, and MIDI Status are semantic interaction targets. Use the current bounds and Figma node references from `interface/maps/chord-gates.json` rather than estimating them from the image.
+
+The eight Gate cards are intentionally aligned as a precise row at the 1536 × 1024 reference size: 140 px card width, 230 px card height, 12 px gaps, and equal 166 px left/right margins.
+
 ### Progression Run
 
 Figma node `77:2`
@@ -128,10 +157,11 @@ Before generating or building a new screen:
 4. Inspect the relevant file under `interface/maps/` if it exists.
 5. If it does not exist, derive the functional inventory and create a draft screen contract rather than stopping.
 6. Inspect the relevant product/spec/code sources.
-7. Inspect the approved Home and Progression Run Figma screens for visual reference.
+7. Inspect the approved Home, Chord Gates, and Progression Run Figma screens for visual reference where relevant.
 8. Identify the complete required control and feature inventory for the target screen.
 9. Propose the environment and composition without changing that inventory.
 10. Verify that no required control or state has been omitted before considering the screen complete.
+11. If the screen becomes approved/canonical, update the JSON and canonical repository references before ending the task.
 
 For exploratory design work, creative freedom is encouraged after these constraints are satisfied.
 
@@ -150,3 +180,5 @@ Do not restart or replace existing application architecture simply to match a vi
 Any new design session, coding agent, or AI working on Harmony Gates should read this file and `SCREEN_DESIGN_WORKFLOW.md` before proposing a major screen.
 
 If a prompt asks for a new screen without an existing screen JSON, inspect the repository and create the draft contract as part of the task. Do not reply that design must stop because the map is missing.
+
+If a screen has already been canonized, use the canonical Figma node and corresponding JSON map as the starting point rather than generating a replacement from scratch.
