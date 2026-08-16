@@ -1,8 +1,5 @@
 package com.harmonygates.progression
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -10,30 +7,33 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.booleanResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.harmonygates.R
 import com.harmonygates.core.designsystem.component.FeedbackTone
 import com.harmonygates.core.designsystem.component.HarmonyPanel
 import com.harmonygates.core.designsystem.component.HarmonyStatusChip
-import com.harmonygates.core.designsystem.progression.ChordOrbUiModel
-import com.harmonygates.core.designsystem.progression.OrbState
-import com.harmonygates.core.designsystem.progression.ProgressionTrack
 import com.harmonygates.core.designsystem.theme.HarmonyTheme
+import com.harmonygates.core.music.progression.ProgressionRunStatus
+import com.harmonygates.core.music.progression.ProgressionTemplates
+import com.harmonygates.core.music.progression.VoicingStyle
 
 @Composable
 fun ProgressionRunRoute(
@@ -43,25 +43,23 @@ fun ProgressionRunRoute(
     val state by viewModel.state.collectAsStateWithLifecycle()
     ProgressionRunScreen(
         state = state,
-        track = viewModel.track,
         onIntent = viewModel::onIntent,
         modifier = modifier,
     )
 }
 
 /**
- * Full-screen Progression Run.
+ * Progression Run intentionally shows only controls that are backed by runtime state.
  *
- * The approved room remains the visual interface. The previous implementation covered nearly
- * half of it with an opaque generic setup panel; on the target tablet that made the approved
- * screen look vertically chopped in two. Runtime track/orb state stays layered over the room,
- * while the only Compose chrome retained is a compact live strip for information that genuinely
- * changes at runtime plus the manual Next control used for testing without MIDI.
+ * The supplied artwork contains an old prototype track, placeholder blobs, fake statistics and
+ * fake controls. Those pixels are not allowed to masquerade as UI. The lower part of the plate
+ * is therefore faded completely into the app surface and rebuilt with real Compose controls.
+ * No separate progression-track renderer is drawn here; the user explicitly removed that visual
+ * treatment, and doing so also prevents the old baked track from doubling with runtime graphics.
  */
 @Composable
 fun ProgressionRunScreen(
     state: ProgressionRunUiState,
-    track: TrackSpec,
     onIntent: (ProgressionRunIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -72,19 +70,33 @@ fun ProgressionRunScreen(
     ) {
         BackgroundPlate()
 
-        ProgressionTrack(
-            geometry = track.geometry,
-            orbs = animatedOrbs(state, track),
-            designAspectRatio = track.aspectRatio,
+        // The prototype artwork becomes visibly contaminated from roughly the lower third down.
+        // Fade it out before any fake controls, path, blobs or static statistics can be mistaken
+        // for live UI.
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0.00f to Color.Transparent,
+                            0.27f to Color.Transparent,
+                            0.38f to HarmonyTheme.colors.backgroundBase.copy(alpha = 0.88f),
+                            0.48f to HarmonyTheme.colors.backgroundBase,
+                            1.00f to HarmonyTheme.colors.backgroundBase,
+                        ),
+                    ),
+                ),
         )
 
-        CompactRunOverlay(
+        RunControlSurface(
             state = state,
-            onNext = { onIntent(ProgressionRunIntent.Next) },
+            onIntent = onIntent,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
+                .fillMaxWidth()
                 .safeDrawingPadding()
-                .padding(HarmonyTheme.spacing.medium),
+                .padding(HarmonyTheme.spacing.large),
         )
     }
 }
@@ -101,78 +113,115 @@ private fun BackgroundPlate() {
 }
 
 @Composable
-private fun animatedOrbs(state: ProgressionRunUiState, track: TrackSpec): List<ChordOrbUiModel> {
-    val progress = remember { Animatable(1f) }
-    val easing = remember(track.easing) {
-        CubicBezierEasing(track.easing[0], track.easing[1], track.easing[2], track.easing[3])
-    }
-
-    LaunchedEffect(state.run.advanceCount) {
-        progress.snapTo(0f)
-        progress.animateTo(1f, tween(durationMillis = track.advanceDurationMs, easing = easing))
-    }
-
-    val offset = 1f - progress.value
-    return state.orbs.map { orb -> orb.copy(slot = orb.slot + offset) }
-}
-
-@Composable
-private fun CompactRunOverlay(
+private fun RunControlSurface(
     state: ProgressionRunUiState,
-    onNext: () -> Unit,
+    onIntent: (ProgressionRunIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     HarmonyPanel(modifier = modifier) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.medium),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.tight)) {
-                Text(
-                    text = state.run.progression?.title ?: "Progression run",
-                    color = HarmonyTheme.colors.onSurface,
-                    fontSize = HarmonyTheme.typography.body,
-                )
-                Text(
-                    text = listOfNotNull(
-                        state.progressLabel.takeIf { it.isNotBlank() },
-                        state.activeSymbol?.let { "Play $it" },
-                    ).joinToString(" · "),
-                    color = HarmonyTheme.colors.onSurfaceMuted,
-                    fontSize = HarmonyTheme.typography.caption,
-                )
+        Column(verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.medium)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.tight)) {
+                    Text(
+                        text = state.run.progression?.title ?: "Progression run",
+                        color = HarmonyTheme.colors.onSurface,
+                        fontSize = HarmonyTheme.typography.heading,
+                    )
+                    Text(
+                        text = when (state.run.status) {
+                            ProgressionRunStatus.COMPLETED -> "Complete · ${state.progressLabel}"
+                            else -> listOfNotNull(
+                                state.progressLabel.takeIf { it.isNotBlank() },
+                                state.activeSymbol?.let { "Play $it" },
+                            ).joinToString(" · ")
+                        },
+                        color = HarmonyTheme.colors.onSurfaceMuted,
+                        fontSize = HarmonyTheme.typography.caption,
+                    )
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    HarmonyStatusChip(
+                        label = state.midiStatus,
+                        tone = if (state.midiConnected) FeedbackTone.CORRECT else FeedbackTone.INCORRECT,
+                    )
+                    Text(
+                        text = "Attempts ${state.run.attempts} · Clean ${state.run.clean}",
+                        color = HarmonyTheme.colors.onSurfaceMuted,
+                        fontSize = HarmonyTheme.typography.caption,
+                    )
+                }
             }
 
-            HarmonyStatusChip(
-                label = state.midiStatus,
-                tone = if (state.midiConnected) FeedbackTone.CORRECT else FeedbackTone.INCORRECT,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CycleButton(
+                    label = "Progression: ${state.setup.template.title}",
+                    onClick = {
+                        val all = ProgressionTemplates.all
+                        val index = all.indexOf(state.setup.template).coerceAtLeast(0)
+                        onIntent(ProgressionRunIntent.ChooseTemplate(all[(index + 1) % all.size]))
+                    },
+                )
+                CycleButton(
+                    label = "Voicing: ${state.setup.style.label}",
+                    onClick = {
+                        val all = VoicingStyle.entries
+                        val index = all.indexOf(state.setup.style).coerceAtLeast(0)
+                        onIntent(ProgressionRunIntent.ChooseStyle(all[(index + 1) % all.size]))
+                    },
+                )
+                ToggleButton(
+                    label = "12 keys",
+                    selected = state.setup.allKeys,
+                    onClick = { onIntent(ProgressionRunIntent.ToggleAllKeys) },
+                )
+                ToggleButton(
+                    label = "Loop",
+                    selected = state.setup.loop,
+                    onClick = { onIntent(ProgressionRunIntent.ToggleLoop) },
+                )
+                ToggleButton(
+                    label = "Roman",
+                    selected = state.setup.showRomanNumerals,
+                    onClick = { onIntent(ProgressionRunIntent.ToggleRomanNumerals) },
+                )
 
-            OutlinedButton(onClick = onNext) { Text("Next") }
+                if (state.run.status == ProgressionRunStatus.COMPLETED) {
+                    Button(onClick = { onIntent(ProgressionRunIntent.Restart) }) { Text("Restart") }
+                } else {
+                    Button(onClick = { onIntent(ProgressionRunIntent.Next) }) { Text("Next chord") }
+                }
+            }
         }
     }
 }
 
-@Preview(showBackground = true, widthDp = 1200, heightDp = 800)
 @Composable
-private fun ProgressionRunPreview() {
-    val track = TrackMapReader.build(TrackMap())
-    HarmonyTheme {
-        Box(Modifier.fillMaxSize().background(HarmonyTheme.colors.background)) {
-            ProgressionTrack(
-                geometry = track.geometry,
-                designAspectRatio = track.aspectRatio,
-                orbs = listOf(
-                    ChordOrbUiModel("0", "Cmaj7", "Imaj7", OrbState.PREVIOUS, -1f),
-                    ChordOrbUiModel("1", "Dm7", "ii7", OrbState.ACTIVE, 0f),
-                    ChordOrbUiModel("2", "G7", "V7", OrbState.UPCOMING, 1f),
-                    ChordOrbUiModel("3", "Cmaj7", "Imaj7", OrbState.UPCOMING, 2f),
-                    ChordOrbUiModel("4", "Fm7", "ii7", OrbState.UPCOMING, 3f),
-                    ChordOrbUiModel("5", "Bb7", "V7", OrbState.UPCOMING, 4f),
-                    ChordOrbUiModel("6", "Ebmaj7", "Imaj7", OrbState.UPCOMING, 5f),
-                    ChordOrbUiModel("7", "Gm7", "ii7", OrbState.UPCOMING, 6f),
-                ),
-            )
-        }
+private fun CycleButton(label: String, onClick: () -> Unit) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = Modifier.widthIn(max = 260.dp),
+    ) {
+        Text(label)
+    }
+}
+
+@Composable
+private fun ToggleButton(label: String, selected: Boolean, onClick: () -> Unit) {
+    if (selected) {
+        Button(onClick = onClick) { Text(label) }
+    } else {
+        OutlinedButton(onClick = onClick) { Text(label) }
     }
 }
