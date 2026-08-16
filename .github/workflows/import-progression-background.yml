@@ -1,0 +1,42 @@
+name: Import Progression Run background
+
+on:
+  push:
+    branches:
+      - fix/progression-background-runtime-decode-20260816
+
+permissions:
+  contents: write
+
+jobs:
+  import-background:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download clean approved background
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://www.figma.com/api/mcp/asset/15cc7362-ea62-4ee2-8b3d-97c4e60fc158.jpeg'
+          mkdir -p interface/assets
+          curl --fail --location --retry 3 --retry-delay 2 "$url" -o interface/assets/progression-run-background.jpg
+          bytes=$(stat -c '%s' interface/assets/progression-run-background.jpg)
+          magic=$(xxd -p -l 2 interface/assets/progression-run-background.jpg)
+          tail_magic=$(tail -c 2 interface/assets/progression-run-background.jpg | xxd -p)
+          echo "downloaded=$bytes bytes magic=$magic tail=$tail_magic"
+          test "$bytes" -gt 100000
+          test "$magic" = 'ffd8'
+          test "$tail_magic" = 'ffd9'
+          file interface/assets/progression-run-background.jpg | grep -q 'JPEG image data'
+      - name: Commit binary asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add interface/assets/progression-run-background.jpg
+          git commit -m 'Add validated clean Progression Run JPEG'
+          git push origin HEAD:${GITHUB_REF_NAME}
