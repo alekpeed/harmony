@@ -57,6 +57,7 @@ Current maps:
 - `interface/maps/home.json`
 - `interface/maps/progression-run.json`
 - `interface/maps/chord-gates.json`
+- `interface/maps/sight-reading.json`
 
 ## Home screen
 
@@ -98,6 +99,43 @@ Runtime values include the center completion percentage, gates unlocked, lessons
 Interactive regions include Home, Gates, Practice, Journal, Profile, Settings, View Progress, all eight Gate cards, Current Focus, Enter Current Gate, and MIDI Status. The exact current bounds and Figma node IDs are authoritative in `interface/maps/chord-gates.json`.
 
 The eight Gate cards are laid out symmetrically at the 1536 × 1024 reference size: 140 px wide, 230 px high, 12 px gaps, and 166 px left/right margins. Preserve that alignment unless an explicit redesign replaces it and the JSON is remapped.
+
+## Sight Reading
+
+Canonical wired frame:
+`Harmony Gates / Sight Reading / CANON / WIRED 01`
+
+Figma node:
+`102:2`
+
+Direct node:
+https://www.figma.com/design/cD5gqV8A5gk94NVuGeJXg5?node-id=102-2
+
+Interaction/runtime map:
+`interface/maps/sight-reading.json`
+
+Detailed handoff:
+`interface/SIGHT_READING_HANDOFF.md`
+
+Production background asset path:
+`interface/assets/sight-reading-landing.png`
+
+Sight Reading uses the approved Cinque Terre loft/music-study environment as its canonical landing-page visual. This is intentionally a distinct room from Home and Chord Gates and should not be replaced with a copy of another Harmony Gates environment.
+
+Its production stack is:
+
+1. static environment plate
+2. runtime progress/path/status UI
+3. semantic hit/interaction layer
+4. Kotlin/Compose navigation, state, curriculum, exercise, and MIDI behavior
+
+Runtime values include completion percentage, lessons completed, mastery, best accuracy, streak, current focus, current path, each path's completion/current/locked state, current-path highlight, Continue Path label, MIDI connection state, and MIDI device name. These values must not be treated as permanent raster content.
+
+Interactive regions include Home, Gates, Practice, Journal, Profile, Settings, View Progress, all eight Sight Reading path cards, Current Focus, Continue Current Path, and MIDI Status. Exact current bounds and node IDs are authoritative in `interface/maps/sight-reading.json`.
+
+The eight path cards are laid out symmetrically at the reference size: 140 px wide, 270 px high, 16 px gaps, and equal 152 px left/right margins. Preserve that alignment unless an explicit redesign is approved and the JSON is remapped.
+
+The canonical path sequence is Rhythm Foundation, Interval Awareness, Treble Staff Fluency, Bass Staff Fluency, Hands Together, Key Navigation, Dynamics & Expression, and Advanced Repertoire. Current/locked/completed state is runtime-driven.
 
 ## Progression Run
 
