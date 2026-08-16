@@ -71,6 +71,9 @@ fun HomeScreen(
             onRegionClick = { regionId -> HomeAction.forRegion(regionId)?.let(onAction) },
             modifier = modifier,
             contentDescription = "Harmony Gates home",
+            // The letterbox around a fitted 3:2 frame is part of the screen, so it is the app's
+            // own ground rather than black.
+            background = HarmonyTheme.colors.backgroundBase,
         )
     } else {
         HomeActionList(onAction = onAction, artworkPresent = artworkPresent, modifier = modifier)

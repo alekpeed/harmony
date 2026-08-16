@@ -22,8 +22,10 @@ import com.harmonygates.exercise.ChordGateRoute
 import com.harmonygates.exercise.ChordGateViewModel
 import com.harmonygates.exercise.SessionRequest
 import com.harmonygates.harness.HarmonyLabRoute
+import com.harmonygates.home.HomeAction
 import com.harmonygates.home.HomeDestination
 import com.harmonygates.home.HomeScreen
+import com.harmonygates.placeholder.PlaceholderScreen
 import com.harmonygates.midi.MidiDiagnosticsRoute
 import com.harmonygates.progress.ProgressRoute
 import com.harmonygates.progression.ProgressionRunRoute
@@ -37,6 +39,9 @@ enum class AppScreen {
     ProgressionRun,
     Campaign,
     Progress,
+
+    /** A destination whose screen is not built. Carries which one, so it can say so. */
+    Placeholder,
 }
 
 /**
@@ -54,6 +59,9 @@ fun AppRoot() {
     // The gate a campaign row asked for, so the exercise screen knows whether this session
     // counts towards anything. Saved with the screen, so a rotation mid-gate stays in the gate.
     var gate by rememberSaveable { mutableStateOf<String?>(null) }
+    // Which unbuilt destination the placeholder is standing in for. Saved with the screen so a
+    // rotation does not land the player on a placeholder for nothing in particular.
+    var placeholder by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingMessage by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -68,12 +76,15 @@ fun AppRoot() {
     BackHandler(enabled = screen != AppScreen.Home) {
         screen = AppScreen.Home
         gate = null
+        placeholder = null
     }
 
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { insets ->
         when (screen) {
+            // Handed the whole window, not the insets: the home frame insets itself, so that
+            // the artwork is fitted inside the safe area rather than fitted to the window and
+            // then slid under a system bar.
             AppScreen.Home -> HomeScreen(
-                modifier = Modifier.padding(insets),
                 onAction = { action ->
                     when (action.destination) {
                         HomeDestination.TheoryLab -> screen = AppScreen.TheoryLab
@@ -93,11 +104,16 @@ fun AppRoot() {
                             gate = null
                             screen = AppScreen.ChordGate
                         }
-                        // Saying "not yet" is better than navigating into an empty room. The
-                        // phase number turns a dead end into a schedule.
-                        else -> if (!action.destination.isImplemented) {
-                            pendingMessage =
-                                "${action.label} arrives in phase ${action.destination.arrivesInPhase}"
+
+                        // Home is where we already are, and tapping it should not feel broken.
+                        HomeDestination.Home -> pendingMessage = "Already home"
+
+                        // Everything else opens a screen that says what it will be. A control
+                        // that goes somewhere can be tested; one that raises a message and
+                        // leaves you where you were cannot be told apart from a dead one.
+                        else -> {
+                            placeholder = action.destination.name
+                            screen = AppScreen.Placeholder
                         }
                     }
                 },
@@ -125,6 +141,26 @@ fun AppRoot() {
             )
 
             AppScreen.Progress -> ProgressRoute(modifier = Modifier.padding(insets))
+
+            AppScreen.Placeholder -> {
+                val destination = placeholder
+                    ?.let { name -> HomeDestination.entries.firstOrNull { it.name == name } }
+                    ?: HomeDestination.Menu
+                PlaceholderScreen(
+                    title = HomeAction.entries
+                        .firstOrNull { it.destination == destination }
+                        ?.label
+                        ?: destination.name,
+                    summary = destination.summary,
+                    engineStatus = destination.engineStatus,
+                    arrivesInPhase = destination.arrivesInPhase,
+                    onBack = {
+                        screen = AppScreen.Home
+                        placeholder = null
+                    },
+                    modifier = Modifier.padding(insets),
+                )
+            }
         }
     }
 }

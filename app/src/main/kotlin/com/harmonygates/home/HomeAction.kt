@@ -88,7 +88,14 @@ enum class HomeAction(
  * aspirational: it is what lets the home screen tell a player that a door is not open yet
  * instead of navigating them into an empty room.
  */
-enum class HomeDestination(val isImplemented: Boolean, val arrivesInPhase: Int) {
+enum class HomeDestination(
+    val isImplemented: Boolean,
+    val arrivesInPhase: Int,
+    /** What the screen will be. Shown on its placeholder until it exists. */
+    val summary: String = "",
+    /** What is already built behind it — which is usually more than the screen suggests. */
+    val engineStatus: String = "",
+) {
     /** The Phase 1 harness over the music domain. Live now. */
     TheoryLab(isImplemented = true, arrivesInPhase = 1),
 
@@ -109,24 +116,63 @@ enum class HomeDestination(val isImplemented: Boolean, val arrivesInPhase: Int) 
     /** Quick practice runs the same loop with no gate around it. */
     QuickPractice(isImplemented = true, arrivesInPhase = 4),
 
-    Menu(isImplemented = false, arrivesInPhase = 7),
+    Menu(
+        isImplemented = false,
+        arrivesInPhase = 7,
+        summary = "A slide-out menu for everything the sidebar does not have room for.",
+        engineStatus = "Every destination it would list is already reachable from the home " +
+            "screen, so this is a convenience rather than a door.",
+    ),
 
     /** The campaign map, from Phase 6. Next Gate and Resume open it at the gate to play. */
     Campaign(isImplemented = true, arrivesInPhase = 6),
     NextGate(isImplemented = true, arrivesInPhase = 6),
     Resume(isImplemented = true, arrivesInPhase = 6),
 
-    DailyChallenge(isImplemented = false, arrivesInPhase = 13),
+    DailyChallenge(
+        isImplemented = false,
+        arrivesInPhase = 13,
+        summary = "One exercise a day, drawn from what you are weakest at.",
+        engineStatus = "The mastery model already records per-skill weakness and schedules " +
+            "review, so the selection this needs is a query rather than new code.",
+    ),
 
     /** Mastery and attempt history, from Phase 5. */
     Progress(isImplemented = true, arrivesInPhase = 5),
     Profile(isImplemented = true, arrivesInPhase = 5),
-    EarTraining(isImplemented = false, arrivesInPhase = 8),
-    SightReading(isImplemented = false, arrivesInPhase = 9),
+    EarTraining(
+        isImplemented = false,
+        arrivesInPhase = 8,
+        summary = "Hear a chord and play it back, name a quality, or say what moved.",
+        engineStatus = "Built and tested: a pure-Kotlin mixer with a synthesised piano, four " +
+            "exercise families, and four authored gates waiting in the campaign. What is " +
+            "missing is only the screen.",
+    ),
+    SightReading(
+        isImplemented = false,
+        arrivesInPhase = 9,
+        summary = "Read a line of notation and play it in time.",
+        engineStatus = "Built and tested: exact rational durations, a Compose staff renderer, " +
+            "and an evaluator that scores pitch and rhythm separately. Three gates are " +
+            "authored. What is missing is the screen that puts a clock on it.",
+    ),
     /** Progression Run: the track, from Phase 10. */
     ProgressionLab(isImplemented = true, arrivesInPhase = 10),
-    VoicingLab(isImplemented = false, arrivesInPhase = 10),
-    Library(isImplemented = false, arrivesInPhase = 13),
+    VoicingLab(
+        isImplemented = false,
+        arrivesInPhase = 10,
+        summary = "Move between chords with the least motion that works.",
+        engineStatus = "The voice-leading engine scores total motion, largest leap and " +
+            "retained common tones, and two gates practise the material as progressions. " +
+            "The screen that shows a starting voicing and asks for the next one is not built.",
+    ),
+    Library(
+        isImplemented = false,
+        arrivesInPhase = 13,
+        summary = "The chord and progression vocabulary, to browse rather than be tested on.",
+        engineStatus = "Thirty chord formulas and eleven progressions are already data the app " +
+            "reads at startup. This is a reader for them.",
+    ),
 }
 
 /**

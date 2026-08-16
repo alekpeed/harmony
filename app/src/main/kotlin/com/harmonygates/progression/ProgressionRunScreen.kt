@@ -85,11 +85,22 @@ fun ProgressionRunScreen(
             designAspectRatio = track.aspectRatio,
         )
 
+        // The live HUD sits in its own opaque strip along the bottom rather than floating over
+        // the whole plate.
+        //
+        // The supplied plate is a full-screen mockup: it has play controls, a sound picker, a
+        // tips button and a milestone bar painted into it, which `interface/README.md` says a
+        // plate must not contain. Drawing the real controls transparently over the painted ones
+        // produced two of everything, overlapping — a working button on top of a picture of a
+        // button. Until a clean plate arrives, covering that strip is the honest fix: one set of
+        // controls, and they are the ones that do something.
         RunHud(
             state = state,
             onIntent = onIntent,
             modifier = Modifier
-                .fillMaxSize()
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(HarmonyTheme.colors.backgroundBase)
                 .safeDrawingPadding()
                 .padding(HarmonyTheme.spacing.large),
         )
@@ -152,9 +163,11 @@ private fun RunHud(
     onIntent: (ProgressionRunIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Wrap-height, not fill-height: the strip is only as tall as its controls, so the room and
+    // the track keep everything above it.
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.SpaceBetween,
+        verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.medium),
     ) {
         RunHeader(state)
         RunFooter(state = state, onIntent = onIntent)
