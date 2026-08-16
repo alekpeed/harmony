@@ -4,11 +4,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ripple
@@ -16,12 +19,12 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -39,16 +42,25 @@ import androidx.compose.ui.unit.dp
  * The artwork is fitted rather than cropped so no control can be pushed off-screen on an
  * unusual aspect ratio — a cropped background would silently move a hit region out of reach.
  *
- * Both the image and the regions are placed from [ArtworkGeometry.fittedBounds] rather than the
- * image being left to `ContentScale.Fit` and the regions computed separately. Two independent
- * implementations of "fit" is one too many: if they ever disagreed — because of a rounding
- * difference, an inset applied to one and not the other, or a window shape nobody tried — the
- * buttons would drift off the things they are drawn over, and it would look like a design
- * problem rather than an arithmetic one.
+ * The fitting is done by the layout rather than by arithmetic. An inner box is given the
+ * artwork's own aspect ratio and told to fill what it can, so it *becomes* the largest correctly
+ * shaped rectangle that fits, and is centred by its parent. The image then simply fills that box
+ * and every region is a fraction of it.
  *
- * The artwork is also inset by [WindowInsets.safeDrawing]. A landscape tablet puts its
+ * That is deliberate, and it replaces an earlier version that measured the container and
+ * computed the rectangle itself. Measuring is the fragile way round: a container that reports a
+ * width larger than what is actually visible — a window being resized, a parent handing down a
+ * looser constraint than the one it will draw within — produces an image scaled to the wrong
+ * number and clipped at the edge, which looks exactly like a cropped background. Sizing by
+ * aspect ratio cannot do that, because the box is never larger than the space it was given.
+ *
+ * The frame is inset by the system bars and the display cutout. A landscape tablet puts its
  * navigation bar down one side, and a frame drawn edge to edge slides that side of the design
- * underneath an opaque system bar — which is how a quarter of the home screen goes missing.
+ * underneath an opaque strip — which is how a quarter of the home screen goes missing.
+ *
+ * The IME is deliberately *not* in that set. A screen with no text field should never see a
+ * keyboard, and if one appears anyway — a hardware keyboard attaching, a stray focus — the
+ * frame should not resize itself around something that is not there.
  *
  * @param onRegionClick receives the region's Figma layer name, e.g. `HIT / Ear Trainer`.
  */
@@ -61,63 +73,64 @@ public fun ArtworkScreen(
     contentDescription: String? = null,
     background: Color = Color.Black,
 ) {
-    BoxWithConstraints(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(background)
-            // The design is landscape and complete; nothing of it may sit under a system bar.
-            .windowInsetsPadding(WindowInsets.safeDrawing),
+            .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.displayCutout)),
+        contentAlignment = Alignment.Center,
     ) {
-        val density = LocalDensity.current
-        val containerWidthPx = with(density) { maxWidth.toPx() }
-        val containerHeightPx = with(density) { maxHeight.toPx() }
-        val fitted = ArtworkGeometry.fittedBounds(spec, containerWidthPx, containerHeightPx)
-
-        Image(
-            painter = artwork,
-            contentDescription = contentDescription,
+        BoxWithConstraints(
             modifier = Modifier
-                .offset(
-                    x = with(density) { fitted.left.toDp() },
-                    y = with(density) { fitted.top.toDp() },
-                )
-                .size(
-                    width = with(density) { fitted.width.toDp() },
-                    height = with(density) { fitted.height.toDp() },
-                ),
-            // The rectangle is already the right shape, so this only fills it. The aspect ratio
-            // is preserved by the arithmetic above, not by the scale mode.
-            contentScale = ContentScale.FillBounds,
-        )
+                .fillMaxSize()
+                // The whole of the fitting, in one line: the largest box of the artwork's shape
+                // that the parent can hold, centred by the parent's alignment.
+                .aspectRatio(spec.nativeWidth.toFloat() / spec.nativeHeight.toFloat()),
+        ) {
+            val frameWidth = maxWidth
+            val frameHeight = maxHeight
 
-        // Largest first, so a region nested inside another still receives its taps.
-        for (region in spec.regionsInHitTestOrder) {
-            val rect = ArtworkGeometry.resolve(region, spec, containerWidthPx, containerHeightPx)
-            val interactionSource = remember(region.id) { MutableInteractionSource() }
-
-            Box(
-                modifier = Modifier
-                    .offset(
-                        x = with(density) { rect.left.toDp() },
-                        y = with(density) { rect.top.toDp() },
-                    )
-                    .size(
-                        width = with(density) { rect.width.toDp() },
-                        height = with(density) { rect.height.toDp() },
-                    )
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable(
-                        interactionSource = interactionSource,
-                        // The artwork already shows the control; the ripple is the only
-                        // feedback this layer adds, so touch still feels answered.
-                        indication = ripple(),
-                        onClick = { onRegionClick(region.id) },
-                    )
-                    .semantics {
-                        this.contentDescription = region.contentDescription
-                        role = Role.Button
-                    },
+            Image(
+                painter = artwork,
+                contentDescription = contentDescription,
+                modifier = Modifier.fillMaxSize(),
+                // The box is already the artwork's shape, so filling it preserves the aspect
+                // ratio and leaves no letterbox inside the frame for a region to be offset by.
+                contentScale = ContentScale.FillBounds,
             )
+
+            // Largest first, so a region nested inside another still receives its taps.
+            for (region in spec.regionsInHitTestOrder) {
+                val interactionSource = remember(region.id) { MutableInteractionSource() }
+
+                // Fractions of the frame, which is the artwork: no letterbox to offset by,
+                // because the frame has the artwork's own shape.
+                Box(
+                    modifier = Modifier
+                        .offset(
+                            x = frameWidth * region.bounds.left,
+                            y = frameHeight * region.bounds.top,
+                        )
+                        .size(
+                            width = frameWidth * region.bounds.width,
+                            height = frameHeight * region.bounds.height,
+                        )
+                        .clip(RoundedCornerShape(REGION_CORNER_RADIUS))
+                        .clickable(
+                            interactionSource = interactionSource,
+                            // The artwork already shows the control; the ripple is the only
+                            // feedback this layer adds, so touch still feels answered.
+                            indication = ripple(),
+                            onClick = { onRegionClick(region.id) },
+                        )
+                        .semantics {
+                            this.contentDescription = region.contentDescription
+                            role = Role.Button
+                        },
+                )
+            }
         }
     }
 }
+
+private val REGION_CORNER_RADIUS = 8.dp

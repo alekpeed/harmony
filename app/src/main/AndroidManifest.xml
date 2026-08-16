@@ -33,6 +33,12 @@
           warns that Android 16 ignores a fixed orientation on large screens — which is true, so
           this attribute is a request rather than a guarantee. `HarmonyLandscape` in the app
           enforces the same shape from inside the window, where the platform cannot overrule it.
+
+          `adjustNothing` because the app has no text input worth resizing the window for. The
+          controller is a MIDI keyboard; the only on-screen keyboard that can appear here is one
+          nobody asked for, and letting it shrink the window would rescale a frame that is
+          composed at a fixed 1536 x 1024 — which shows up as a screen that is inexplicably cut
+          off down one side.
         -->
         <activity
             android:name=".MainActivity"
@@ -40,6 +46,7 @@
             android:screenOrientation="sensorLandscape"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize|density"
             android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustNothing"
             tools:ignore="LockedOrientationActivity,DiscouragedApi"
             android:theme="@style/Theme.HarmonyGates">
             <intent-filter>
