@@ -5,6 +5,56 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 8 — Ear training and sampler
+
+**Commit:** see `git log` for `phase/8-ear-training`
+
+### Implemented
+
+- `core:audio`, a new module. `Mixer` is plain Kotlin: voice pool, resampling with linear
+  interpolation, envelope, per-voice gain, summed float buffer, soft limiter, PCM conversion —
+  and no allocation in the render loop, which 09 §6 asks for by name.
+- Voice stealing takes the oldest note rather than refusing the new one, and the pedal marks a
+  voice sustained rather than released, mirroring `ActiveNoteTracker` on the input side.
+- `InstrumentPreset`, `SampleZone`, `PcmSample`, `SampleBank` — 09 §3's model, with licence text
+  on every bank because §4 requires it.
+- `AudioTrackPlayer` — the Android sink and the render thread, and nothing else.
+- `SynthesisedBanks` generates a decaying harmonic tone per zone, so ear training works before a
+  sample licence is chosen. Honest about what it is rather than dressed up.
+- `EarStimulus`, `StimulusSpec`, `ReplayRule`, `ListeningRecord` — 07 §3's reproducible record
+  and §5's replay evidence.
+- `DefaultEarExerciseGenerator` — reproduce, identify-then-play, difference detection and
+  function hearing, every one producing an ordinary `ExerciseRequirement`.
+
+### Acceptance
+
+- *deterministic stimulus* — `the same seed produces the same stimulus` compares the whole
+  `StimulusSpec`, instrument and velocities included; `rendering is deterministic` does the same
+  for the mixer's output buffer.
+- *no blocking decode during timed playback* — `PcmSample` is decoded audio by construction, a
+  `SampleBank` refuses zones whose audio was never decoded, and `load` decodes on the IO
+  dispatcher before the render loop starts.
+- *MIDI answer evaluation reuses core evaluator* — `playing what you heard is correct, judged by
+  the ordinary evaluator` runs an ear answer through `DefaultPerformanceEvaluator`, and
+  `an ear exercise uses the same requirement type as a chord gate` pins 07 §1.
+
+### Tests
+
+451 passing, 0 failing. 37 new: `MixerTest` (21) and `EarTrainingTest` (16).
+
+### Known limitations
+
+1. **Nothing has been heard.** No audio device here. The mixer is verified by reading rendered
+   buffers — pitch by counting zero crossings, the limiter by counting full-scale frames — which
+   proves the arithmetic and not the sound.
+2. **No licensed samples.** The synthesised tone is a placeholder with a plausible envelope and
+   is not a piano. §4's three v1 instruments need a bank chosen and its licence recorded.
+3. **Two ear families return null.** Bass hearing and voice-leading hearing need a moving line,
+   and a line is Phase 9's score domain. Declining is deliberate; a half-version would be worse.
+4. **No ear-training screen.** The domain and the sampler exist; nothing plays them yet.
+
+---
+
 ## Phase: 7 — Assistance system
 
 **Commit:** see `git log` for `phase/7-assistance`
