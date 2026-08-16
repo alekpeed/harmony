@@ -16,6 +16,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -107,7 +109,14 @@ private fun SessionHeader(state: ChordGateUiState) {
             )
             LinearProgressIndicator(
                 progress = { exercise.exerciseNumber.toFloat() / exercise.totalExercises },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // A bar with no words is silence to a screen reader, and how far through a
+                    // session you are is information, not decoration.
+                    .semantics {
+                        contentDescription =
+                            "Exercise ${exercise.exerciseNumber} of ${exercise.totalExercises}"
+                    },
             )
         }
     }
@@ -131,7 +140,11 @@ private fun ExerciseBody(
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.medium)) {
-        HarmonyPanel(modifier = Modifier.fillMaxWidth()) {
+        HarmonyPanel(
+            // Merged so the task is announced as one sentence — instruction, chord, inversion —
+            // rather than as separate stops a player has to swipe between mid-exercise.
+            modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
+        ) {
             Column(verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
                 Text(
                     text = exercise.instruction,
@@ -195,8 +208,20 @@ private fun WaitingPanel(
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
-            OutlinedButton(onClick = { onIntent(ChordGateIntent.Hint) }) { Text("Hint") }
-            OutlinedButton(onClick = { onIntent(ChordGateIntent.Skip) }) { Text("Skip") }
+            OutlinedButton(
+                onClick = { onIntent(ChordGateIntent.Hint) },
+                // A hint is not free: 06 §9 scores an answer after one at half weight, and a
+                // player who cannot see the screen should be told that before pressing it.
+                modifier = Modifier.semantics {
+                    contentDescription = "Hint. Counts against this exercise."
+                },
+            ) { Text("Hint") }
+            OutlinedButton(
+                onClick = { onIntent(ChordGateIntent.Skip) },
+                modifier = Modifier.semantics {
+                    contentDescription = "Skip this exercise and move on"
+                },
+            ) { Text("Skip") }
         }
     }
 }

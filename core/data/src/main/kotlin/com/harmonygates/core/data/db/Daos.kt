@@ -39,6 +39,13 @@ public interface SessionDao {
 
     @Query("SELECT COUNT(*) FROM sessions WHERE profileId = :profileId AND gateId = :gateId")
     public suspend fun countForGate(profileId: String, gateId: String): Int
+
+    /** Every session, oldest first. Used by the progress export. */
+    @Query("SELECT * FROM sessions WHERE profileId = :profileId ORDER BY startedAtEpochMillis")
+    public suspend fun allForProfile(profileId: String): List<SessionEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    public suspend fun insertAll(sessions: List<SessionEntity>)
 }
 
 @Dao

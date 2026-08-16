@@ -2,8 +2,10 @@ package com.harmonygates.exercise
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.harmonygates.core.data.content.ContentRepository
@@ -57,6 +59,7 @@ sealed interface ChordGateIntent {
 class ChordGateViewModel(
     application: Application,
     private val request: SessionRequest,
+    private val savedState: SavedStateHandle,
     private val progress: ProgressRepository = HarmonyGraph.progress(application),
     private val content: ContentRepository = HarmonyGraph.content(application),
 ) : AndroidViewModel(application) {
@@ -77,13 +80,30 @@ class ChordGateViewModel(
 
     private val planner = GateSessionPlanner()
 
-    private val _sessionSeed = MutableStateFlow(System.currentTimeMillis())
+    /**
+     * The session that was running when the process was killed, if there was one.
+     *
+     * Read once, at construction. Everything else about the session is regenerated from it,
+     * because the generator is deterministic — see [SessionRestoration].
+     */
+    private val restored: SessionRestoration? = SessionRestoration.fromMap(
+        SessionRestoration.run {
+            mapOf(
+                KEY_SESSION_ID to savedState.get<String>(KEY_SESSION_ID),
+                KEY_SEED to savedState.get<Long>(KEY_SEED),
+                KEY_GATE_ID to savedState.get<String>(KEY_GATE_ID),
+                KEY_COMPLETED to savedState.get<Int>(KEY_COMPLETED),
+            )
+        },
+    )
+
+    private val _sessionSeed = MutableStateFlow(restored?.seed ?: System.currentTimeMillis())
     private val _policy = MutableStateFlow<ExercisePolicy?>(null)
     private val _title = MutableStateFlow<String?>(null)
 
     /** How many of the engine's records have already been written. */
     private var recordedCount = 0
-    private var sessionId: String = UUID.randomUUID().toString()
+    private var sessionId: String = restored?.sessionId ?: UUID.randomUUID().toString()
 
     val state: StateFlow<ChordGateUiState> = combine(
         engine.state,
@@ -140,6 +160,7 @@ class ChordGateViewModel(
                 }
                 ChordGateIntent.Restart -> {
                     _sessionSeed.value = System.currentTimeMillis()
+                    sessionId = UUID.randomUUID().toString()
                     startSession()
                 }
             }
@@ -166,7 +187,10 @@ class ChordGateViewModel(
         _policy.value = shaped
         _title.value = gate?.title
         recordedCount = 0
-        sessionId = UUID.randomUUID().toString()
+        // A restored session keeps its id, so the attempts already written stay attached to it
+        // rather than being orphaned under a session row nobody will ever read again.
+        sessionId = restored?.sessionId?.takeIf { it == sessionId } ?: UUID.randomUUID().toString()
+        saveForRestoration(seed)
 
         progress.startSession(
             profile,
@@ -200,10 +224,33 @@ class ChordGateViewModel(
             progress.recordAttempt(profile, sessionId, record, now)
         }
         recordedCount = records.size
+        saveForRestoration(_sessionSeed.value)
+    }
+
+    /**
+     * Keeps enough in saved state to rebuild this session after a process death.
+     *
+     * Four values, and no exercises: the generator is deterministic, so the seed and the
+     * position are the session. Written after each attempt is persisted rather than on a
+     * lifecycle callback, so what is saved always agrees with what is in the database.
+     */
+    private fun saveForRestoration(seed: Long) {
+        val state = SessionRestoration(
+            sessionId = sessionId,
+            seed = seed,
+            gateId = request.gateId?.value,
+            completedExercises = recordedCount,
+        )
+        state.toMap().forEach { (key, value) -> savedState[key] = value }
     }
 
     private suspend fun finishSession() {
         persistNewRecords()
+        // A finished session has nothing left to restore, and leaving it saved would make the
+        // next launch resume a session that is already over.
+        SessionRestoration.run {
+            listOf(KEY_SESSION_ID, KEY_SEED, KEY_GATE_ID, KEY_COMPLETED)
+        }.forEach { savedState.remove<Any>(it) }
         val profile = progress.currentProfile(HarmonyGraph.CONTENT_VERSION)
         progress.endSession(sessionId, Instant.now())
 
@@ -236,7 +283,7 @@ class ChordGateViewModel(
         /** Builds a view model for one particular session. */
         fun factory(application: Application, request: SessionRequest): ViewModelProvider.Factory =
             viewModelFactory {
-                initializer { ChordGateViewModel(application, request) }
+                initializer { ChordGateViewModel(application, request, createSavedStateHandle()) }
             }
     }
 }

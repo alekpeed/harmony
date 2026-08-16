@@ -606,3 +606,59 @@ family. So the generator now passes a transform family through to the policy ins
 for a recipe, and the content check accepts either route. The drop gates are authored as
 `ExactVoicing`, because a drop voicing is judged on its spacing: the same four tones in close
 position are a different answer.
+
+---
+
+## D46 — A backup carries evidence, not conclusions
+
+**Phase 14.** `ProgressBackup` exports sessions, attempts and gate completions. It does not
+export skill mastery.
+
+Mastery is derived from the attempts, so a file carrying an estimate could be restored into a
+build whose weighting had changed and would then disagree with its own attempt history forever.
+The import calls the same `rebuildMastery` the app uses, which means a restored profile is
+scored by exactly the code that scores a played one. It is the same rule the campaign already
+follows for gate status: store what happened, re-derive what it means.
+
+Attempts whose session is not in the file are dropped rather than imported — the schema makes a
+session an attempt's parent — and the count of dropped attempts is returned rather than swallowed.
+A truncated import that says nothing is how somebody loses six months quietly.
+
+The decisions live in `ProgressBackupService` behind a narrow `ProgressBackupStore`, so all of
+the above is tested on the JVM. Room's own round trip still needs an emulator; these rules do
+not, and they are the part that can be wrong.
+
+---
+
+## D47 — Determinism is the whole of the process-death story
+
+**Phase 14.** `SessionRestoration` saves four values: session id, seed, gate id, position.
+
+The exercise generator is deterministic — same seed, same position, same exercises — so a
+killed session does not need its exercises saved. It needs the two numbers that regenerate them.
+The attempts already answered were written to the database as each one was judged, so they were
+never at risk.
+
+A half-written saved state returns null rather than a partly-filled object. Resuming under an
+old session id with a lost seed would attach new attempts to a session that was about something
+else, and starting fresh is a better outcome than that. The current attempt is deliberately not
+restored: a player whose tablet was killed mid-chord gets that exercise again rather than being
+marked wrong for it.
+
+---
+
+## D48 — The performance budgets that can be measured here, are
+
+**Phase 14.** `PerformanceBudgetTest` measures chord evaluation and exercise generation against
+14 §8's own numbers.
+
+"Measure rather than assume" applies to whatever can be measured. Two of the five budgets are
+pure computation and run anywhere; the other three — MIDI-to-pixel latency, audio glitches,
+dropped Compose frames — need the tablet, and the status note says so rather than implying
+coverage that does not exist.
+
+The measurements warm up and then take a median rather than a mean, because on a shared build
+machine one run in twenty is interrupted by something unrelated and a mean lets that run fail a
+build that is not broken. They are there to catch an order-of-magnitude regression — a realizer
+that started allocating per note — not to certify a number that would only be true of this
+machine.

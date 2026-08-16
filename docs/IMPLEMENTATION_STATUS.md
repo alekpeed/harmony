@@ -5,6 +5,65 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 14 — Quality pass
+
+**Commit:** see `git log` for `phase/14-quality`
+
+### Implemented
+
+- **Progress export and import.** `ProgressBackup` is a JSON file of sessions, attempts and gate
+  completions — 11 §7's "local JSON export/import of learning progress". Mastery is deliberately
+  not in it and is rebuilt on import (D46).
+- **Process death survived.** `SessionRestoration` keeps four values in `SavedStateHandle`;
+  everything else about a session is regenerated from the seed, because the generator is
+  deterministic (D47). A finished session clears its saved state so the next launch does not
+  resume something that is already over.
+- **Performance budgets measured.** `PerformanceBudgetTest` checks 14 §8's two computable
+  budgets — chord evaluation under 10 ms, exercise generation under 50 ms — plus a whole
+  20-exercise session and the 360-chord vocabulary (D48). All are comfortably inside.
+- **Accessibility pass on the exercise screen.** The progress bar announces its position, the
+  task panel merges into one announcement instead of four, and the hint button says what a hint
+  costs before it is pressed.
+
+### Acceptance
+
+Phase 14 lists seven deliverables. Three are done and four cannot be done here:
+
+| Deliverable | State |
+| --- | --- |
+| data export/import | Done, 9 tests. |
+| process/state robustness | Done, 10 tests. |
+| accessibility pass | Partly: semantics on the exercise screen; the design system's components already carry theirs, and `TokenTest` measures contrast. The other screens have not been audited. |
+| actual tablet profiling | **Blocked.** No tablet. |
+| latency tuning | **Blocked.** No keyboard, no display. |
+| MIDI compatibility testing | **Blocked.** No hardware to be compatible with. |
+| audio tuning | **Blocked.** The mixer is verified by reading rendered samples; nobody has heard it. |
+
+### Tests
+
+611 passing, 0 failing. 24 new: `ProgressBackupTest` (9), `SessionRestorationTest` (10),
+`PerformanceBudgetTest` (5).
+
+### What the tests caught
+
+- Nothing broke, but the budget tests are worth having for what they will catch later rather
+  than what they caught now. The one thing lint caught: `SavedStateHandle()`'s no-argument
+  constructor is `@VisibleForTesting`, so the view model takes the handle rather than defaulting
+  it.
+
+### Known limitations
+
+1. **Four of seven deliverables need hardware.** They are the same four that have been blocked
+   since phase 4, and they remain the release blocker.
+2. **Export and import are not reachable from any screen.** The service and its Room store both
+   exist and are tested; no settings screen calls them.
+3. **Only the exercise screen has had an accessibility pass.** The campaign, progress, MIDI
+   diagnostics and progression screens have not been audited.
+4. **Restoration is wired into the chord gate only.** The progression run has the same problem
+   and not the same fix.
+
+---
+
 ## Phase: 13 — Full campaign content
 
 **Commit:** see `git log` for `phase/13-campaign-content`
