@@ -31,8 +31,15 @@
           Two lint checks are suppressed here, and only here. `LockedOrientationActivity` is the
           general advice to stay adaptive, which this app is deliberately not. `DiscouragedApi`
           warns that Android 16 ignores a fixed orientation on large screens — which is true, so
-          this attribute is a request rather than a guarantee. `HarmonyLandscape` in the app
-          enforces the same shape from inside the window, where the platform cannot overrule it.
+          this attribute is a request rather than a guarantee. Declining it is harmless: every
+          frame is sized by its own aspect ratio, so a window of any shape gets the whole design
+          upright, as large as it will go.
+
+          `singleTask` so the app always runs in a task of its own. Tapping Open straight after
+          an install, or launching from a file-transfer app or a share sheet, otherwise starts
+          this activity inside the caller's task — and inherits the caller's window, which on a
+          tablet is a small one with the rest of the screen left dark around it. Its own task
+          means its own window, at whatever size the system gives a launched app.
 
           `adjustNothing` because the app has no text input worth resizing the window for. The
           controller is a MIDI keyboard; the only on-screen keyboard that can appear here is one
@@ -47,6 +54,7 @@
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize|density"
             android:resizeableActivity="true"
             android:windowSoftInputMode="adjustNothing"
+            android:launchMode="singleTask"
             tools:ignore="LockedOrientationActivity,DiscouragedApi"
             android:theme="@style/Theme.HarmonyGates">
             <intent-filter>

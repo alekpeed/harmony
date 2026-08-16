@@ -1,52 +1,31 @@
 package com.harmonygates
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 
 /**
- * Keeps the app horizontal, whatever the window turns out to be.
+ * Kept as a pass-through, deliberately, with its history in the comment.
  *
- * `android:screenOrientation` in the manifest is the first line of defence and, on the tablets
- * this app is for, no longer a reliable one: from Android 16 the platform ignores a fixed
- * orientation on large screens, which is exactly what lint's `DiscouragedApi` says when it
- * objects to the attribute. The request is still made — it works on Android 15 and below, and on
- * any device that still honours it — but it cannot be depended on.
+ * This used to enforce a landscape shape from inside the window: given a portrait window it laid
+ * the content out at the window's dimensions swapped and turned it a quarter turn, so the
+ * interface was always horizontal whichever way the tablet was held.
  *
- * So the shape is enforced from inside the window as well, where nothing can overrule it. Given
- * a portrait window, the content is laid out at the window's own dimensions swapped, and turned
- * a quarter turn. The result is that the interface is always horizontal: hold the tablet
- * sideways and it is upright, hold it upright and the interface asks to be turned.
+ * That was wrong in a way that only showed up on a real device. It assumes a portrait window
+ * means a portrait *tablet*, and it does not: a small window is also portrait. Launching the app
+ * from another app — a file transfer tool, a share sheet — hands it a tall narrow window, and
+ * the rotation would then lay the whole interface out larger than the window it was given and
+ * turn it on its side. On screen that reads as an app that opens in the wrong place with its
+ * edges cut off, which took most of an afternoon to attribute to the right cause because the
+ * same build launched from the home screen was perfect.
  *
- * That is a deliberate demand on the player rather than a failure to adapt. Every approved frame
- * is composed at 1536 x 1024; the piano keyboard, the progression track's perspective and the
- * home artwork are all landscape designs, and a portrait version of them is not a narrower
- * layout but a different screen that nobody has drawn. Reflowing into one would be inventing
- * design, which is the thing this project does not do.
+ * It is no longer needed. Every frame is now sized by its own aspect ratio, so a window of any
+ * shape gets the whole design, upright, as large as it will go — a narrow window simply gets a
+ * smaller picture rather than a rotated one. The manifest still asks for landscape, which is a
+ * request the platform may decline; declining it is now harmless.
+ *
+ * Left in place rather than deleted so this note has somewhere to live, and so the wrapper is
+ * still there if a future screen genuinely needs to fight the window.
  */
 @Composable
 fun HarmonyLandscape(content: @Composable () -> Unit) {
-    BoxWithConstraints {
-        if (maxWidth >= maxHeight) {
-            content()
-            return@BoxWithConstraints
-        }
-
-        // `requiredSize` rather than `size`: the child is deliberately laid out larger than the
-        // constraints allow in one axis, because after the rotation that axis is the other one.
-        Box(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .requiredSize(width = maxHeight, height = maxWidth)
-                .rotate(ONE_QUARTER_TURN),
-        ) {
-            content()
-        }
-    }
+    content()
 }
-
-private const val ONE_QUARTER_TURN = 90f
