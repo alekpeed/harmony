@@ -20,41 +20,29 @@
         android:theme="@style/Theme.HarmonyGates">
 
         <!--
-          Landscape only, deliberately.
+          Landscape is requested because every approved frame is composed for a landscape tablet.
+          Android 16 may decline that request on large screens, so RequireLandscape remains the
+          runtime guard instead of attempting to rotate or stretch the artwork.
 
-          Every approved frame is composed at 1536 x 1024, and the app is played sitting at a
-          keyboard with the tablet propped in front of it. A portrait layout is not a narrower
-          version of these screens, it is a different design that nobody has drawn: the piano
-          keyboard, the progression track's perspective and the home artwork all assume the wide
-          frame. Locking it is more honest than reflowing into something unapproved.
+          Do not opt out of activity recreation for orientation/screen-size/density changes here.
+          The activity contains saveable Compose state, and recreation is the reliable boundary
+          when Android moves the app between full-screen, multi-window and differently sized task
+          windows. Suppressing those configuration changes can leave an existing activity attached
+          to window history that no longer matches the current launch.
 
-          Two lint checks are suppressed here, and only here. `LockedOrientationActivity` is the
-          general advice to stay adaptive, which this app is deliberately not. `DiscouragedApi`
-          warns that Android 16 ignores a fixed orientation on large screens — which is true, so
-          this attribute is a request rather than a guarantee. Declining it is harmless: every
-          frame is sized by its own aspect ratio, so a window of any shape gets the whole design
-          upright, as large as it will go.
+          Likewise, use the default launch mode. This activity does not need singleTask semantics;
+          reusing a previous task is specifically undesirable for a full-screen artwork surface,
+          because that task may have retained freeform or multi-window bounds.
 
-          `singleTask` so the app always runs in a task of its own. Tapping Open straight after
-          an install, or launching from a file-transfer app or a share sheet, otherwise starts
-          this activity inside the caller's task — and inherits the caller's window, which on a
-          tablet is a small one with the rest of the screen left dark around it. Its own task
-          means its own window, at whatever size the system gives a launched app.
-
-          `adjustNothing` because the app has no text input worth resizing the window for. The
-          controller is a MIDI keyboard; the only on-screen keyboard that can appear here is one
-          nobody asked for, and letting it shrink the window would rescale a frame that is
-          composed at a fixed 1536 x 1024 — which shows up as a screen that is inexplicably cut
-          off down one side.
+          adjustNothing is retained because the app has no text-input workflow that should resize
+          the artwork around an IME.
         -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="sensorLandscape"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize|density"
             android:resizeableActivity="true"
             android:windowSoftInputMode="adjustNothing"
-            android:launchMode="singleTask"
             tools:ignore="LockedOrientationActivity,DiscouragedApi"
             android:theme="@style/Theme.HarmonyGates">
             <intent-filter>
