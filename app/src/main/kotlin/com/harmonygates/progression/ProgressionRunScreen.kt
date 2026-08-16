@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.booleanResource
 import androidx.compose.ui.res.painterResource
@@ -63,14 +63,6 @@ fun ProgressionRunRoute(
 
 private enum class Selector { Progression, Voicing, Key, Sound }
 
-/**
- * Production Progression Run screen.
- *
- * The approved room is the interface. The lower control console remains visible as part of the
- * approved artwork and receives an interaction layer at the exact design coordinates. Runtime
- * chord orbs are independent of the plate; the old glowing path is intentionally suppressed.
- * Temporary selectors are modal overlays and always dismiss after a selection or Close.
- */
 @Composable
 fun ProgressionRunScreen(
     state: ProgressionRunUiState,
@@ -88,6 +80,7 @@ fun ProgressionRunScreen(
     ) {
         BackgroundPlate()
 
+        // Progression remains visible and animated, but the old glowing line is gone.
         ProgressionTrack(
             geometry = track.geometry,
             orbs = animatedOrbs(state, track),
@@ -143,33 +136,16 @@ private fun animatedOrbs(state: ProgressionRunUiState, track: TrackSpec): List<C
     return state.orbs.map { orb -> orb.copy(slot = orb.slot + offset) }
 }
 
-/** Live values cover the prototype numbers that are baked into the approved static plate. */
 @Composable
 private fun RuntimeReadouts(state: ProgressionRunUiState) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val w = maxWidth
         val h = maxHeight
-
-        Readout(
-            text = "${state.goalProgress} / 5",
-            modifier = Modifier.offset(w * 0.943f, h * 0.289f),
-        )
-        Readout(
-            text = state.runsCompleted.toString(),
-            modifier = Modifier.offset(w * 0.943f, h * 0.526f),
-        )
-        Readout(
-            text = state.bestStreak.toString(),
-            modifier = Modifier.offset(w * 0.943f, h * 0.559f),
-        )
-        Readout(
-            text = "${state.accuracyPercent}%",
-            modifier = Modifier.offset(w * 0.935f, h * 0.592f),
-        )
-        Readout(
-            text = state.elapsedLabel,
-            modifier = Modifier.offset(w * 0.922f, h * 0.625f),
-        )
+        Readout("${state.goalProgress} / 5", Modifier.offset(w * 0.943f, h * 0.289f))
+        Readout(state.runsCompleted.toString(), Modifier.offset(w * 0.943f, h * 0.526f))
+        Readout(state.bestStreak.toString(), Modifier.offset(w * 0.943f, h * 0.559f))
+        Readout("${state.accuracyPercent}%", Modifier.offset(w * 0.935f, h * 0.592f))
+        Readout(state.elapsedLabel, Modifier.offset(w * 0.922f, h * 0.625f))
     }
 }
 
@@ -177,7 +153,7 @@ private fun RuntimeReadouts(state: ProgressionRunUiState) {
 private fun Readout(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
-        modifier = modifier.background(HarmonyTheme.colors.surface.copy(alpha = 0.94f)),
+        modifier = modifier.background(HarmonyTheme.colors.surface.copy(alpha = 0.96f)),
         color = HarmonyTheme.colors.accent,
         fontSize = HarmonyTheme.typography.caption,
     )
@@ -192,16 +168,16 @@ private fun InteractionLayer(
     onOpenSelector: (Selector) -> Unit,
 ) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        // Left navigation. The whole sidebar remains usable on this screen.
+        // Full sidebar navigation.
         Hit(10, 286, 255, 338) { onNavigate(HomeDestination.Home) }
         Hit(10, 384, 255, 432) { onNavigate(HomeDestination.ChordGate) }
-        Hit(10, 432, 255, 480) { onNavigate(HomeDestination.EarTrainer) }
+        Hit(10, 432, 255, 480) { onNavigate(HomeDestination.EarTraining) }
         Hit(10, 480, 255, 528) { onNavigate(HomeDestination.SightReading) }
-        Hit(10, 528, 255, 576) { onNavigate(HomeDestination.VoiceLeading) }
+        Hit(10, 528, 255, 576) { onNavigate(HomeDestination.VoicingLab) }
         Hit(10, 576, 255, 624) { onNavigate(HomeDestination.TheoryLab) }
         Hit(10, 624, 255, 672) { onNavigate(HomeDestination.DailyChallenge) }
-        Hit(10, 672, 255, 720) { onNavigate(HomeDestination.Journey) }
-        Hit(10, 720, 255, 768) { onNavigate(HomeDestination.Map) }
+        Hit(10, 672, 255, 720) { onNavigate(HomeDestination.Campaign) }
+        Hit(10, 720, 255, 768) { onNavigate(HomeDestination.Campaign) }
         Hit(10, 768, 255, 816) { onNavigate(HomeDestination.QuickPractice) }
         Hit(10, 816, 255, 864) { onNavigate(HomeDestination.Progress) }
         Hit(10, 864, 255, 910) { onNavigate(HomeDestination.Library) }
@@ -229,14 +205,12 @@ private fun InteractionLayer(
         Hit(1012, 838, 1078, 890) { onIntent(ProgressionRunIntent.DecreaseOctave) }
         Hit(1155, 838, 1230, 890) { onIntent(ProgressionRunIntent.IncreaseOctave) }
 
-        // Options. Real switches cover the baked prototype switches so their state is truthful.
+        // Real switches cover the baked prototype switches so state changes are visible.
         PositionedSwitch(1435, 704, state.setup.loop) { onIntent(ProgressionRunIntent.ToggleLoop) }
         PositionedSwitch(1435, 746, state.highlightRoot) { onIntent(ProgressionRunIntent.ToggleHighlightRoot) }
         PositionedSwitch(1435, 789, state.showGuideTones) { onIntent(ProgressionRunIntent.ToggleGuideTones) }
         PositionedSwitch(1435, 831, state.autoNextGate) { onIntent(ProgressionRunIntent.ToggleAutoNextGate) }
 
-        // Tapping the visible progression/voicing status area also opens setup rather than trapping
-        // the user in a permanent panel.
         Hit(295, 655, 520, 700) { onOpenSelector(Selector.Voicing) }
     }
 }
@@ -307,21 +281,18 @@ private fun SelectorPanel(
                         onDismiss()
                     }
                 }
-
                 Selector.Voicing -> VoicingStyle.entries.forEach { style ->
                     ChoiceButton(style.label) {
                         onIntent(ProgressionRunIntent.ChooseStyle(style))
                         onDismiss()
                     }
                 }
-
                 Selector.Key -> state.availableKeys.forEach { key ->
                     ChoiceButton(key) {
                         onIntent(ProgressionRunIntent.ChooseKey(key))
                         onDismiss()
                     }
                 }
-
                 Selector.Sound -> state.availableSounds.forEach { sound ->
                     ChoiceButton(sound) {
                         onIntent(ProgressionRunIntent.ChooseSound(sound))
