@@ -1,0 +1,87 @@
+name: Release
+
+# 17_BUILD_CI_INSTALL_RELEASE.md §2 and §5: a tag produces a signed APK for sideloading and an
+# App Bundle for Play, both as workflow artifacts. Signing secrets come from GitHub encrypted
+# secrets (§3) and are never in the repository.
+#
+# The build does not fail when the secrets are absent: an unsigned release APK still proves the
+# shrinker and the resource stripper are happy, which is worth knowing on a fork that has no
+# keystore. What it produces is then clearly labelled unsigned.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Why this release is being built
+        required: false
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Signed APK and bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          # Must match javaToolchain in gradle/libs.versions.toml.
+          java-version: '21'
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Verify
+        # The same gate a pull request passes. A release that skipped it would be the one build
+        # nobody checked.
+        run: ./gradlew verifyHarmony --no-daemon
+
+      - name: Decode keystore
+        id: keystore
+        # Absent secrets are not an error: the next step produces an unsigned build instead.
+        env:
+          KEYSTORE_BASE64: ${{ secrets.HARMONY_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            echo "No keystore secret present; building unsigned."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/harmony.jks"
+          echo "signed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Assemble release APK and bundle
+        env:
+          HARMONY_KEYSTORE_FILE: ${{ steps.keystore.outputs.signed == 'true' && format('{0}/harmony.jks', runner.temp) || '' }}
+          HARMONY_KEYSTORE_PASSWORD: ${{ secrets.HARMONY_KEYSTORE_PASSWORD }}
+          HARMONY_KEY_ALIAS: ${{ secrets.HARMONY_KEY_ALIAS }}
+          HARMONY_KEY_PASSWORD: ${{ secrets.HARMONY_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease bundleRelease --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: harmony-gates-${{ steps.keystore.outputs.signed == 'true' && 'signed' || 'unsigned' }}-apk
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: harmony-gates-${{ steps.keystore.outputs.signed == 'true' && 'signed' || 'unsigned' }}-aab
+          path: app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Placeholder platform theme. Everything the player sees is drawn by Compose, so this only
+      needs to set the window background and hide the action bar. The real visual system
+      arrives with the Figma phase (non-negotiable rule 10).
+    -->
+    <style name="Theme.HarmonyGates" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:statusBarColor">@color/window_background</item>
+        <item name="android:navigationBarColor">@color/window_background</item>
+    </style>
+</resources>

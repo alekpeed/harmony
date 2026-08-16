@@ -1,0 +1,218 @@
+package com.harmonygates.core.music.exercise
+
+import com.harmonygates.core.music.chord.ChordFormulaId
+import com.harmonygates.core.music.eartraining.EarTaskFamily
+import com.harmonygates.core.music.harmony.DominantAlteration
+import com.harmonygates.core.music.performance.OnsetPolicy
+import com.harmonygates.core.music.pitch.SpelledPitchClass
+import com.harmonygates.core.music.progression.VoicingStyle
+import com.harmonygates.core.music.score.ReadingMaterial
+import com.harmonygates.core.music.voicing.Inversion
+import com.harmonygates.core.music.voicing.VoicingFamily
+import com.harmonygates.core.music.voicing.VoicingPolicy
+
+/** Stable identifiers. Content JSON references these strings (21_CONTENT_AUTHORING_GUIDE.md §6). */
+@JvmInline
+public value class ExercisePolicyId(public val value: String) {
+    init {
+        require(value.isNotBlank()) { "Exercise policy id must not be blank" }
+    }
+
+    override fun toString(): String = value
+}
+
+@JvmInline
+public value class ExerciseDefinitionId(public val value: String) {
+    override fun toString(): String = value
+}
+
+@JvmInline
+public value class ExerciseInstanceId(public val value: String) {
+    override fun toString(): String = value
+}
+
+@JvmInline
+public value class SkillId(public val value: String) {
+    init {
+        require(value.isNotBlank()) { "Skill id must not be blank" }
+    }
+
+    override fun toString(): String = value
+}
+
+/**
+ * What a gate actually asks the player to do.
+ *
+ * 01_PRODUCT_AND_FUNCTIONAL_SCOPE.md §5 is emphatic that the exercise screen is compositional
+ * rather than one screen per combination, so this names the four *inputs* a gate can take —
+ * hands, ears, a moving progression, a staff — and not four screens.
+ */
+public enum class GateActivity {
+    /** A chord symbol is shown and played. */
+    CHORD,
+
+    /** Something is heard and reproduced or identified. */
+    EAR,
+
+    /** A progression runs, and each chord is played as it arrives. */
+    PROGRESSION,
+
+    /** Notation is read and played. */
+    READING,
+}
+
+/**
+ * How an answer is judged.
+ *
+ * 01_PRODUCT_AND_FUNCTIONAL_SCOPE.md §6: "Every exercise explicitly declares how it is
+ * evaluated... No global 'chord equals set of pitch classes' shortcut is sufficient." So the
+ * mode is part of the content, chosen per exercise, never inferred.
+ */
+public enum class AnswerMode {
+    /** Any octave, any voicing: "play a Cmaj7". */
+    PitchClasses,
+
+    /** Degree-aware, against a voicing policy. Rootless and shell families need this. */
+    ChordPolicy,
+
+    /** The exact notes shown, including doublings. */
+    ExactVoicing,
+}
+
+/**
+ * What the player is shown (01_PRODUCT_AND_FUNCTIONAL_SCOPE.md §5).
+ *
+ * "Do not build each combination as a separate screen. The exercise screen is compositional."
+ * So these are independent switches rather than named difficulty levels, and Phase 7's
+ * assistance profiles will set them rather than replace them.
+ */
+public data class PresentationSpec(
+    val showChordSymbol: Boolean = true,
+    val showSpelledNoteNames: Boolean = false,
+    val showKeyboardTargets: Boolean = false,
+    val showInversionLabel: Boolean = false,
+    val showRomanNumeral: Boolean = false,
+    val showStaffNotation: Boolean = false,
+    val showTargetBassNote: Boolean = false,
+    val showVoicingName: Boolean = false,
+) {
+    public companion object {
+        /** Everything the player needs handed to them. The first trials of a gate. */
+        public val Guided: PresentationSpec = PresentationSpec(
+            showChordSymbol = true,
+            showSpelledNoteNames = true,
+            showKeyboardTargets = true,
+            showInversionLabel = true,
+        )
+
+        /** Symbol only. The player supplies the rest. */
+        public val Independent: PresentationSpec = PresentationSpec(showChordSymbol = true)
+    }
+}
+
+/**
+ * What an exercise may generate, and how it is judged.
+ *
+ * The checklist in 21_CONTENT_AUTHORING_GUIDE.md §4. Adding a lesson should mean writing one of
+ * these, not writing a screen — so everything that varies between exercises of the same shape
+ * lives here as data.
+ *
+ * @param rootPool roots the generator may choose from. Empty means all twelve.
+ * @param formulaPool chord qualities it may choose from.
+ * @param inversionPool inversions it may ask for. Empty means root position only.
+ * @param alterationPool alteration sets a dominant may be dressed with. Empty means plain.
+ * @param voicingPolicy the answer policy, used when [answerMode] is degree-aware.
+ * @param sessionLength how many exercises a session of this policy runs for.
+ */
+public data class ExercisePolicy(
+    val id: ExercisePolicyId,
+    val skillIds: Set<SkillId>,
+    val rootPool: List<SpelledPitchClass> = emptyList(),
+    val formulaPool: List<ChordFormulaId> = emptyList(),
+    val inversionPool: List<Inversion> = listOf(Inversion.ROOT),
+    /**
+     * Alterations to dress a dominant with, one authored set per entry.
+     *
+     * A list of sets rather than a set of alterations, because `C7b9` and `C7#9b13` are two
+     * exercises and "b9, #9, b13" would be an instruction to sound all three at once. Each
+     * entry is one chord the gate may ask for. Region 10 of 03_JAZZ_CURRICULUM.md teaches
+     * these as transformations of a plain dominant, so the pool alters the formula rather
+     * than replacing it.
+     */
+    val alterationPool: List<Set<DominantAlteration>> = emptyList(),
+    val answerMode: AnswerMode = AnswerMode.PitchClasses,
+    val voicingPolicy: VoicingPolicy? = null,
+    /**
+     * A named shape, resolved against each chord as it is generated.
+     *
+     * A rootless A voicing of `Cmaj7` and of `G7` are different sets of notes, so a family
+     * cannot be flattened into one [VoicingPolicy] ahead of time the way a fixed constraint can.
+     * The family is the authored intent; `VoicingFamilies.recipe` turns it into the policy for
+     * a particular chord at generation time.
+     */
+    val voicingFamily: VoicingFamily? = null,
+    /**
+     * The ear-training family this gate asks for, when it is an ear gate.
+     *
+     * The rest of the policy still applies: an ear exercise draws its material from the same
+     * root and formula pools a chord exercise would, because the answer is a chord either way.
+     * What changes is that the player hears it instead of reading it.
+     */
+    val earTaskFamily: EarTaskFamily? = null,
+    /** The progression this gate runs, by id, when it is a progression gate. */
+    val progressionId: String? = null,
+    /** How much freedom each chord of a progression allows. Only meaningful with [progressionId]. */
+    val voicingStyle: VoicingStyle? = null,
+    /** What the staff shows, when it is a sight-reading gate. */
+    val readingMaterial: ReadingMaterial? = null,
+    val presentation: PresentationSpec = PresentationSpec.Independent,
+    val onsetPolicy: OnsetPolicy = OnsetPolicy.NormalRoll,
+    val pitchRange: IntRange = DEFAULT_RANGE,
+    val sessionLength: Int = DEFAULT_SESSION_LENGTH,
+) {
+    init {
+        require(formulaPool.isNotEmpty()) { "An exercise policy needs at least one chord quality" }
+        require(alterationPool.none { it.isEmpty() }) {
+            "An alteration set with nothing in it is a plain dominant; leave it out rather " +
+                "than authoring an exercise that silently is not the one it names"
+        }
+        require(activityMarkers <= 1) {
+            "Policy $id asks to be $activityMarkers kinds of exercise at once. A gate is one " +
+                "activity: chords, ears, a progression, or the staff."
+        }
+        require(voicingStyle == null || progressionId != null) {
+            "Policy $id sets a voicing style with no progression to apply it to"
+        }
+        require(inversionPool.isNotEmpty()) { "An exercise policy needs at least one inversion" }
+        require(sessionLength > 0) { "A session needs at least one exercise" }
+        require(answerMode != AnswerMode.ChordPolicy || voicingPolicy != null || voicingFamily != null) {
+            "A degree-aware policy match needs either a voicing policy or a named family"
+        }
+    }
+
+    /**
+     * What kind of exercise this policy describes.
+     *
+     * Derived rather than stored, for the same reason gate status is: two fields that can
+     * disagree eventually do. A policy that names no activity is a chord policy, which is what
+     * every gate written before phase 13 is.
+     */
+    public val activity: GateActivity
+        get() = when {
+            earTaskFamily != null -> GateActivity.EAR
+            progressionId != null -> GateActivity.PROGRESSION
+            readingMaterial != null -> GateActivity.READING
+            else -> GateActivity.CHORD
+        }
+
+    private val activityMarkers: Int
+        get() = listOfNotNull(earTaskFamily, progressionId, readingMaterial).size
+
+    public companion object {
+        /** Two octaves either side of middle C. */
+        public val DEFAULT_RANGE: IntRange = 36..96
+
+        /** 02_GAME_LOOP_AND_PROGRESSION.md §3: a gate session runs 8–24 exercises. */
+        public const val DEFAULT_SESSION_LENGTH: Int = 20
+    }
+}

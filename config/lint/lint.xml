@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Shared lint configuration.
+
+  Every module runs lint with warningsAsErrors, so anything left enabled here genuinely blocks
+  a merge. The three checks below are turned off deliberately, each for a stated reason; a
+  fourth kind of suppression — "it was noisy" — is not allowed.
+-->
+<lint>
+
+    <!--
+      The dependency-freshness checks compare against whatever was published this morning, so
+      they fail a build on a day nobody touched the repository. Version bumps are a deliberate
+      act recorded in gradle/libs.versions.toml, not a CI gate. Still reported, never fatal.
+    -->
+    <issue id="NewerVersionAvailable" severity="informational" />
+    <issue id="GradleDependency" severity="informational" />
+
+    <!--
+      targetSdk deliberately trails compileSdk. 00_README_START_HERE.md sets the baseline as
+      "compile SDK: API 37, initial target SDK: API 36, with an explicit API 37
+      validation/upgrade task before public distribution". That task is tracked in
+      docs/IMPLEMENTATION_STATUS.md and belongs to the Phase 15 release work, not to Phase 0.
+    -->
+    <issue id="OldTargetApi" severity="informational" />
+
+</lint>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      MIDI is the primary controller (00_README_START_HERE.md). The feature is declared as not
+      required so the app still installs on a tablet that has no MIDI stack; the app detects
+      support at runtime and says so, which 18_ACCEPTANCE_CRITERIA.md requires.
+    -->
+    <uses-feature
+        android:name="android.software.midi"
+        android:required="false" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.HarmonyGates">
+
+        <!--
+          Landscape is requested because every approved frame is composed for a landscape tablet.
+          Android 16 may decline that request on large screens, so RequireLandscape remains the
+          runtime guard instead of attempting to rotate or stretch the artwork.
+
+          Do not opt out of activity recreation for orientation/screen-size/density changes here.
+          The activity contains saveable Compose state, and recreation is the reliable boundary
+          when Android moves the app between full-screen, multi-window and differently sized task
+          windows. Suppressing those configuration changes can leave an existing activity attached
+          to window history that no longer matches the current launch.
+
+          Likewise, use the default launch mode. This activity does not need singleTask semantics;
+          reusing a previous task is specifically undesirable for a full-screen artwork surface,
+          because that task may have retained freeform or multi-window bounds.
+
+          adjustNothing is retained because the app has no text-input workflow that should resize
+          the artwork around an IME.
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustNothing"
+            tools:ignore="LockedOrientationActivity,DiscouragedApi"
+            android:theme="@style/Theme.HarmonyGates">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

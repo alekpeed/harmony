@@ -1,0 +1,21 @@
+{
+  "id": "dom7-inversions-all-roots",
+  "skillIds": ["seventh.dom7.inversions"],
+  "roots": "ALL_12",
+  "formulaIds": ["dom7"],
+  "inversions": ["ROOT", "FIRST", "SECOND", "THIRD"],
+  "harmonicDifficulty": 4,
+  "assistanceProfile": "SYMBOL_PLUS_INVERSION",
+  "answerPolicy": {
+    "type": "CHORD_POLICY_MATCH",
+    "allowDoubling": true,
+    "extraTones": "REJECT",
+    "register": "KEYBOARD_CONFIGURED_RANGE"
+  },
+  "selection": {
+    "rootCoverageWeight": 1.0,
+    "weaknessWeight": 1.5,
+    "reviewDueWeight": 1.2,
+    "duplicatePenalty": 2.0
+  }
+}
