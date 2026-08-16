@@ -5,21 +5,30 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -31,9 +40,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.booleanResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -64,7 +76,7 @@ fun ProgressionRunRoute(
     )
 }
 
-private enum class Selector { Progression, Voicing, Key, Sound }
+private enum class Selector { Progression, Voicing, Key, Tempo, Sound }
 
 private data class DesignFrame(
     val left: Dp,
@@ -83,12 +95,15 @@ fun ProgressionRunScreen(
 ) {
     var selector by remember { mutableStateOf<Selector?>(null) }
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(HarmonyTheme.colors.background),
     ) {
+        val frame = fittedFrame(maxWidth, maxHeight)
+
         BackgroundPlate()
+        CleanStaticMasks(frame)
 
         ProgressionTrack(
             geometry = track.geometry,
@@ -97,14 +112,24 @@ fun ProgressionRunScreen(
             showPath = false,
         )
 
-        RuntimeReadouts(state)
-
-        InteractionLayer(
+        Sidebar(
+            frame = frame,
             state = state,
-            onIntent = onIntent,
             onNavigate = onNavigate,
+        )
+        TopControls(
+            frame = frame,
+            state = state,
             onOpenSelector = { selector = it },
         )
+        GoalAndStats(frame = frame, state = state)
+        ControlDeck(
+            frame = frame,
+            state = state,
+            onIntent = onIntent,
+            onOpenSelector = { selector = it },
+        )
+        Footer(frame = frame, state = state)
 
         selector?.let { selected ->
             SelectorPanel(
@@ -130,6 +155,53 @@ private fun BackgroundPlate() {
 }
 
 @Composable
+private fun BoxScope.CleanStaticMasks(frame: DesignFrame) {
+    // The source artwork contains prototype values and old progression graphics. These regions
+    // are intentionally covered completely so no baked value can ever collide with live state.
+    DesignArea(frame, 0, 0, 286, 1024) {
+        Box(Modifier.fillMaxSize().background(HarmonyTheme.colors.surface.copy(alpha = 0.985f)))
+    }
+    DesignArea(frame, 888, 14, 360, 90) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(24.dp))
+                .background(HarmonyTheme.colors.surface.copy(alpha = 0.985f)),
+        )
+    }
+    DesignArea(frame, 1190, 130, 346, 300) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(22.dp))
+                .background(HarmonyTheme.colors.surface.copy(alpha = 0.985f)),
+        )
+    }
+    DesignArea(frame, 286, 332, 1250, 270) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .background(HarmonyTheme.colors.surface.copy(alpha = 0.90f)),
+        )
+    }
+    DesignArea(frame, 286, 575, 1250, 365) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(HarmonyTheme.colors.surface.copy(alpha = 0.99f)),
+        )
+    }
+    DesignArea(frame, 286, 938, 1250, 86) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(HarmonyTheme.colors.surface.copy(alpha = 0.99f)),
+        )
+    }
+}
+
+@Composable
 private fun animatedOrbs(state: ProgressionRunUiState, track: TrackSpec): List<ChordOrbUiModel> {
     val progress = remember { Animatable(1f) }
     val easing = remember(track.easing) {
@@ -144,142 +216,397 @@ private fun animatedOrbs(state: ProgressionRunUiState, track: TrackSpec): List<C
 }
 
 @Composable
-private fun RuntimeReadouts(state: ProgressionRunUiState) {
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        val frame = fittedFrame(maxWidth, maxHeight)
-        DesignReadout(frame, 1448, 296, "${state.goalProgress} / 5")
-        DesignReadout(frame, 1448, 538, state.runsCompleted.toString())
-        DesignReadout(frame, 1448, 572, maxOf(state.bestStreak, state.run.clean).toString())
-        DesignReadout(frame, 1435, 606, "${state.accuracyPercent}%")
-        DesignReadout(frame, 1415, 640, state.elapsedLabel)
-
-        // Make the controls that change state visibly truthful instead of leaving only prototype text.
-        DesignReadout(frame, 944, 60, if (state.setup.allKeys) "12 keys" else state.setup.key.toString())
-        DesignReadout(frame, 1115, 60, state.setup.tempoBpm.toString())
-        DesignReadout(frame, 305, 680, state.setup.template.title)
-        DesignReadout(frame, 305, 823, state.timeFeel.name)
-        DesignReadout(frame, 842, 822, if (state.countingIn) "COUNTING" else "${state.countBars} BARS")
-        DesignReadout(frame, 1070, 742, state.selectedSound)
-        DesignReadout(frame, 1100, 862, state.octave.toString())
-    }
-}
-
-@Composable
-private fun DesignReadout(frame: DesignFrame, x: Int, y: Int, text: String) {
-    Readout(
-        text = text,
-        modifier = Modifier.offset(
-            x = frame.left + frame.width * (x / DESIGN_WIDTH),
-            y = frame.top + frame.height * (y / DESIGN_HEIGHT),
-        ),
-    )
-}
-
-@Composable
-private fun Readout(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        modifier = modifier
-            .background(HarmonyTheme.colors.surface.copy(alpha = 0.94f))
-            .padding(horizontal = 3.dp, vertical = 1.dp),
-        color = HarmonyTheme.colors.accent,
-        fontSize = HarmonyTheme.typography.caption,
-    )
-}
-
-@Suppress("LongMethod")
-@Composable
-private fun InteractionLayer(
-    state: ProgressionRunUiState,
-    onIntent: (ProgressionRunIntent) -> Unit,
-    onNavigate: (HomeDestination) -> Unit,
-    onOpenSelector: (Selector) -> Unit,
-) {
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        val frame = fittedFrame(maxWidth, maxHeight)
-
-        Hit(frame, 10, 286, 255, 338) { onNavigate(HomeDestination.Home) }
-        Hit(frame, 10, 384, 255, 432) { onNavigate(HomeDestination.ChordGate) }
-        Hit(frame, 10, 432, 255, 480) { onNavigate(HomeDestination.EarTraining) }
-        Hit(frame, 10, 480, 255, 528) { onNavigate(HomeDestination.SightReading) }
-        Hit(frame, 10, 528, 255, 576) { onNavigate(HomeDestination.VoicingLab) }
-        Hit(frame, 10, 576, 255, 624) { onNavigate(HomeDestination.TheoryLab) }
-        Hit(frame, 10, 624, 255, 672) { onNavigate(HomeDestination.DailyChallenge) }
-        Hit(frame, 10, 672, 255, 720) { onNavigate(HomeDestination.Campaign) }
-        Hit(frame, 10, 720, 255, 768) { onNavigate(HomeDestination.Campaign) }
-        Hit(frame, 10, 768, 255, 816) { onNavigate(HomeDestination.QuickPractice) }
-        Hit(frame, 10, 816, 255, 864) { onNavigate(HomeDestination.Progress) }
-        Hit(frame, 10, 864, 255, 910) { onNavigate(HomeDestination.Library) }
-
-        Hit(frame, 906, 18, 1062, 84) { onOpenSelector(Selector.Key) }
-        Hit(frame, 1062, 18, 1218, 84) { onIntent(ProgressionRunIntent.IncreaseTempo) }
-
-        Hit(frame, 292, 700, 725, 790) { onOpenSelector(Selector.Progression) }
-        Hit(frame, 295, 840, 422, 889) { onIntent(ProgressionRunIntent.SetTimeFeel(TimeFeel.Straight)) }
-        Hit(frame, 422, 840, 545, 889) { onIntent(ProgressionRunIntent.SetTimeFeel(TimeFeel.Swing)) }
-        Hit(frame, 545, 840, 670, 889) { onIntent(ProgressionRunIntent.SetTimeFeel(TimeFeel.Shuffle)) }
-
-        Hit(frame, 775, 704, 832, 770) { onIntent(ProgressionRunIntent.Previous) }
-        Hit(frame, 832, 700, 916, 785) { onIntent(ProgressionRunIntent.TogglePlaying) }
-        Hit(frame, 916, 704, 975, 770) { onIntent(ProgressionRunIntent.Next) }
-        Hit(frame, 910, 797, 970, 840) { onIntent(ProgressionRunIntent.ToggleCountIn) }
-        Hit(frame, 776, 839, 827, 890) { onIntent(ProgressionRunIntent.DecreaseCountBars) }
-        Hit(frame, 925, 839, 975, 890) { onIntent(ProgressionRunIntent.IncreaseCountBars) }
-
-        Hit(frame, 1012, 698, 1230, 792) { onOpenSelector(Selector.Sound) }
-        Hit(frame, 1012, 838, 1078, 890) { onIntent(ProgressionRunIntent.DecreaseOctave) }
-        Hit(frame, 1155, 838, 1230, 890) { onIntent(ProgressionRunIntent.IncreaseOctave) }
-
-        PositionedSwitch(frame, 1435, 704, state.setup.loop) { onIntent(ProgressionRunIntent.ToggleLoop) }
-        PositionedSwitch(frame, 1435, 746, state.highlightRoot) { onIntent(ProgressionRunIntent.ToggleHighlightRoot) }
-        PositionedSwitch(frame, 1435, 789, state.showGuideTones) { onIntent(ProgressionRunIntent.ToggleGuideTones) }
-        PositionedSwitch(frame, 1435, 831, state.autoNextGate) { onIntent(ProgressionRunIntent.ToggleAutoNextGate) }
-
-        Hit(frame, 295, 655, 520, 700) { onOpenSelector(Selector.Voicing) }
-    }
-}
-
-@Composable
-private fun Hit(
+private fun BoxScope.Sidebar(
     frame: DesignFrame,
-    left: Int,
-    top: Int,
-    right: Int,
-    bottom: Int,
-    onClick: () -> Unit,
+    state: ProgressionRunUiState,
+    onNavigate: (HomeDestination) -> Unit,
 ) {
+    DesignArea(frame, 0, 0, 286, 1024) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = "HARMONY\nGATES",
+                color = HarmonyTheme.colors.accent,
+                fontSize = HarmonyTheme.typography.heading,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.height(8.dp))
+            SessionProfile(state)
+            Spacer(Modifier.height(6.dp))
+
+            NavRow("HOME", false) { onNavigate(HomeDestination.Home) }
+            NavRow("PROGRESSION RUN", true) { }
+            NavRow("CHORD GATES", false) { onNavigate(HomeDestination.ChordGate) }
+            NavRow("EAR TRAINER", false) { onNavigate(HomeDestination.EarTraining) }
+            NavRow("SIGHT READING", false) { onNavigate(HomeDestination.SightReading) }
+            NavRow("VOICE LEADING", false) { onNavigate(HomeDestination.VoicingLab) }
+            NavRow("THEORY LAB", false) { onNavigate(HomeDestination.TheoryLab) }
+            NavRow("DAILY CHALLENGE", false) { onNavigate(HomeDestination.DailyChallenge) }
+            NavRow("MY JOURNEY", false) { onNavigate(HomeDestination.Campaign) }
+            NavRow("MAP", false) { onNavigate(HomeDestination.Campaign) }
+            NavRow("PRACTICE", false) { onNavigate(HomeDestination.QuickPractice) }
+            NavRow("STATS", false) { onNavigate(HomeDestination.Progress) }
+            NavRow("LIBRARY", false) { onNavigate(HomeDestination.Library) }
+
+            Spacer(Modifier.weight(1f))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                UtilityButton("⚙") { onNavigate(HomeDestination.Settings) }
+                UtilityButton("P") { onNavigate(HomeDestination.Profile) }
+                UtilityButton("L") { onNavigate(HomeDestination.Library) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SessionProfile(state: ProgressionRunUiState) {
+    val sessionXp = ((state.totalClean + state.run.clean) * 100) + (state.runsCompleted * 250)
+    val level = 1 + (sessionXp / XP_PER_LEVEL)
+    val inLevel = sessionXp % XP_PER_LEVEL
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(HarmonyTheme.colors.background.copy(alpha = 0.7f))
+            .border(1.dp, HarmonyTheme.colors.outline, RoundedCornerShape(16.dp))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+        Text("Jazz Explorer", color = HarmonyTheme.colors.onSurface, fontWeight = FontWeight.SemiBold)
+        Text("Level $level", color = HarmonyTheme.colors.onSurfaceMuted, fontSize = HarmonyTheme.typography.caption)
+        LinearProgressIndicator(
+            progress = { inLevel.toFloat() / XP_PER_LEVEL.toFloat() },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+            "$inLevel / $XP_PER_LEVEL session XP",
+            color = HarmonyTheme.colors.onSurfaceMuted,
+            fontSize = HarmonyTheme.typography.caption,
+        )
+    }
+}
+
+@Composable
+private fun NavRow(label: String, selected: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .offset(
-                frame.left + frame.width * (left / DESIGN_WIDTH),
-                frame.top + frame.height * (top / DESIGN_HEIGHT),
-            )
-            .size(
-                frame.width * ((right - left) / DESIGN_WIDTH),
-                frame.height * ((bottom - top) / DESIGN_HEIGHT),
-            )
-            .clickable(onClick = onClick),
-    )
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(if (selected) HarmonyTheme.colors.accent.copy(alpha = 0.18f) else HarmonyTheme.colors.surface)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Text(
+            label,
+            color = if (selected) HarmonyTheme.colors.accent else HarmonyTheme.colors.onSurface,
+            fontSize = HarmonyTheme.typography.caption,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+        )
+    }
 }
 
 @Composable
-private fun PositionedSwitch(
+private fun UtilityButton(label: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .border(1.dp, HarmonyTheme.colors.outline, CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(label, color = HarmonyTheme.colors.onSurface, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun BoxScope.TopControls(
+    frame: DesignFrame,
+    state: ProgressionRunUiState,
+    onOpenSelector: (Selector) -> Unit,
+) {
+    DesignArea(frame, 900, 22, 168, 70) {
+        SelectorCapsule(
+            label = "KEY",
+            value = if (state.setup.allKeys) "12 keys" else state.setup.key.toString(),
+            onClick = { onOpenSelector(Selector.Key) },
+        )
+    }
+    DesignArea(frame, 1074, 22, 156, 70) {
+        SelectorCapsule(
+            label = "BPM",
+            value = state.setup.tempoBpm.toString(),
+            onClick = { onOpenSelector(Selector.Tempo) },
+        )
+    }
+}
+
+@Composable
+private fun SelectorCapsule(label: String, value: String, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(20.dp))
+            .border(1.dp, HarmonyTheme.colors.outline, RoundedCornerShape(20.dp))
+            .background(HarmonyTheme.colors.background.copy(alpha = 0.82f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 9.dp),
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(label, color = HarmonyTheme.colors.onSurfaceMuted, fontSize = HarmonyTheme.typography.caption)
+        Text(value, color = HarmonyTheme.colors.onSurface, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun BoxScope.GoalAndStats(frame: DesignFrame, state: ProgressionRunUiState) {
+    DesignArea(frame, 1210, 150, 300, 215) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(18.dp))
+                .border(1.dp, HarmonyTheme.colors.outline, RoundedCornerShape(18.dp))
+                .background(HarmonyTheme.colors.background.copy(alpha = 0.82f))
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text("CURRENT GOAL", color = HarmonyTheme.colors.accent, fontSize = HarmonyTheme.typography.caption, fontWeight = FontWeight.Bold)
+            Text(
+                state.activeSymbol?.let { "Play $it cleanly" } ?: "Reach the next gate",
+                color = HarmonyTheme.colors.onSurface,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(state.progressLabel, color = HarmonyTheme.colors.onSurfaceMuted, fontSize = HarmonyTheme.typography.caption)
+            LinearProgressIndicator(
+                progress = { state.goalProgress / 5f },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text("${state.goalProgress} / 5", color = HarmonyTheme.colors.onSurface, fontWeight = FontWeight.Bold)
+        }
+    }
+
+    DesignArea(frame, 1210, 375, 300, 184) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(18.dp))
+                .border(1.dp, HarmonyTheme.colors.outline, RoundedCornerShape(18.dp))
+                .background(HarmonyTheme.colors.background.copy(alpha = 0.82f))
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            Text("RUN STATS", color = HarmonyTheme.colors.accent, fontSize = HarmonyTheme.typography.caption, fontWeight = FontWeight.Bold)
+            StatRow("Runs", state.runsCompleted.toString())
+            StatRow("Best streak", maxOf(state.bestStreak, state.run.clean).toString())
+            StatRow("Accuracy", "${state.accuracyPercent}%")
+            StatRow("Time", state.elapsedLabel)
+        }
+    }
+}
+
+@Composable
+private fun StatRow(label: String, value: String) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, color = HarmonyTheme.colors.onSurfaceMuted, fontSize = HarmonyTheme.typography.caption)
+        Text(value, color = HarmonyTheme.colors.onSurface, fontSize = HarmonyTheme.typography.caption, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun BoxScope.ControlDeck(
+    frame: DesignFrame,
+    state: ProgressionRunUiState,
+    onIntent: (ProgressionRunIntent) -> Unit,
+    onOpenSelector: (Selector) -> Unit,
+) {
+    DesignArea(frame, 305, 600, 430, 320) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text("PROGRESSION", color = HarmonyTheme.colors.accent, fontSize = HarmonyTheme.typography.caption, fontWeight = FontWeight.Bold)
+            OutlinedButton(onClick = { onOpenSelector(Selector.Progression) }, modifier = Modifier.fillMaxWidth()) {
+                Text(state.setup.template.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            OutlinedButton(onClick = { onOpenSelector(Selector.Voicing) }, modifier = Modifier.fillMaxWidth()) {
+                Text("Voicing: ${state.setup.style.label}", maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ChoicePill("Straight", state.timeFeel == TimeFeel.Straight) { onIntent(ProgressionRunIntent.SetTimeFeel(TimeFeel.Straight)) }
+                ChoicePill("Swing", state.timeFeel == TimeFeel.Swing) { onIntent(ProgressionRunIntent.SetTimeFeel(TimeFeel.Swing)) }
+                ChoicePill("Shuffle", state.timeFeel == TimeFeel.Shuffle) { onIntent(ProgressionRunIntent.SetTimeFeel(TimeFeel.Shuffle)) }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ChoicePill("12 keys", state.setup.allKeys) { onIntent(ProgressionRunIntent.ToggleAllKeys) }
+                ChoicePill("Roman", state.setup.showRomanNumerals) { onIntent(ProgressionRunIntent.ToggleRomanNumerals) }
+            }
+        }
+    }
+
+    DesignArea(frame, 748, 600, 250, 320) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text("PLAY CONTROLS", color = HarmonyTheme.colors.accent, fontSize = HarmonyTheme.typography.caption, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                RoundControl("◀", 56.dp) { onIntent(ProgressionRunIntent.Previous) }
+                RoundControl(if (state.run.status == ProgressionRunStatus.RUNNING) "Ⅱ" else "▶", 78.dp) {
+                    onIntent(ProgressionRunIntent.TogglePlaying)
+                }
+                RoundControl("▶", 56.dp) { onIntent(ProgressionRunIntent.Next) }
+            }
+            ToggleRow("Count in", state.countIn) { onIntent(ProgressionRunIntent.ToggleCountIn) }
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                RoundControl("−", 42.dp) { onIntent(ProgressionRunIntent.DecreaseCountBars) }
+                Text(
+                    if (state.countingIn) "COUNTING" else "${state.countBars} BARS",
+                    color = HarmonyTheme.colors.onSurface,
+                    fontWeight = FontWeight.Bold,
+                )
+                RoundControl("+", 42.dp) { onIntent(ProgressionRunIntent.IncreaseCountBars) }
+            }
+            Text(state.midiStatus, color = if (state.midiConnected) HarmonyTheme.colors.accent else HarmonyTheme.colors.onSurfaceMuted, fontSize = HarmonyTheme.typography.caption)
+        }
+    }
+
+    DesignArea(frame, 1010, 600, 250, 320) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text("SOUND", color = HarmonyTheme.colors.accent, fontSize = HarmonyTheme.typography.caption, fontWeight = FontWeight.Bold)
+            OutlinedButton(onClick = { onOpenSelector(Selector.Sound) }, modifier = Modifier.fillMaxWidth()) {
+                Text(state.selectedSound, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            }
+            Text("OCTAVE", color = HarmonyTheme.colors.onSurfaceMuted, fontSize = HarmonyTheme.typography.caption)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                RoundControl("−", 42.dp) { onIntent(ProgressionRunIntent.DecreaseOctave) }
+                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    Text(state.octave.toString(), color = HarmonyTheme.colors.onSurface, fontWeight = FontWeight.Bold)
+                }
+                RoundControl("+", 42.dp) { onIntent(ProgressionRunIntent.IncreaseOctave) }
+            }
+            Text(
+                state.activeSymbol?.let { "Now: $it" } ?: "Ready",
+                color = HarmonyTheme.colors.onSurface,
+                fontWeight = FontWeight.SemiBold,
+            )
+            state.activeFunction?.let {
+                Text(it, color = HarmonyTheme.colors.onSurfaceMuted, fontSize = HarmonyTheme.typography.caption)
+            }
+        }
+    }
+
+    DesignArea(frame, 1270, 600, 246, 320) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text("OPTIONS", color = HarmonyTheme.colors.accent, fontSize = HarmonyTheme.typography.caption, fontWeight = FontWeight.Bold)
+            ToggleRow("Loop", state.setup.loop) { onIntent(ProgressionRunIntent.ToggleLoop) }
+            ToggleRow("Highlight root", state.highlightRoot) { onIntent(ProgressionRunIntent.ToggleHighlightRoot) }
+            ToggleRow("Guide tones", state.showGuideTones) { onIntent(ProgressionRunIntent.ToggleGuideTones) }
+            ToggleRow("Auto next", state.autoNextGate) { onIntent(ProgressionRunIntent.ToggleAutoNextGate) }
+        }
+    }
+}
+
+@Composable
+private fun ChoicePill(label: String, selected: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(18.dp))
+            .background(if (selected) HarmonyTheme.colors.accent.copy(alpha = 0.22f) else HarmonyTheme.colors.background.copy(alpha = 0.5f))
+            .border(1.dp, if (selected) HarmonyTheme.colors.accent else HarmonyTheme.colors.outline, RoundedCornerShape(18.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Text(label, color = HarmonyTheme.colors.onSurface, fontSize = HarmonyTheme.typography.caption)
+    }
+}
+
+@Composable
+private fun RoundControl(label: String, size: Dp, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(HarmonyTheme.colors.background.copy(alpha = 0.72f))
+            .border(1.dp, HarmonyTheme.colors.outline, CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(label, color = HarmonyTheme.colors.onSurface, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun ToggleRow(label: String, checked: Boolean, onToggle: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, color = HarmonyTheme.colors.onSurface, fontSize = HarmonyTheme.typography.caption)
+        Switch(checked = checked, onCheckedChange = { onToggle() })
+    }
+}
+
+@Composable
+private fun BoxScope.Footer(frame: DesignFrame, state: ProgressionRunUiState) {
+    DesignArea(frame, 305, 948, 1210, 62) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                state.instruction ?: "Listen, play the active chord, then move with the progression.",
+                color = HarmonyTheme.colors.onSurfaceMuted,
+                fontSize = HarmonyTheme.typography.caption,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.width(16.dp))
+            Text(
+                "Attempts ${state.totalAttempts + state.run.attempts} · Clean ${state.totalClean + state.run.clean}",
+                color = HarmonyTheme.colors.onSurface,
+                fontSize = HarmonyTheme.typography.caption,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+    }
+}
+
+@Composable
+private fun BoxScope.DesignArea(
     frame: DesignFrame,
     x: Int,
     y: Int,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
+    width: Int,
+    height: Int,
+    content: @Composable BoxScope.() -> Unit,
 ) {
     Box(
         modifier = Modifier
             .offset(
-                frame.left + frame.width * (x / DESIGN_WIDTH),
-                frame.top + frame.height * (y / DESIGN_HEIGHT),
+                x = frame.left + frame.width * (x / DESIGN_WIDTH),
+                y = frame.top + frame.height * (y / DESIGN_HEIGHT),
             )
-            .background(HarmonyTheme.colors.surface.copy(alpha = 0.96f)),
-    ) {
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
-    }
+            .size(
+                width = frame.width * (width / DESIGN_WIDTH),
+                height = frame.height * (height / DESIGN_HEIGHT),
+            ),
+        content = content,
+    )
 }
 
 private fun fittedFrame(maxWidth: Dp, maxHeight: Dp): DesignFrame {
@@ -317,6 +644,7 @@ private fun SelectorPanel(
                     Selector.Progression -> "Choose progression"
                     Selector.Voicing -> "Choose voicing"
                     Selector.Key -> "Choose key"
+                    Selector.Tempo -> "Choose tempo"
                     Selector.Sound -> "Choose sound"
                 },
                 color = HarmonyTheme.colors.onSurface,
@@ -336,9 +664,23 @@ private fun SelectorPanel(
                         onDismiss()
                     }
                 }
-                Selector.Key -> state.availableKeys.forEach { key ->
-                    ChoiceButton(key) {
-                        onIntent(ProgressionRunIntent.ChooseKey(key))
+                Selector.Key -> {
+                    ChoiceButton("All 12 keys") {
+                        if (!state.setup.allKeys) onIntent(ProgressionRunIntent.ToggleAllKeys)
+                        onDismiss()
+                    }
+                    state.availableKeys.forEach { key ->
+                        ChoiceButton(key) {
+                            onIntent(ProgressionRunIntent.ChooseKey(key))
+                            onDismiss()
+                        }
+                    }
+                }
+                Selector.Tempo -> TEMPOS.forEach { bpm ->
+                    ChoiceButton("$bpm BPM") {
+                        repeat(((bpm - state.setup.tempoBpm + TEMPO_WRAP) % TEMPO_WRAP) / 5) {
+                            onIntent(ProgressionRunIntent.IncreaseTempo)
+                        }
                         onDismiss()
                     }
                 }
@@ -365,9 +707,12 @@ private fun SelectorPanel(
 
 @Composable
 private fun ChoiceButton(label: String, onClick: () -> Unit) {
-    OutlinedButton(onClick = onClick) { Text(label) }
+    OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) { Text(label) }
 }
 
+private val TEMPOS = listOf(60, 80, 100, 120, 140, 160, 180, 200)
+private const val XP_PER_LEVEL = 1000
+private const val TEMPO_WRAP = 205
 private const val DESIGN_WIDTH = 1536f
 private const val DESIGN_HEIGHT = 1024f
 private const val DESIGN_ASPECT = DESIGN_WIDTH / DESIGN_HEIGHT
