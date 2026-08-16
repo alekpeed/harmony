@@ -5,9 +5,30 @@
   "figma": {
     "fileKey": "cD5gqV8A5gk94NVuGeJXg5",
     "frameName": "Harmony Gates / FINAL Approved Home",
-    "nodeId": "28:2"
+    "nodeId": "28:2",
+    "staticPlateNodeId": "92:24",
+    "runtimeLayerNodeId": "93:2",
+    "legacyRasterBackupNodeId": "92:2"
   },
   "visualAsset": "../harmony-home-approved.jpg",
+  "visualAssetStatus": "legacy-reference-only",
+  "staticPlateRule": "The production Home background must use the clean static plate represented by Figma node 92:24, not the legacy full-screen raster. The legacy JPG remains a visual reference only because it contains baked runtime values.",
+  "dynamicLayers": [
+    "profile name and level",
+    "XP value and progress",
+    "next gate title/detail/action state",
+    "day streak",
+    "gates completed",
+    "weekly activity bars",
+    "per-module progress indicators",
+    "device/system time if shown by the production shell"
+  ],
+  "runtimeRules": [
+    "Do not bake timestamps, profile/session values, streaks, progress values, current gate data, or module progress into static artwork.",
+    "Figma sample values exist only to demonstrate appearance and must be populated from runtime state in Compose.",
+    "The production UI must render dynamic Home values independently above the clean environment plate.",
+    "The Android system status bar should be supplied by the system/app shell when enabled, not reproduced inside the background artwork."
+  ],
   "coordinateRule": "Scale normalized bounds into the actual rendered artwork rectangle; if aspect-fit creates letterboxing, offset by the rendered artwork origin before hit testing.",
   "regions": [
     {"id":"toggle_menu","figmaLayer":"HIT / Menu","action":"toggle_menu","boundsPx":{"x":10,"y":72,"width":70,"height":82},"boundsNormalized":{"x":0.006510,"y":0.070312,"width":0.045573,"height":0.080078}},
