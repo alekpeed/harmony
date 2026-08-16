@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "0.2.0",
+  "progressions": [
+    {
+      "id": "progression.major_two_five_one",
+      "title": "Major ii-V-I",
+      "functions": ["ii7", "V7", "Imaj7"]
+    },
+    {
+      "id": "progression.minor_two_five_one",
+      "title": "Minor iiø-V-i",
+      "functions": ["iiø7", "V7", "i7"],
+      "mode": "HARMONIC_MINOR"
+    },
+    {
+      "id": "progression.one_six_two_five",
+      "title": "I-vi-ii-V turnaround",
+      "functions": ["Imaj7", "vi7", "ii7", "V7"],
+      "loop": true
+    },
+    {
+      "id": "progression.three_six_two_five",
+      "title": "iii-VI-ii-V",
+      "functions": ["iii7", "VI7", "ii7", "V7"],
+      "loop": true
+    },
+    {
+      "id": "progression.tritone_sub_turnaround",
+      "title": "ii-bII7-I",
+      "functions": ["ii7", "bII7", "Imaj7"]
+    },
+    {
+      "id": "progression.backdoor",
+      "title": "Backdoor cadence",
+      "functions": ["iv7", "bVII7", "Imaj7"]
+    },
+    {
+      "id": "progression.secondary_dominants",
+      "title": "Secondary dominants",
+      "functions": ["Imaj7", "III7", "vi7", "II7", "ii7", "V7"]
+    },
+    {
+      "id": "progression.descending_dominants",
+      "title": "Descending dominants",
+      "functions": ["III7", "VI7", "II7", "V7", "Imaj7"],
+      "beatsPerChord": 2
+    },
+    {
+      "id": "progression.rhythm_changes_a",
+      "title": "Rhythm changes, A section",
+      "functions": [
+        "Imaj7", "vi7", "ii7", "V7",
+        "Imaj7", "vi7", "ii7", "V7",
+        "Imaj7", "I7", "IVmaj7", "iv7",
+        "Imaj7", "V7", "Imaj7", "V7"
+      ],
+      "loop": true,
+      "beatsPerChord": 2
+    },
+    {
+      "id": "progression.jazz_blues",
+      "title": "Twelve-bar jazz blues",
+      "functions": [
+        "I7", "IV7", "I7", "v7",
+        "IV7", "#ivo7", "I7", "VI7",
+        "ii7", "V7", "I7", "V7"
+      ],
+      "loop": true
+    },
+    {
+      "id": "progression.minor_blues",
+      "title": "Minor blues",
+      "functions": [
+        "i7", "i7", "i7", "i7",
+        "iv7", "iv7", "i7", "i7",
+        "VI7", "V7", "i7", "V7"
+      ],
+      "mode": "HARMONIC_MINOR",
+      "loop": true
+    }
+  ]
+}

@@ -17,7 +17,13 @@ import com.harmonygates.core.music.exercise.PresentationSpec
 import com.harmonygates.core.music.exercise.SkillId
 import com.harmonygates.core.music.harmony.DominantAlteration
 import com.harmonygates.core.music.mastery.ErrorClass
+import com.harmonygates.core.music.eartraining.EarTaskFamily
+import com.harmonygates.core.music.key.Mode
+import com.harmonygates.core.music.key.RomanNumeralParser
 import com.harmonygates.core.music.performance.OnsetPolicy
+import com.harmonygates.core.music.progression.ProgressionTemplate
+import com.harmonygates.core.music.progression.VoicingStyle
+import com.harmonygates.core.music.score.ReadingMaterial
 import com.harmonygates.core.music.pitch.SpelledPitchClass
 import com.harmonygates.core.music.voicing.Inversion
 import com.harmonygates.core.music.voicing.VoicingFamilies
@@ -109,11 +115,34 @@ internal data class PolicyJson(
     val assistanceLevel: String? = null,
     /** A named family from `VoicingFamily`, resolved per chord at generation time. */
     val voicingFamily: String? = null,
+    val earTaskFamily: String? = null,
+    val progression: String? = null,
+    val voicingStyle: String? = null,
+    val readingMaterial: String? = null,
     val presentation: PresentationJson = PresentationJson(),
     val onsetPolicy: OnsetPolicyJson = OnsetPolicyJson(),
     val lowestNote: Int? = null,
     val highestNote: Int? = null,
     val sessionLength: Int = ExercisePolicy.DEFAULT_SESSION_LENGTH,
+)
+
+/** The authored progression vocabulary of Region 12. */
+@Serializable
+internal data class ProgressionFileJson(
+    val schemaVersion: Int,
+    val contentVersion: String,
+    val progressions: List<ProgressionJson>,
+)
+
+@Serializable
+internal data class ProgressionJson(
+    val id: String,
+    val title: String,
+    /** Roman numerals, as a chart writes them: `["ii7", "V7", "Imaj7"]`. */
+    val functions: List<String>,
+    val mode: String = "MAJOR",
+    val loop: Boolean = false,
+    val beatsPerChord: Int = 4,
 )
 
 @Serializable
@@ -199,6 +228,35 @@ internal object ContentDecoder {
         else -> throw ContentReferenceException("'${json.kind}' is not a kind of unlock")
     }
 
+    /**
+     * Reads the progression file.
+     *
+     * The functions are roman numerals written the way a chart writes them, so adding the blues
+     * or rhythm changes is a content edit. An unreadable numeral is refused here rather than
+     * turning into a chord nobody meant.
+     */
+    fun progressions(json: ProgressionFileJson): Map<String, ProgressionTemplate> =
+        json.progressions.associate { progression ->
+            val functions = RomanNumeralParser.parseProgression(progression.functions)
+                .getOrElse { failure ->
+                    throw ContentReferenceException(
+                        "Progression '${progression.id}' has unreadable numerals: ${failure.message}",
+                    )
+                }
+            val mode = Mode.entries.firstOrNull { it.name == progression.mode }
+                ?: throw ContentReferenceException(
+                    "Progression '${progression.id}' is in mode '${progression.mode}', which does not exist",
+                )
+            progression.id to ProgressionTemplate(
+                id = progression.id,
+                title = progression.title,
+                functions = functions,
+                mode = mode,
+                loop = progression.loop,
+                beatsPerChord = progression.beatsPerChord,
+            )
+        }
+
     fun policies(json: PolicyFileJson): Map<ExercisePolicyId, ExercisePolicy> =
         json.policies.associate { policy -> ExercisePolicyId(policy.id) to policy(policy) }
 
@@ -232,6 +290,24 @@ internal object ContentDecoder {
                 "Policy '${json.id}' authors an empty alteration set, which is a plain dominant",
             )
         }
+        val earFamily = json.earTaskFamily?.let { name ->
+            EarTaskFamily.entries.firstOrNull { it.name == name }
+                ?: throw ContentReferenceException(
+                    "Policy '${json.id}' asks for the ear task family '$name', which does not exist",
+                )
+        }
+        val voicingStyle = json.voicingStyle?.let { name ->
+            VoicingStyle.entries.firstOrNull { it.name == name }
+                ?: throw ContentReferenceException(
+                    "Policy '${json.id}' asks for the voicing style '$name', which does not exist",
+                )
+        }
+        val reading = json.readingMaterial?.let { name ->
+            ReadingMaterial.entries.firstOrNull { it.name == name }
+                ?: throw ContentReferenceException(
+                    "Policy '${json.id}' asks for the reading material '$name', which does not exist",
+                )
+        }
         val answerMode = AnswerMode.entries.firstOrNull { it.name == json.answerMode }
             ?: throw ContentReferenceException(
                 "Policy '${json.id}' uses the answer mode '${json.answerMode}', which does not exist",
@@ -242,9 +318,10 @@ internal object ContentDecoder {
                     "Policy '${json.id}' names the voicing family '$name', which does not exist",
                 )
         }
-        if (family != null && family !in VoicingFamilies.supported) {
+        if (family != null && family !in VoicingFamilies.authorable) {
             throw ContentReferenceException(
-                "Policy '${json.id}' names the voicing family '$family', which has no recipe yet",
+                "Policy '${json.id}' names the voicing family '$family', which the engine " +
+                    "cannot build by either route",
             )
         }
         val roots = json.rootPool.map { name ->
@@ -276,6 +353,10 @@ internal object ContentDecoder {
             // Resolved against the actual chord at generation time, because a rootless voicing
             // of Cmaj7 and of G7 need different tones. The policy records the intent only.
             voicingFamily = family,
+            earTaskFamily = earFamily,
+            progressionId = json.progression,
+            voicingStyle = voicingStyle,
+            readingMaterial = reading,
             presentation = level?.profile?.presentation ?: PresentationSpec(
                 showChordSymbol = json.presentation.chordSymbol,
                 showSpelledNoteNames = json.presentation.noteNames,

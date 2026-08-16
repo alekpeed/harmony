@@ -3,6 +3,36 @@
   "contentVersion": "0.1.0",
   "regions": [
     {
+      "id": "region.calibration",
+      "title": "Setting Up",
+      "summary": "Your keyboard, this app, and proof that the two are talking to each other.",
+      "prerequisites": [],
+      "gates": [
+        {
+          "id": "gate.calibration.keys",
+          "title": "First contact",
+          "objective": "Play what the app asks for and see it register.",
+          "skills": [
+            "skill.calibration.keys"
+          ],
+          "prerequisites": [],
+          "exercisePolicyId": "policy.calibration.keys",
+          "preview": "Everything here is played, not tapped. Before anything else: play the chord shown and watch the keys light up. If they do not, the setup screen will tell you why.",
+          "completionRule": {
+            "minimumAttempts": 8,
+            "recentWeightedAccuracy": 0.7,
+            "minimumRootCoverage": 4
+          },
+          "rewards": [
+            {
+              "kind": "region",
+              "value": "region.foundations"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "region.foundations",
       "title": "Foundations",
       "summary": "Triads in every key, and what inversion actually means.",
@@ -14,7 +44,9 @@
           "skills": [
             "skill.triad.build"
           ],
-          "prerequisites": [],
+          "prerequisites": [
+            "gate.calibration.keys"
+          ],
           "exercisePolicyId": "policy.triad.major_minor.guided",
           "preview": "A triad is three notes: the root, a third and a fifth. The third is what makes it major or minor \u2014 everything else in this game is built on hearing that one note move.",
           "completionRule": {
@@ -47,6 +79,9 @@
             }
           ]
         }
+      ],
+      "prerequisites": [
+        "region.calibration"
       ]
     },
     {
@@ -105,7 +140,7 @@
           "rewards": [
             {
               "kind": "region",
-              "value": "region.jazz_voicings"
+              "value": "region.functional"
             }
           ]
         },
@@ -145,7 +180,7 @@
             "skill.voicing.shell"
           ],
           "prerequisites": [
-            "gate.sevenths.inversions"
+            "gate.reading.triads"
           ],
           "exercisePolicyId": "policy.voicing.shell",
           "preview": "In this exercise the fifth is left out so that the root and the two guide tones sit clearly in the left hand. That is a choice about this voicing, not a rule about the chord.",
@@ -209,7 +244,7 @@
             },
             {
               "kind": "region",
-              "value": "region.extensions"
+              "value": "region.drop_voicings"
             }
           ]
         }
@@ -220,7 +255,7 @@
       "title": "Extensions",
       "summary": "Ninths and the colour above the seventh.",
       "prerequisites": [
-        "region.jazz_voicings"
+        "region.drop_voicings"
       ],
       "gates": [
         {
@@ -231,7 +266,7 @@
             "skill.extension.ninth"
           ],
           "prerequisites": [
-            "gate.voicing.rootless"
+            "gate.voicing.drop_three"
           ],
           "exercisePolicyId": "policy.extensions.ninths",
           "completionRule": {
@@ -488,6 +523,565 @@
             "minimumAttempts": 18,
             "recentWeightedAccuracy": 0.85,
             "minimumRootCoverage": 8
+          },
+          "rewards": [
+            {
+              "kind": "region",
+              "value": "region.progressions"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.functional",
+      "title": "Functional Harmony",
+      "summary": "What a chord is doing, not just what it is called.",
+      "prerequisites": [
+        "region.seventh_harmony"
+      ],
+      "gates": [
+        {
+          "id": "gate.functional.diatonic",
+          "title": "Diatonic sevenths",
+          "objective": "Name and play any diatonic seventh chord by its roman numeral.",
+          "skills": [
+            "skill.functional.diatonic"
+          ],
+          "prerequisites": [
+            "gate.sevenths.build"
+          ],
+          "exercisePolicyId": "policy.functional.diatonic",
+          "preview": "Seven chords come out of one scale, and each has a job. The numeral is how a musician talks about that job without naming a key \u2014 ii is ii in every key there is.",
+          "completionRule": {
+            "minimumAttempts": 18,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.functional.cadence",
+          "title": "The major cadence",
+          "objective": "Play a ii-V-I in any key, in time.",
+          "skills": [
+            "skill.functional.cadence"
+          ],
+          "prerequisites": [
+            "gate.functional.diatonic"
+          ],
+          "exercisePolicyId": "policy.functional.cadence",
+          "preview": "The ii-V-I is the sentence this whole language is written in. Once it is under your hands in every key, most of a jazz standard is already familiar.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.functional.minor_cadence",
+          "title": "The minor cadence",
+          "objective": "Play a ii\u00f8-V-i, where the V brings its own leading tone.",
+          "skills": [
+            "skill.functional.cadence"
+          ],
+          "prerequisites": [
+            "gate.functional.cadence"
+          ],
+          "exercisePolicyId": "policy.functional.minor_cadence",
+          "preview": "The minor version is not the major one moved down. The ii is half-diminished and the V borrows a raised third that the key does not supply \u2014 which is exactly what makes it sound like it is going somewhere.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            {
+              "kind": "region",
+              "value": "region.ear_training"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.ear_training",
+      "title": "Ear Training",
+      "summary": "Hearing it before you can see it.",
+      "prerequisites": [
+        "region.functional"
+      ],
+      "gates": [
+        {
+          "id": "gate.ear.reproduce",
+          "title": "Play back what you hear",
+          "objective": "Reproduce a chord you have heard but not seen.",
+          "skills": [
+            "skill.ear.reproduce"
+          ],
+          "prerequisites": [
+            "gate.functional.minor_cadence"
+          ],
+          "exercisePolicyId": "policy.ear.reproduce",
+          "preview": "No symbol on the screen. You hear it, you play it. This is the one exercise where the answer cannot be worked out \u2014 only heard.",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.75,
+            "minimumRootCoverage": 6
+          }
+        },
+        {
+          "id": "gate.ear.quality",
+          "title": "Name the quality",
+          "objective": "Tell a major seventh from a dominant from a minor, by ear.",
+          "skills": [
+            "skill.ear.quality"
+          ],
+          "prerequisites": [
+            "gate.ear.reproduce"
+          ],
+          "exercisePolicyId": "policy.ear.quality",
+          "preview": "Four sounds, one root. The third and the seventh are what change, and they are what your ear is being trained to notice.",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.8,
+            "minimumRootCoverage": 6
+          }
+        },
+        {
+          "id": "gate.ear.difference",
+          "title": "What changed",
+          "objective": "Hear two chords and say which tone moved.",
+          "skills": [
+            "skill.ear.difference"
+          ],
+          "prerequisites": [
+            "gate.ear.quality"
+          ],
+          "exercisePolicyId": "policy.ear.difference",
+          "preview": "Two chords, one note apart. Hearing which note moved is a different skill from naming a chord, and it is the one that makes altered dominants make sense later.",
+          "completionRule": {
+            "minimumAttempts": 14,
+            "recentWeightedAccuracy": 0.75,
+            "minimumRootCoverage": 6
+          }
+        },
+        {
+          "id": "gate.ear.function",
+          "title": "Hear the function",
+          "objective": "Hear a chord in a key and say what it is doing.",
+          "skills": [
+            "skill.ear.function"
+          ],
+          "prerequisites": [
+            "gate.ear.difference"
+          ],
+          "exercisePolicyId": "policy.ear.function",
+          "preview": "The same chord means different things in different keys. This asks for the job, not the name: is that the one, the four, or the five?",
+          "completionRule": {
+            "minimumAttempts": 14,
+            "recentWeightedAccuracy": 0.75,
+            "minimumRootCoverage": 6
+          },
+          "rewards": [
+            {
+              "kind": "practice_preset",
+              "value": "policy.practice.ear_mixed"
+            },
+            {
+              "kind": "region",
+              "value": "region.reading"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.reading",
+      "title": "Reading",
+      "summary": "Notation, at the speed it goes past.",
+      "prerequisites": [
+        "region.ear_training"
+      ],
+      "gates": [
+        {
+          "id": "gate.reading.single_notes",
+          "title": "Single notes",
+          "objective": "Read and play a line of single notes in time.",
+          "skills": [
+            "skill.reading.pitch"
+          ],
+          "prerequisites": [
+            "gate.ear.function"
+          ],
+          "exercisePolicyId": "policy.reading.single_notes",
+          "preview": "Pitch and rhythm are scored separately here, on purpose. Playing the right notes late is a timing problem; playing wrong notes exactly on the beat is not.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.75
+          }
+        },
+        {
+          "id": "gate.reading.intervals",
+          "title": "Intervals",
+          "objective": "Read two notes at once without spelling them out.",
+          "skills": [
+            "skill.reading.pitch"
+          ],
+          "prerequisites": [
+            "gate.reading.single_notes"
+          ],
+          "exercisePolicyId": "policy.reading.intervals",
+          "preview": "Reading an interval is reading a shape rather than two notes. The gap on the staff is the information; the letters are the slow way round.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.75
+          }
+        },
+        {
+          "id": "gate.reading.triads",
+          "title": "Triads",
+          "objective": "Read three-note chords on sight.",
+          "skills": [
+            "skill.reading.chords"
+          ],
+          "prerequisites": [
+            "gate.reading.intervals"
+          ],
+          "exercisePolicyId": "policy.reading.triads",
+          "preview": "Three notes stacked is a shape you already know from Foundations. Now it arrives on a staff, at tempo, and you have one beat to see it.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.75
+          },
+          "rewards": [
+            {
+              "kind": "region",
+              "value": "region.jazz_voicings"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.drop_voicings",
+      "title": "Drop Voicings",
+      "summary": "The same four notes, opened out.",
+      "prerequisites": [
+        "region.jazz_voicings"
+      ],
+      "gates": [
+        {
+          "id": "gate.voicing.drop_two",
+          "title": "Drop 2",
+          "objective": "Take the second voice from the top down an octave, and keep the chord.",
+          "skills": [
+            "skill.voicing.drop"
+          ],
+          "prerequisites": [
+            "gate.voicing.rootless"
+          ],
+          "exercisePolicyId": "policy.voicing.drop_two",
+          "preview": "A drop voicing is a close-position chord with one voice moved down an octave. The notes are the same; the spacing is what changes, and the spacing is the sound.",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            {
+              "kind": "voicing_family",
+              "value": "DROP_2"
+            }
+          ]
+        },
+        {
+          "id": "gate.voicing.drop_three",
+          "title": "Drop 3",
+          "objective": "Drop the third voice instead, and hear the gap open under it.",
+          "skills": [
+            "skill.voicing.drop"
+          ],
+          "prerequisites": [
+            "gate.voicing.drop_two"
+          ],
+          "exercisePolicyId": "policy.voicing.drop_three",
+          "preview": "Drop 3 leaves a wider hole beneath the upper structure than drop 2 does. It is the guitarist's voicing, and on a piano it is what a left hand does under a melody.",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            {
+              "kind": "voicing_family",
+              "value": "DROP_3"
+            },
+            {
+              "kind": "region",
+              "value": "region.extensions"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.progressions",
+      "title": "Progressions",
+      "summary": "The tunes underneath the tunes.",
+      "prerequisites": [
+        "region.substitutions"
+      ],
+      "gates": [
+        {
+          "id": "gate.progression.turnaround",
+          "title": "Turnarounds",
+          "objective": "Play a I-vi-ii-V round the loop without stopping.",
+          "skills": [
+            "skill.progression.turnaround"
+          ],
+          "prerequisites": [
+            "gate.substitution.secondary"
+          ],
+          "exercisePolicyId": "policy.progression.turnaround",
+          "preview": "Four chords that end where they began. A turnaround is what fills the last two bars of nearly every standard, and it loops, so it is the first thing worth being able to play without thinking.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.progression.three_six_two_five",
+          "title": "iii-VI-ii-V",
+          "objective": "Start the turnaround from the third degree instead.",
+          "skills": [
+            "skill.progression.turnaround"
+          ],
+          "prerequisites": [
+            "gate.progression.turnaround"
+          ],
+          "exercisePolicyId": "policy.progression.three_six_two_five",
+          "preview": "The same four bars, entered a step higher. The VI is a secondary dominant now, not a minor chord, and that one alteration is what pulls the whole thing forward.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.progression.secondary",
+          "title": "Secondary dominants in a line",
+          "objective": "Play a chain where each dominant sets up the next chord.",
+          "skills": [
+            "skill.substitution.secondary"
+          ],
+          "prerequisites": [
+            "gate.progression.three_six_two_five"
+          ],
+          "exercisePolicyId": "policy.progression.secondary",
+          "preview": "Every chord borrowed a cadence from the chord that followed it. Played as a chain, it is the sound of a bridge in almost any standard.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.progression.descending",
+          "title": "Descending dominants",
+          "objective": "Play dominants round the cycle, on guide tones alone.",
+          "skills": [
+            "skill.progression.descending"
+          ],
+          "prerequisites": [
+            "gate.progression.secondary"
+          ],
+          "exercisePolicyId": "policy.progression.descending",
+          "preview": "Dominant after dominant, each a fourth above the last, with nothing in your hands but thirds and sevenths. Two notes per chord, and each pair moves by a semitone.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.progression.backdoor",
+          "title": "The backdoor",
+          "objective": "Approach the tonic from a whole step below.",
+          "skills": [
+            "skill.substitution.backdoor"
+          ],
+          "prerequisites": [
+            "gate.progression.descending"
+          ],
+          "exercisePolicyId": "policy.progression.backdoor",
+          "preview": "iv7 to bVII7 to I. The other way into a major chord, and the reason Bb7 can lead to Cmaj7 without either of them being in the wrong key.",
+          "completionRule": {
+            "minimumAttempts": 10,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.progression.tritone",
+          "title": "Tritone substitution in place",
+          "objective": "Swap the dominant for the one a tritone away, mid-progression.",
+          "skills": [
+            "skill.substitution.tritone"
+          ],
+          "prerequisites": [
+            "gate.progression.backdoor"
+          ],
+          "exercisePolicyId": "policy.progression.tritone",
+          "preview": "You have played the substitute chord. This is playing it where the original stood, which is the only place it is a substitution rather than a chord.",
+          "completionRule": {
+            "minimumAttempts": 10,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.progression.blues",
+          "title": "Twelve-bar blues",
+          "objective": "Play a jazz blues through, in several keys.",
+          "skills": [
+            "skill.progression.blues"
+          ],
+          "prerequisites": [
+            "gate.progression.tritone"
+          ],
+          "exercisePolicyId": "policy.progression.blues",
+          "preview": "Twelve bars, three chords, and a hundred years of variation on top. The jazz version adds the ii-V in bars nine and ten and a diminished chord in bar six.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.8,
+            "minimumRootCoverage": 6
+          }
+        },
+        {
+          "id": "gate.progression.minor_blues",
+          "title": "Minor blues",
+          "objective": "The same twelve bars, in minor.",
+          "skills": [
+            "skill.progression.blues"
+          ],
+          "prerequisites": [
+            "gate.progression.blues"
+          ],
+          "exercisePolicyId": "policy.progression.minor_blues",
+          "preview": "Minor blues is not the major form moved down. Bar nine goes to the flat sixth as a dominant, and the turnaround is darker for it.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.8,
+            "minimumRootCoverage": 6
+          }
+        },
+        {
+          "id": "gate.progression.rhythm_changes",
+          "title": "Rhythm changes",
+          "objective": "Play the A section of rhythm changes, at tempo, on rootless voicings.",
+          "skills": [
+            "skill.progression.rhythm_changes"
+          ],
+          "prerequisites": [
+            "gate.progression.minor_blues"
+          ],
+          "exercisePolicyId": "policy.progression.rhythm_changes",
+          "preview": "Sixteen bars that half the bebop repertoire is built on. Two chords per bar, rootless voicings in the left hand, and no time to think about any of it.",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.8,
+            "minimumRootCoverage": 6
+          },
+          "rewards": [
+            {
+              "kind": "practice_preset",
+              "value": "policy.practice.all_progressions"
+            },
+            {
+              "kind": "region",
+              "value": "region.voice_leading"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.voice_leading",
+      "title": "Voice Leading",
+      "summary": "Getting from one chord to the next without moving more than you have to.",
+      "prerequisites": [
+        "region.progressions"
+      ],
+      "gates": [
+        {
+          "id": "gate.voiceleading.smooth",
+          "title": "Smooth ii-V-I",
+          "objective": "Move between rootless voicings with the least motion that works.",
+          "skills": [
+            "skill.voiceleading.smooth"
+          ],
+          "prerequisites": [
+            "gate.progression.rhythm_changes"
+          ],
+          "exercisePolicyId": "policy.voiceleading.smooth",
+          "preview": "There are several right answers, and they are not equally good. The one where your hand barely moves is the one a listener hears as one idea rather than three chords.",
+          "completionRule": {
+            "minimumAttempts": 14,
+            "recentWeightedAccuracy": 0.8,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.voiceleading.cycle",
+          "title": "Round the cycle",
+          "objective": "Keep the voice leading tight through a chain of dominants.",
+          "skills": [
+            "skill.voiceleading.smooth"
+          ],
+          "prerequisites": [
+            "gate.voiceleading.smooth"
+          ],
+          "exercisePolicyId": "policy.voiceleading.cycle",
+          "preview": "Every chord a fourth above the last, and every voice moving by a semitone or not at all. Done properly your hand stays in one place for the whole cycle.",
+          "completionRule": {
+            "minimumAttempts": 14,
+            "recentWeightedAccuracy": 0.8,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            {
+              "kind": "region",
+              "value": "region.integrated"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.integrated",
+      "title": "Integrated Reading",
+      "summary": "Chart in front of you, hands on the keys, no time to translate.",
+      "prerequisites": [
+        "region.voice_leading"
+      ],
+      "gates": [
+        {
+          "id": "gate.integrated.lead_sheet",
+          "title": "Read and comp",
+          "objective": "Read a chart and comp it in real time.",
+          "skills": [
+            "skill.integrated.reading"
+          ],
+          "prerequisites": [
+            "gate.voiceleading.cycle"
+          ],
+          "exercisePolicyId": "policy.integrated.lead_sheet",
+          "preview": "Everything at once: the chart on the staff, the symbols above it, and a left hand that has to turn both into sound at the tempo the tune is going. This is what all of the above was for.",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.8,
+            "minimumRootCoverage": 6
           }
         }
       ]

@@ -861,6 +861,1051 @@
         "maxSpreadMillis": 300
       },
       "sessionLength": 20
+    },
+    {
+      "id": "policy.calibration.keys",
+      "skills": [
+        "skill.calibration.keys"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "G",
+        "D",
+        "Bb",
+        "Eb",
+        "A",
+        "E"
+      ],
+      "formulas": [
+        "major_triad",
+        "minor_triad"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "assistanceLevel": "A7",
+      "presentation": {
+        "chordSymbol": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 8
+    },
+    {
+      "id": "policy.functional.diatonic",
+      "skills": [
+        "skill.functional.diatonic"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh",
+        "minor_sixth"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 18
+    },
+    {
+      "id": "policy.functional.cadence",
+      "skills": [
+        "skill.functional.cadence"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.major_two_five_one",
+      "voicingStyle": "ANY_VOICING",
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 12
+    },
+    {
+      "id": "policy.functional.minor_cadence",
+      "skills": [
+        "skill.functional.cadence"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "minor_seventh",
+        "dominant_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.minor_two_five_one",
+      "voicingStyle": "ANY_VOICING",
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 12
+    },
+    {
+      "id": "policy.voicing.drop_two",
+      "skills": [
+        "skill.voicing.drop"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "answerMode": "ExactVoicing",
+      "voicingFamily": "DROP_2",
+      "presentation": {
+        "chordSymbol": true,
+        "voicingName": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "lowestNote": 48,
+      "highestNote": 84,
+      "sessionLength": 16
+    },
+    {
+      "id": "policy.voicing.drop_three",
+      "skills": [
+        "skill.voicing.drop"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "answerMode": "ExactVoicing",
+      "voicingFamily": "DROP_3",
+      "presentation": {
+        "chordSymbol": true,
+        "voicingName": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "lowestNote": 45,
+      "highestNote": 84,
+      "sessionLength": 16
+    },
+    {
+      "id": "policy.progression.turnaround",
+      "skills": [
+        "skill.progression.turnaround"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.one_six_two_five",
+      "voicingStyle": "SHELL",
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 12
+    },
+    {
+      "id": "policy.progression.three_six_two_five",
+      "skills": [
+        "skill.progression.turnaround"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.three_six_two_five",
+      "voicingStyle": "SHELL",
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 12
+    },
+    {
+      "id": "policy.progression.secondary",
+      "skills": [
+        "skill.substitution.secondary"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.secondary_dominants",
+      "voicingStyle": "ROOTLESS_A",
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 12
+    },
+    {
+      "id": "policy.progression.descending",
+      "skills": [
+        "skill.progression.descending"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.descending_dominants",
+      "voicingStyle": "GUIDE_TONES",
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 12
+    },
+    {
+      "id": "policy.progression.backdoor",
+      "skills": [
+        "skill.substitution.backdoor"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.backdoor",
+      "voicingStyle": "SHELL",
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 10
+    },
+    {
+      "id": "policy.progression.tritone",
+      "skills": [
+        "skill.substitution.tritone"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.tritone_sub_turnaround",
+      "voicingStyle": "ROOTLESS_A",
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 10
+    },
+    {
+      "id": "policy.progression.blues",
+      "skills": [
+        "skill.progression.blues"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "dominant_seventh",
+        "minor_seventh",
+        "diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.jazz_blues",
+      "voicingStyle": "SHELL",
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 12
+    },
+    {
+      "id": "policy.progression.minor_blues",
+      "skills": [
+        "skill.progression.blues"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "minor_seventh",
+        "dominant_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.minor_blues",
+      "voicingStyle": "SHELL",
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 12
+    },
+    {
+      "id": "policy.progression.rhythm_changes",
+      "skills": [
+        "skill.progression.rhythm_changes"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.rhythm_changes_a",
+      "voicingStyle": "ROOTLESS_B",
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 16
+    },
+    {
+      "id": "policy.ear.reproduce",
+      "skills": [
+        "skill.ear.reproduce"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "G",
+        "D",
+        "Bb",
+        "Eb",
+        "A",
+        "E"
+      ],
+      "formulas": [
+        "major_triad",
+        "minor_triad",
+        "dominant_seventh",
+        "major_seventh",
+        "minor_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "earTaskFamily": "REPRODUCE",
+      "presentation": {
+        "chordSymbol": false
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 16
+    },
+    {
+      "id": "policy.ear.quality",
+      "skills": [
+        "skill.ear.quality"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh",
+        "minor_major_seventh",
+        "diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "earTaskFamily": "IDENTIFY_THEN_PLAY",
+      "presentation": {
+        "chordSymbol": false
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 16
+    },
+    {
+      "id": "policy.ear.difference",
+      "skills": [
+        "skill.ear.difference"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "dominant_seventh",
+        "major_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "earTaskFamily": "DIFFERENCE_DETECTION",
+      "presentation": {
+        "chordSymbol": false
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 14
+    },
+    {
+      "id": "policy.ear.function",
+      "skills": [
+        "skill.ear.function"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "G",
+        "D",
+        "Bb",
+        "Eb",
+        "A",
+        "E"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "earTaskFamily": "FUNCTION_HEARING",
+      "presentation": {
+        "chordSymbol": false,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 14
+    },
+    {
+      "id": "policy.reading.single_notes",
+      "skills": [
+        "skill.reading.pitch"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "G",
+        "D",
+        "Bb",
+        "Eb",
+        "A",
+        "E"
+      ],
+      "formulas": [
+        "major_triad"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "readingMaterial": "SINGLE_NOTES",
+      "presentation": {
+        "chordSymbol": false,
+        "staffNotation": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "lowestNote": 55,
+      "highestNote": 79,
+      "sessionLength": 12
+    },
+    {
+      "id": "policy.reading.intervals",
+      "skills": [
+        "skill.reading.pitch"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "G",
+        "D",
+        "Bb",
+        "Eb",
+        "A",
+        "E"
+      ],
+      "formulas": [
+        "major_triad"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "readingMaterial": "INTERVALS",
+      "presentation": {
+        "chordSymbol": false,
+        "staffNotation": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "lowestNote": 48,
+      "highestNote": 79,
+      "sessionLength": 12
+    },
+    {
+      "id": "policy.reading.triads",
+      "skills": [
+        "skill.reading.chords"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "G",
+        "D",
+        "Bb",
+        "Eb",
+        "A",
+        "E"
+      ],
+      "formulas": [
+        "major_triad",
+        "minor_triad"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "readingMaterial": "TRIADS",
+      "presentation": {
+        "chordSymbol": false,
+        "staffNotation": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "lowestNote": 48,
+      "highestNote": 79,
+      "sessionLength": 12
+    },
+    {
+      "id": "policy.voiceleading.smooth",
+      "skills": [
+        "skill.voiceleading.smooth"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.major_two_five_one",
+      "voicingStyle": "ROOTLESS_A",
+      "presentation": {
+        "chordSymbol": true,
+        "voicingName": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "lowestNote": 48,
+      "highestNote": 79,
+      "sessionLength": 14
+    },
+    {
+      "id": "policy.voiceleading.cycle",
+      "skills": [
+        "skill.voiceleading.smooth"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.descending_dominants",
+      "voicingStyle": "ROOTLESS_B",
+      "presentation": {
+        "chordSymbol": true,
+        "voicingName": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "lowestNote": 48,
+      "highestNote": 79,
+      "sessionLength": 14
+    },
+    {
+      "id": "policy.integrated.lead_sheet",
+      "skills": [
+        "skill.integrated.reading"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.jazz_blues",
+      "voicingStyle": "ROOTLESS_A",
+      "presentation": {
+        "chordSymbol": true,
+        "staffNotation": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "lowestNote": 48,
+      "highestNote": 84,
+      "sessionLength": 16
+    },
+    {
+      "id": "policy.practice.all_progressions",
+      "skills": [
+        "skill.progression.turnaround"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "progression": "progression.rhythm_changes_a",
+      "voicingStyle": "ANY_VOICING",
+      "presentation": {
+        "chordSymbol": true,
+        "romanNumeral": true
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 20
+    },
+    {
+      "id": "policy.practice.ear_mixed",
+      "skills": [
+        "skill.ear.quality"
+      ],
+      "roots": [
+        "C",
+        "F",
+        "Bb",
+        "Eb",
+        "Ab",
+        "Db",
+        "Gb",
+        "B",
+        "E",
+        "A",
+        "D",
+        "G"
+      ],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh"
+      ],
+      "inversions": [
+        "ROOT"
+      ],
+      "earTaskFamily": "IDENTIFY_THEN_PLAY",
+      "presentation": {
+        "chordSymbol": false
+      },
+      "onsetPolicy": {
+        "kind": "rolled",
+        "maxSpreadMillis": 300
+      },
+      "sessionLength": 20
     }
   ]
 }

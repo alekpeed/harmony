@@ -177,6 +177,10 @@ public class DefaultExerciseGenerator(
         val base = policy.voicingPolicy ?: VoicingPolicy(
             requiredDegrees = chord.requiredDegrees,
             optionalDegrees = chord.optionalDegrees,
+            // A drop or spread family has no recipe, because it is the same notes respaced.
+            // Naming it here is what makes the realizer hand back the reshaped voicing rather
+            // than the close one it started from.
+            namedFamily = policy.voicingFamily?.takeIf { it in VoicingFamilies.transformFamilies },
         )
         val bass = when (inversion) {
             Inversion.ROOT -> BassRequirement.RootInBass

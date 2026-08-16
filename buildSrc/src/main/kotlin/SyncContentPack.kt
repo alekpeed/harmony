@@ -52,6 +52,7 @@ abstract class SyncContentPack : DefaultTask() {
         val FILES = listOf(
             "curriculum/curriculum.json" to "curriculum.json",
             "exercises/exercise_policies.json" to "exercise_policies.json",
+            "progressions/progressions.json" to "progressions.json",
         )
     }
 }

@@ -551,3 +551,58 @@ ambiguous in the meantime.
 The precedence — verdict over held over role — is pedagogical rather than technical. A required
 tone played wrong must stop saying "required" the moment the player has been told the answer;
 what they need then is the marker about what they did.
+
+---
+
+## D43 — A progression is authored as roman numerals, not as Kotlin
+
+**Phase 13.** `RomanNumeralParser`, plus `content/progressions/progressions.json`.
+
+21_CONTENT_AUTHORING_GUIDE.md §1 asks for content to be data wherever existing domain types can
+express the musical behaviour. A progression already *was* expressible — it is a list of
+`FunctionalChord` — but there was no way for an author to write one down, so every tune would
+have been a new entry in `Functions` and a recompile. The parser reads what a chart writes, and
+the mandatory vocabulary of Region 12 (the blues, rhythm changes, turnaround variants,
+descending dominants) is now eleven entries in a JSON file.
+
+Case carries meaning, exactly as it does on a chart: `ii7` is the two chord and `II7` is the
+dominant of the five, and that difference is the only thing the capitals say. It applies only to
+the figures that are ambiguous alone — a bare numeral, and plain `7`, `6`, `9`, `11`, `13`. An
+explicit suffix overrules it, so `IIm7` and `ii7` are one chord written two ways.
+
+Two things the tests caught. The slash in `I6/9` is part of the quality, not a secondary target,
+so a slash only separates a target when what follows it is a numeral — the same distinction the
+chord parser draws for a slash bass. And `i(maj7)` has to reach the minor-major seventh even
+though `maj7` on its own is a major seventh: a lowercase numeral has already said "minor", so the
+`m`-prefixed alias is tried first there and second everywhere else.
+
+---
+
+## D44 — A gate's activity is derived from what its policy names
+
+**Phase 13.** `ExercisePolicy.activity`, over `earTaskFamily`, `progressionId` and
+`readingMaterial`.
+
+The ear-training and sight-reading engines were finished in phases 8 and 9 and no content could
+reach them, because a policy could only describe a chord exercise. Rather than a `kind` field
+that could disagree with the rest of the policy, the activity is derived from which of the three
+markers is set — the same reasoning as gate status, which is derived from evidence and never
+stored. Setting two markers is refused at construction: a gate is one activity.
+
+`GateActivity` names four *inputs* — hands, ears, a progression, a staff — and not four screens.
+01_PRODUCT_AND_FUNCTIONAL_SCOPE.md §5 is explicit that the exercise screen is compositional.
+
+---
+
+## D45 — A drop voicing is named on the policy, not built as a recipe
+
+**Phase 13.** `VoicingFamilies.transformFamilies` and `authorable`.
+
+Authoring the Region 8 gates failed the content validator: `DROP_2` is not in
+`VoicingFamilies.supported`, because a drop voicing is not a choice of degrees — it is the same
+four notes with one moved down an octave, so there is nothing for `recipe` to return. The
+realizer already builds them by transforming a close voicing when a `VoicingPolicy` names the
+family. So the generator now passes a transform family through to the policy instead of asking
+for a recipe, and the content check accepts either route. The drop gates are authored as
+`ExactVoicing`, because a drop voicing is judged on its spacing: the same four tones in close
+position are a different answer.

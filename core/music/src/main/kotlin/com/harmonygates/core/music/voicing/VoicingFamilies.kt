@@ -51,6 +51,24 @@ public object VoicingFamilies {
     )
 
     /**
+     * Families that are a reshaping of a close voicing rather than a choice of degrees.
+     *
+     * A drop 2 is not a different set of notes — it is the same four with one moved down an
+     * octave, so there is nothing for [recipe] to return. `ChordRealizer` builds them by
+     * transforming a close voicing, which is why an exercise asking for one names the family on
+     * its [VoicingPolicy] instead. Region 8 gates are authored that way.
+     */
+    public val transformFamilies: Set<VoicingFamily> = setOf(
+        VoicingFamily.DROP_2,
+        VoicingFamily.DROP_3,
+        VoicingFamily.DROP_2_AND_4,
+        VoicingFamily.SPREAD,
+    )
+
+    /** Every family a content author may name, by either route. */
+    public val authorable: Set<VoicingFamily> = supported + transformFamilies
+
+    /**
      * Resolves [family] for [chord], or null when the chord cannot support the shape.
      *
      * A triad has no seventh, so it has no shell and no guide tones; saying so with a null is

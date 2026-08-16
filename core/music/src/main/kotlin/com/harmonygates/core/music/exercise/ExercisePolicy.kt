@@ -1,9 +1,12 @@
 package com.harmonygates.core.music.exercise
 
 import com.harmonygates.core.music.chord.ChordFormulaId
+import com.harmonygates.core.music.eartraining.EarTaskFamily
 import com.harmonygates.core.music.harmony.DominantAlteration
 import com.harmonygates.core.music.performance.OnsetPolicy
 import com.harmonygates.core.music.pitch.SpelledPitchClass
+import com.harmonygates.core.music.progression.VoicingStyle
+import com.harmonygates.core.music.score.ReadingMaterial
 import com.harmonygates.core.music.voicing.Inversion
 import com.harmonygates.core.music.voicing.VoicingFamily
 import com.harmonygates.core.music.voicing.VoicingPolicy
@@ -35,6 +38,27 @@ public value class SkillId(public val value: String) {
     }
 
     override fun toString(): String = value
+}
+
+/**
+ * What a gate actually asks the player to do.
+ *
+ * 01_PRODUCT_AND_FUNCTIONAL_SCOPE.md §5 is emphatic that the exercise screen is compositional
+ * rather than one screen per combination, so this names the four *inputs* a gate can take —
+ * hands, ears, a moving progression, a staff — and not four screens.
+ */
+public enum class GateActivity {
+    /** A chord symbol is shown and played. */
+    CHORD,
+
+    /** Something is heard and reproduced or identified. */
+    EAR,
+
+    /** A progression runs, and each chord is played as it arrives. */
+    PROGRESSION,
+
+    /** Notation is read and played. */
+    READING,
 }
 
 /**
@@ -127,6 +151,20 @@ public data class ExercisePolicy(
      * a particular chord at generation time.
      */
     val voicingFamily: VoicingFamily? = null,
+    /**
+     * The ear-training family this gate asks for, when it is an ear gate.
+     *
+     * The rest of the policy still applies: an ear exercise draws its material from the same
+     * root and formula pools a chord exercise would, because the answer is a chord either way.
+     * What changes is that the player hears it instead of reading it.
+     */
+    val earTaskFamily: EarTaskFamily? = null,
+    /** The progression this gate runs, by id, when it is a progression gate. */
+    val progressionId: String? = null,
+    /** How much freedom each chord of a progression allows. Only meaningful with [progressionId]. */
+    val voicingStyle: VoicingStyle? = null,
+    /** What the staff shows, when it is a sight-reading gate. */
+    val readingMaterial: ReadingMaterial? = null,
     val presentation: PresentationSpec = PresentationSpec.Independent,
     val onsetPolicy: OnsetPolicy = OnsetPolicy.NormalRoll,
     val pitchRange: IntRange = DEFAULT_RANGE,
@@ -138,12 +176,37 @@ public data class ExercisePolicy(
             "An alteration set with nothing in it is a plain dominant; leave it out rather " +
                 "than authoring an exercise that silently is not the one it names"
         }
+        require(activityMarkers <= 1) {
+            "Policy $id asks to be $activityMarkers kinds of exercise at once. A gate is one " +
+                "activity: chords, ears, a progression, or the staff."
+        }
+        require(voicingStyle == null || progressionId != null) {
+            "Policy $id sets a voicing style with no progression to apply it to"
+        }
         require(inversionPool.isNotEmpty()) { "An exercise policy needs at least one inversion" }
         require(sessionLength > 0) { "A session needs at least one exercise" }
         require(answerMode != AnswerMode.ChordPolicy || voicingPolicy != null || voicingFamily != null) {
             "A degree-aware policy match needs either a voicing policy or a named family"
         }
     }
+
+    /**
+     * What kind of exercise this policy describes.
+     *
+     * Derived rather than stored, for the same reason gate status is: two fields that can
+     * disagree eventually do. A policy that names no activity is a chord policy, which is what
+     * every gate written before phase 13 is.
+     */
+    public val activity: GateActivity
+        get() = when {
+            earTaskFamily != null -> GateActivity.EAR
+            progressionId != null -> GateActivity.PROGRESSION
+            readingMaterial != null -> GateActivity.READING
+            else -> GateActivity.CHORD
+        }
+
+    private val activityMarkers: Int
+        get() = listOfNotNull(earTaskFamily, progressionId, readingMaterial).size
 
     public companion object {
         /** Two octaves either side of middle C. */

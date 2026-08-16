@@ -5,6 +5,70 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 13 — Full campaign content
+
+**Commit:** see `git log` for `phase/13-campaign-content`
+
+### Implemented
+
+- **`RomanNumeralParser`** — reads `ii7`, `bII7`, `#ivo7`, `V7/ii`, `i(maj7)` the way a chart
+  writes them, so a progression can be authored instead of compiled (D43).
+- **`content/progressions/progressions.json`** — eleven progressions covering Region 12's
+  mandatory vocabulary: both ii-V-Is, I-vi-ii-V, iii-VI-ii-V, secondary and descending dominants,
+  backdoor, tritone sub, twelve-bar jazz blues, minor blues, and the rhythm-changes A section.
+- **`ExercisePolicy` activities** — `earTaskFamily`, `progressionId` + `voicingStyle`, and
+  `readingMaterial`. The phase 8 and 9 engines finally have content that reaches them (D44).
+- **Drop voicings authorable** — a transform family is named on the policy rather than built as
+  a recipe, which is what Region 8's gates needed (D45).
+- **Eight new regions**: Setting Up (calibration, now the campaign's entry point), Functional
+  Harmony, Ear Training, Reading, Drop Voicings, Progressions, Voice Leading, Integrated
+  Reading. Twenty-five new gates, twenty-six new policies, all with instruction copy, completion
+  rules and unlocks.
+- The campaign is now 17 regions and 43 gates, in curriculum order, from a first note on a
+  keyboard through to comping a chart.
+
+### Acceptance
+
+- *content validator clean* — `ContentPackTest` passes: no cycles, no unreachable gates, no
+  dangling references, no warnings, and all 48 policies generate 100 playable exercises each.
+- *complete path from onboarding through advanced region* — a test walks the prerequisite graph
+  from `gate.calibration.keys` and asserts every one of the 43 gates is on it, and that the path
+  reaches `region.integrated`.
+
+### Tests
+
+587 passing, 0 failing. 19 new: `RomanNumeralParserTest` (12) and seven in `ContentPackTest`.
+
+### What the tests caught
+
+- **`I6/9` was being read as a secondary target.** The slash in a six-nine chord is part of the
+  quality; a slash only separates a target when what follows it is a numeral.
+- **`i(maj7)` resolved to a major seventh.** A lowercase numeral has already said "minor", so the
+  `m`-prefixed alias has to be tried first there.
+- **A test expectation was wrong, not the code.** `ii7/V` in C is `Am7` — the ii *of G* — and the
+  test had asserted `Em7`.
+- **The drop-voicing gates could not be authored at all,** which is how the recipe/transform
+  distinction surfaced (D45).
+
+### Known limitations
+
+1. **No screen runs a progression gate, an ear gate or a reading gate yet.** The content, the
+   policies and the engines all exist and are tested; the app still only launches chord gates.
+   Wiring them is UI work, which the user has asked to hold.
+2. **The calibration gate is a chord exercise, not a calibration screen.** Region 0 asks for
+   note-on/off, sustain and latency checks. Those live on the MIDI diagnostics screen, which is
+   not yet part of the campaign path.
+3. **Voice-leading gates are progression gates.** Region 13 wants scoring on total motion, leaps
+   and retained common tones. `VoiceLeadingTarget` exists as a requirement type and no policy
+   field reaches it, so the two gates practise the right material with the wrong evaluator.
+4. **Integrated reading is a progression with staff notation switched on.** Region 14's two-hand
+   coordination — melody in one hand, comping in the other — is not modelled.
+5. **Human review has not happened.** The phase asks for gates populated "with human review".
+   Every exercise is machine-checked as generable, spellable and playable; nobody has read the
+   43 previews or played a session.
+
+---
+
 ## Phase: 12 — Design system
 
 **Commit:** see `git log` for `phase/12-design-system`

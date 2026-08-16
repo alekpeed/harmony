@@ -133,7 +133,7 @@ androidComponents {
             "sync${variant.name.replaceFirstChar(Char::uppercase)}ContentPack",
         ) {
             group = "build"
-            description = "Copies the curriculum and exercise policies from content/ into assets."
+            description = "Copies the curriculum, policies and progressions from content/ into assets."
             contentDirectory.set(rootProject.layout.projectDirectory.dir("content"))
         }
         variant.sources.assets?.addGeneratedSourceDirectory(

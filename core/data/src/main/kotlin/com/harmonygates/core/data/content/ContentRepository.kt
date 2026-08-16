@@ -8,6 +8,7 @@ import com.harmonygates.core.music.campaign.GateId
 import com.harmonygates.core.music.campaign.ValidationResult
 import com.harmonygates.core.music.exercise.ExercisePolicy
 import com.harmonygates.core.music.exercise.ExercisePolicyId
+import com.harmonygates.core.music.progression.ProgressionTemplate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -29,6 +30,11 @@ public interface ContentRepository {
     public suspend fun exercisePolicy(id: ExercisePolicyId): ExercisePolicy?
 
     public suspend fun allPolicies(): Map<ExercisePolicyId, ExercisePolicy>
+
+    /** The authored progressions, by id. Region 12's vocabulary is content, not code. */
+    public suspend fun allProgressions(): Map<String, ProgressionTemplate>
+
+    public suspend fun progression(id: String): ProgressionTemplate?
 
     /** What the validator makes of the loaded content. Surfaced so a diagnostics screen can show it. */
     public suspend fun validate(): ValidationResult
@@ -63,6 +69,7 @@ public class DefaultContentRepository(
     private val source: ContentSource,
     private val curriculumPath: String = CURRICULUM_PATH,
     private val policyPath: String = POLICY_PATH,
+    private val progressionPath: String = PROGRESSION_PATH,
 ) : ContentRepository {
 
     private val mutex = Mutex()
@@ -75,11 +82,26 @@ public class DefaultContentRepository(
     private fun load(): LoadedContent {
         val curriculum = ContentDecoder.curriculum(JSON.decodeFromString(source.read(curriculumPath)))
         val policies = ContentDecoder.policies(JSON.decodeFromString(source.read(policyPath)))
+        val progressions =
+            ContentDecoder.progressions(JSON.decodeFromString(source.read(progressionPath)))
+
+        // A policy naming a progression that does not exist is a dangling reference like any
+        // other, and it is checked here rather than in the validator because the validator's
+        // job is the gate graph and it has never been handed the progressions.
+        val missing = policies.values.mapNotNull { policy ->
+            policy.progressionId?.takeIf { it !in progressions }?.let { "${policy.id} -> $it" }
+        }
+        if (missing.isNotEmpty()) {
+            throw ContentReferenceException(
+                "These policies name a progression that is not authored: ${missing.joinToString()}",
+            )
+        }
+
         val validation = CurriculumValidator(policies.keys).validate(curriculum)
         check(validation.isValid) {
             "The bundled curriculum is unplayable:\n${validation.report()}"
         }
-        return LoadedContent(curriculum, policies, validation)
+        return LoadedContent(curriculum, policies, progressions, validation)
     }
 
     override suspend fun curriculum(): Curriculum = content().curriculum
@@ -90,17 +112,23 @@ public class DefaultContentRepository(
 
     override suspend fun allPolicies(): Map<ExercisePolicyId, ExercisePolicy> = content().policies
 
+    override suspend fun allProgressions(): Map<String, ProgressionTemplate> = content().progressions
+
+    override suspend fun progression(id: String): ProgressionTemplate? = content().progressions[id]
+
     override suspend fun validate(): ValidationResult = content().validation
 
     private data class LoadedContent(
         val curriculum: Curriculum,
         val policies: Map<ExercisePolicyId, ExercisePolicy>,
+        val progressions: Map<String, ProgressionTemplate>,
         val validation: ValidationResult,
     )
 
     public companion object {
         public const val CURRICULUM_PATH: String = "content/curriculum.json"
         public const val POLICY_PATH: String = "content/exercise_policies.json"
+        public const val PROGRESSION_PATH: String = "content/progressions.json"
 
         internal val JSON = Json {
             ignoreUnknownKeys = true
