@@ -32,21 +32,21 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** Everything the Progression Run screen can ask for. */
 sealed interface ProgressionRunIntent {
     data object Next : ProgressionRunIntent
     data object Restart : ProgressionRunIntent
     data class ChooseTemplate(val template: ProgressionTemplate) : ProgressionRunIntent
     data class ChooseStyle(val style: VoicingStyle) : ProgressionRunIntent
     data object ToggleAllKeys : ProgressionRunIntent
+    data object ToggleLoop : ProgressionRunIntent
     data object ToggleRomanNumerals : ProgressionRunIntent
 }
 
-/** How this run was set up. */
 data class RunSetup(
     val template: ProgressionTemplate = ProgressionTemplates.MajorTwoFiveOne,
     val style: VoicingStyle = VoicingStyle.ANY_VOICING,
     val allKeys: Boolean = true,
+    val loop: Boolean = false,
     val key: SpelledPitchClass = DEFAULT_KEY,
     val showRomanNumerals: Boolean = true,
 ) {
@@ -55,13 +55,6 @@ data class RunSetup(
     }
 }
 
-/**
- * Drives Progression Run.
- *
- * Wiring only, exactly as `ChordGateViewModel` is: the run itself is
- * `DefaultProgressionRunEngine` in `core:music`, so the rule that a chord is judged by the
- * domain and never by the screen holds here by construction rather than by discipline.
- */
 class ProgressionRunViewModel(application: Application) : AndroidViewModel(application) {
 
     private val midi: MidiInputSource = AndroidMidiInputSource(application, viewModelScope)
@@ -79,10 +72,8 @@ class ProgressionRunViewModel(application: Application) : AndroidViewModel(appli
     )
 
     private val generator = DefaultProgressionGenerator()
-
     private val _setup = MutableStateFlow(RunSetup())
 
-    /** The track as supplied in `interface/`, read once. */
     val track: TrackSpec = TrackMapReader.read(
         application.resources.openRawResource(R.raw.progression_run_map).use { it.readBytes().decodeToString() },
     )
@@ -107,8 +98,6 @@ class ProgressionRunViewModel(application: Application) : AndroidViewModel(appli
             startRun()
         }
         viewModelScope.launch {
-            // Losing the keyboard pauses the run rather than ending it, and the track keeps its
-            // place — the same contract the exercise session has (05_MIDI_INPUT_ENGINE.md §9).
             midi.connectionState.collect { connection ->
                 if (connection is MidiConnectionState.Error) {
                     engine.pause()
@@ -141,6 +130,11 @@ class ProgressionRunViewModel(application: Application) : AndroidViewModel(appli
                     startRun()
                 }
 
+                ProgressionRunIntent.ToggleLoop -> {
+                    _setup.value = _setup.value.copy(loop = !_setup.value.loop)
+                    startRun()
+                }
+
                 ProgressionRunIntent.ToggleRomanNumerals ->
                     _setup.value = _setup.value.copy(showRomanNumerals = !_setup.value.showRomanNumerals)
             }
@@ -152,22 +146,17 @@ class ProgressionRunViewModel(application: Application) : AndroidViewModel(appli
     }
 
     private fun progressionFor(setup: RunSetup): Progression {
-        if (setup.allKeys) return generator.throughAllKeys(setup.template, setup.style)
-        return when (val placed = generator.generate(setup.template, KeyContext(setup.key), setup.style)) {
-            is SpellingResult.Spelled -> placed.value
-            // A template that cannot be written in the chosen key falls back to the twelve-key
-            // form rather than to an error screen: the run is still playable, just longer.
-            is SpellingResult.Overflow -> generator.throughAllKeys(setup.template, setup.style)
+        val generated = if (setup.allKeys) {
+            generator.throughAllKeys(setup.template, setup.style)
+        } else {
+            when (val placed = generator.generate(setup.template, KeyContext(setup.key), setup.style)) {
+                is SpellingResult.Spelled -> placed.value
+                is SpellingResult.Overflow -> generator.throughAllKeys(setup.template, setup.style)
+            }
         }
+        return generated.copy(loop = setup.loop)
     }
 
-    /**
-     * The chords the track shows, and where each one is.
-     *
-     * The window is one slot wider than the visible composition at both ends, because the orb
-     * leaving the near end and the orb arriving at the far end have to exist before they can
-     * move. Slots here are integers; the screen adds the fraction of an advance in flight.
-     */
     private fun orbsFor(run: ProgressionRunState, setup: RunSetup): List<ChordOrbUiModel> {
         val progression = run.progression ?: return emptyList()
         return progression.window(
@@ -219,7 +208,6 @@ class ProgressionRunViewModel(application: Application) : AndroidViewModel(appli
     }
 }
 
-/** What the Progression Run screen draws. */
 data class ProgressionRunUiState(
     val run: ProgressionRunState = ProgressionRunState(),
     val setup: RunSetup = RunSetup(),
@@ -234,9 +222,15 @@ data class ProgressionRunUiState(
 
     val instruction: String? get() = run.activeEvent?.instruction
 
-    /** "Chord 4 of 36". */
     val progressLabel: String
-        get() = run.progression?.let { "Chord ${run.activeChordIndex + 1} of ${it.size}" }.orEmpty()
+        get() = run.progression?.let { progression ->
+            val ordinal = if (run.status == ProgressionRunStatus.COMPLETED) {
+                progression.size
+            } else {
+                (run.activeChordIndex + 1).coerceIn(1, progression.size)
+            }
+            "Chord $ordinal of ${progression.size}"
+        }.orEmpty()
 
     val lastResult: EvaluationResult? get() = run.lastResult
 }
