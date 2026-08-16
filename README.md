@@ -20,9 +20,19 @@ Approved visual references:
 - Home: node `28:2`
 - Progression Run: node `77:2`
 - Chord Gates: node `101:76` (`Harmony Gates / Chord Gates / CANON / WIRED 01`)
+- Sight Reading: node `102:2` (`Harmony Gates / Sight Reading / CANON / WIRED 01`)
 
 Chord Gates machine-readable contract:
 `interface/maps/chord-gates.json`
 
 Chord Gates production background asset path:
 `interface/assets/chord-gates-canon.png`
+
+Sight Reading machine-readable contract:
+`interface/maps/sight-reading.json`
+
+Sight Reading detailed handoff:
+`interface/SIGHT_READING_HANDOFF.md`
+
+Sight Reading production background asset path:
+`interface/assets/sight-reading-landing.png`
