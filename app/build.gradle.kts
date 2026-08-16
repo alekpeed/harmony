@@ -160,9 +160,14 @@ androidComponents {
             "sync${variant.name.replaceFirstChar(Char::uppercase)}InterfaceArtwork",
         ) {
             group = "build"
-            description = "Copies the approved home artwork from interface/ into generated resources."
+            description = "Copies the clean Home plate and its interaction map from interface/."
             interfaceDirectory.set(rootProject.layout.projectDirectory.dir("interface"))
-            sourceFileName.set("harmony_home_approved.jpg")
+            // The clean static plate, not the approved JPG. `interface/maps/home.json` marks that
+            // JPG `legacy-reference-only` because it has runtime values baked into it — a
+            // profile name, an XP figure, a streak, a clock. Those have to be drawn from state
+            // above the plate, and a background that already contains yesterday's numbers makes
+            // that impossible to do correctly.
+            sourceFileName.set("assets/home-clean-background.png")
             mapFileName.set("maps/home.json")
             resourceName.set("home_approved")
             mapResourceName.set("home_interaction_map")
