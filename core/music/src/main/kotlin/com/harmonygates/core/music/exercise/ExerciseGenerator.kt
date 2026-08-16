@@ -1,6 +1,7 @@
 package com.harmonygates.core.music.exercise
 
 import com.harmonygates.core.music.chord.ChordSpec
+import com.harmonygates.core.music.harmony.AlteredDominants
 import com.harmonygates.core.music.parse.StandardRoots
 import com.harmonygates.core.music.pitch.SpelledPitchClass
 import com.harmonygates.core.music.pitch.SpellingResult
@@ -96,12 +97,24 @@ public class DefaultExerciseGenerator(
             }?.let { ChordSpec(it, formulaId) } ?: chord
         }
 
+        // Region 10 builds an altered dominant by altering a plain one rather than by naming a
+        // separate chord, so the pool is applied here to whatever root and quality came out
+        // above. A pool set against a chord that is not a dominant leaves it alone: the
+        // authored formula is what the gate is teaching, and inventing a `Cmaj7b9` to satisfy
+        // the pool would be a different lesson.
+        val altered = if (policy.alterationPool.isEmpty()) {
+            writable
+        } else {
+            val alterations = random.pick(policy.alterationPool)
+            AlteredDominants.alter(writable, *alterations.toTypedArray()) ?: writable
+        }
+
         // A named family is resolved here rather than in the policy, because the tones a shape
         // needs depend on the chord it is applied to: rootless A on a dominant sounds the
         // thirteenth, on a minor seventh the fifth. The recipe may also extend the chord with
-        // the tensions the shape supplies, which is why it can replace `writable`.
-        val recipe = policy.voicingFamily?.let { VoicingFamilies.recipe(it, writable) }
-        val judged = recipe?.chord ?: writable
+        // the tensions the shape supplies, which is why it can replace `altered`.
+        val recipe = policy.voicingFamily?.let { VoicingFamilies.recipe(it, altered) }
+        val judged = recipe?.chord ?: altered
 
         val spelled = realizer.chordTones(judged)
         val voicingPolicy = voicingPolicyFor(policy, judged, inversion, recipe)

@@ -1,5 +1,6 @@
 package com.harmonygates.core.music
 
+import com.harmonygates.core.music.chord.ChordDegree
 import com.harmonygates.core.music.chord.ChordFormulas
 import com.harmonygates.core.music.exercise.AnswerMode
 import com.harmonygates.core.music.exercise.DefaultExerciseGenerator
@@ -9,6 +10,7 @@ import com.harmonygates.core.music.exercise.ExerciseRequirement
 import com.harmonygates.core.music.exercise.GenerationContext
 import com.harmonygates.core.music.exercise.PresentationSpec
 import com.harmonygates.core.music.exercise.SkillId
+import com.harmonygates.core.music.harmony.DominantAlteration
 import com.harmonygates.core.music.parse.StandardRoots
 import com.harmonygates.core.music.pitch.SpellingResult
 import com.harmonygates.core.music.realize.DefaultChordRealizer
@@ -39,14 +41,84 @@ class ExerciseGeneratorTest {
         inversions: List<Inversion> = listOf(Inversion.ROOT),
         answerMode: AnswerMode = AnswerMode.PitchClasses,
         presentation: PresentationSpec = PresentationSpec.Independent,
+        alterations: List<Set<DominantAlteration>> = emptyList(),
     ) = ExercisePolicy(
         id = ExercisePolicyId("policy.test"),
         skillIds = setOf(SkillId("skill.test")),
         formulaPool = formulas,
         inversionPool = inversions,
+        alterationPool = alterations,
         answerMode = answerMode,
         presentation = presentation,
     )
+
+    // --- Altered dominants (Region 10) -----------------------------------------------------
+
+    @Test
+    fun `an alteration pool dresses the dominant it generated`() {
+        val altered = policy(
+            formulas = listOf(ChordFormulas.DominantSeventh.id),
+            alterations = listOf(setOf(DominantAlteration.FLAT_NINE)),
+        )
+
+        repeat(SAMPLES) { seed ->
+            val instance = generator.generate(altered, seed = seed.toLong())
+
+            assertTrue(
+                ChordDegree.FLAT_NINTH in instance.chord.degrees,
+                "${instance.chord.symbol} was generated from a pool that asks for a b9",
+            )
+            assertTrue(
+                instance.spelledTones.size > PLAIN_DOMINANT_TONES,
+                "${instance.chord.symbol} should sound the alteration it names",
+            )
+        }
+    }
+
+    @Test
+    fun `an alteration pool asks for one of its sets, not all of them at once`() {
+        val altered = policy(
+            formulas = listOf(ChordFormulas.DominantSeventh.id),
+            alterations = listOf(setOf(DominantAlteration.FLAT_NINE), setOf(DominantAlteration.SHARP_NINE)),
+        )
+
+        val symbols = (0 until SAMPLES).map { generator.generate(altered, seed = it.toLong()).chord }
+
+        assertTrue(symbols.any { ChordDegree.FLAT_NINTH in it.degrees }, "The b9 was never chosen")
+        assertTrue(symbols.any { ChordDegree.SHARP_NINTH in it.degrees }, "The #9 was never chosen")
+        assertTrue(
+            symbols.none { ChordDegree.FLAT_NINTH in it.degrees && ChordDegree.SHARP_NINTH in it.degrees },
+            "A ninth cannot be flat and sharp at once",
+        )
+    }
+
+    @Test
+    fun `an alteration pool leaves a chord that is not a dominant alone`() {
+        val altered = policy(
+            formulas = listOf(ChordFormulas.MajorSeventh.id),
+            alterations = listOf(setOf(DominantAlteration.FLAT_NINE)),
+        )
+
+        repeat(SAMPLES) { seed ->
+            val instance = generator.generate(altered, seed = seed.toLong())
+
+            assertEquals(
+                ChordFormulas.MajorSeventh.id,
+                instance.chord.formulaId,
+                "The authored formula is the lesson; a major seventh with a b9 is a different one",
+            )
+            assertTrue(ChordDegree.FLAT_NINTH !in instance.chord.degrees)
+        }
+    }
+
+    @Test
+    fun `an empty alteration set is refused rather than silently meaning nothing`() {
+        val failure = runCatching {
+            policy(formulas = listOf(ChordFormulas.DominantSeventh.id), alterations = listOf(emptySet()))
+        }
+
+        assertTrue(failure.isFailure)
+    }
 
     @Test
     fun `the same seed produces the same exercise`() {
@@ -198,5 +270,10 @@ class ExerciseGeneratorTest {
     fun `an instance carries the seed that made it`() {
         val instance = generator.generate(policy(), seed = 99)
         assertEquals(99L, instance.seed, "A bug report naming a chord has to be reproducible")
+    }
+
+    private companion object {
+        const val SAMPLES = 24
+        const val PLAIN_DOMINANT_TONES = 4
     }
 }

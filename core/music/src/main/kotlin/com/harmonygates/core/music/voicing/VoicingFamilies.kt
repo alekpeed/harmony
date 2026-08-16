@@ -47,6 +47,7 @@ public object VoicingFamilies {
         VoicingFamily.GUIDE_TONES,
         VoicingFamily.ROOTLESS_A,
         VoicingFamily.ROOTLESS_B,
+        VoicingFamily.QUARTAL,
     )
 
     /**
@@ -61,7 +62,51 @@ public object VoicingFamilies {
         VoicingFamily.GUIDE_TONES -> guideTones(chord)
         VoicingFamily.ROOTLESS_A -> rootless(chord, thirdLowest = true)
         VoicingFamily.ROOTLESS_B -> rootless(chord, thirdLowest = false)
+        VoicingFamily.QUARTAL -> quartal(chord)
         else -> null
+    }
+
+    // --- Region 9: quartal and modal ----------------------------------------------------------
+
+    /**
+     * Stacked fourths.
+     *
+     * 03_JAZZ_CURRICULUM.md §11 says the important thing about this family: "The chord label may
+     * be ambiguous. Exercises here can specify structure/function rather than force a single
+     * conventional chord symbol." A So What voicing is not really a `Dm11` — it is four fourths
+     * and a third, and calling it a chord with a root is already an interpretation.
+     *
+     * So the policy asks for the tones a fourth-stack over this chord contains, and deliberately
+     * does not constrain which is lowest: a quartal structure inverted is still quartal.
+     */
+    private fun quartal(chord: ChordSpec): VoicingRecipe? {
+        // Fourths from the chord: root, fourth, seventh, third above. Expressed as degrees so
+        // the same recipe works over a minor seventh and a suspended chord alike.
+        val stack = listOf(
+            ChordDegree.ROOT,
+            ChordDegree.FOURTH,
+            chord.seventh() ?: return null,
+            chord.quality() ?: return null,
+        )
+        val extended = chord.copy(additions = chord.additions + (stack.toSet() - chord.degrees.toSet()))
+        val required = stack.toSet()
+        if (required.size < MINIMUM_QUARTAL_TONES) return null
+
+        return VoicingRecipe(
+            family = VoicingFamily.QUARTAL,
+            chord = extended,
+            policy = VoicingPolicy(
+                requiredDegrees = required,
+                allowDoubling = false,
+                requireRoot = true,
+                // No bass or top requirement: the stack is the structure, and inverting it does
+                // not stop it being fourths.
+                maxVoices = required.size,
+                namedFamily = VoicingFamily.QUARTAL,
+                disallowedDegrees = extended.degrees.toSet() - required,
+            ),
+            instruction = "Quartal: stack fourths — " + required.sorted().joinToString(" ") { it.symbol },
+        )
     }
 
     // --- Region 4: shells and guide tones -----------------------------------------------------
@@ -197,4 +242,5 @@ public object VoicingFamilies {
     private const val NINTH_NUMBER = 9
     private const val THIRTEENTH_NUMBER = 13
     private const val REQUIRED_ROOTLESS_TONES = 4
+    private const val MINIMUM_QUARTAL_TONES = 4
 }

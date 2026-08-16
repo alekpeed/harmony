@@ -11,10 +11,12 @@
           "id": "gate.triads.build",
           "title": "Triads",
           "objective": "Build a major or minor triad on any root.",
-          "skills": ["skill.triad.build"],
+          "skills": [
+            "skill.triad.build"
+          ],
           "prerequisites": [],
           "exercisePolicyId": "policy.triad.major_minor.guided",
-          "preview": "A triad is three notes: the root, a third and a fifth. The third is what makes it major or minor — everything else in this game is built on hearing that one note move.",
+          "preview": "A triad is three notes: the root, a third and a fifth. The third is what makes it major or minor \u2014 everything else in this game is built on hearing that one note move.",
           "completionRule": {
             "minimumAttempts": 12,
             "recentWeightedAccuracy": 0.85,
@@ -25,8 +27,12 @@
           "id": "gate.triads.inversions",
           "title": "Triad inversions",
           "objective": "Put any chord tone in the bass, on purpose.",
-          "skills": ["skill.triad.inversion"],
-          "prerequisites": ["gate.triads.build"],
+          "skills": [
+            "skill.triad.inversion"
+          ],
+          "prerequisites": [
+            "gate.triads.build"
+          ],
           "exercisePolicyId": "policy.triad.inversions",
           "preview": "An inversion is not a different chord. It is the same chord with a different note underneath, and the bass is what a listener hears first.",
           "completionRule": {
@@ -35,7 +41,10 @@
             "minimumRootCoverage": 8
           },
           "rewards": [
-            { "kind": "region", "value": "region.seventh_harmony" }
+            {
+              "kind": "region",
+              "value": "region.seventh_harmony"
+            }
           ]
         }
       ]
@@ -44,14 +53,20 @@
       "id": "region.seventh_harmony",
       "title": "Seventh Harmony",
       "summary": "The four-note chords the whole language is written in.",
-      "prerequisites": ["region.foundations"],
+      "prerequisites": [
+        "region.foundations"
+      ],
       "gates": [
         {
           "id": "gate.sevenths.build",
           "title": "Seventh chords",
           "objective": "Build the six common seventh and sixth chords on any root.",
-          "skills": ["skill.seventh.build"],
-          "prerequisites": ["gate.triads.inversions"],
+          "skills": [
+            "skill.seventh.build"
+          ],
+          "prerequisites": [
+            "gate.triads.inversions"
+          ],
           "exercisePolicyId": "policy.seventh.build",
           "preview": "Add one more third on top of a triad and you have a seventh chord. The third and the seventh together are what name it: they are the two notes a jazz musician will not leave out.",
           "completionRule": {
@@ -65,15 +80,22 @@
             "WRONG_QUALITY": "policy.seventh.build.remedial"
           },
           "rewards": [
-            { "kind": "practice_preset", "value": "policy.practice.mixed_sevenths" }
+            {
+              "kind": "practice_preset",
+              "value": "policy.practice.mixed_sevenths"
+            }
           ]
         },
         {
           "id": "gate.sevenths.inversions",
           "title": "Seventh inversions",
           "objective": "Place the third, fifth or seventh in the bass of a four-note chord.",
-          "skills": ["skill.seventh.inversion"],
-          "prerequisites": ["gate.sevenths.build"],
+          "skills": [
+            "skill.seventh.inversion"
+          ],
+          "prerequisites": [
+            "gate.sevenths.build"
+          ],
           "exercisePolicyId": "policy.seventh.inversions",
           "completionRule": {
             "minimumAttempts": 16,
@@ -81,15 +103,22 @@
             "minimumRootCoverage": 8
           },
           "rewards": [
-            { "kind": "region", "value": "region.jazz_voicings" }
+            {
+              "kind": "region",
+              "value": "region.jazz_voicings"
+            }
           ]
         },
         {
           "id": "gate.progression.two_five_one",
           "title": "ii-V-I",
           "objective": "Play a ii-V-I in any key without working it out first.",
-          "skills": ["skill.progression.two_five_one"],
-          "prerequisites": ["gate.sevenths.build"],
+          "skills": [
+            "skill.progression.two_five_one"
+          ],
+          "prerequisites": [
+            "gate.sevenths.build"
+          ],
           "exercisePolicyId": "policy.progression.two_five_one",
           "preview": "Most of the standard repertoire is this progression, moved around. Learn it in one key and you have learned one key; learn what it is made of and you have learned twelve.",
           "completionRule": {
@@ -104,14 +133,20 @@
       "id": "region.jazz_voicings",
       "title": "Jazz Voicings",
       "summary": "The shapes a pianist actually plays, rather than the ones a textbook prints.",
-      "prerequisites": ["region.seventh_harmony"],
+      "prerequisites": [
+        "region.seventh_harmony"
+      ],
       "gates": [
         {
           "id": "gate.voicing.shell",
           "title": "Shell voicings",
-          "objective": "Play root, third and seventh — and leave the fifth out.",
-          "skills": ["skill.voicing.shell"],
-          "prerequisites": ["gate.sevenths.inversions"],
+          "objective": "Play root, third and seventh \u2014 and leave the fifth out.",
+          "skills": [
+            "skill.voicing.shell"
+          ],
+          "prerequisites": [
+            "gate.sevenths.inversions"
+          ],
           "exercisePolicyId": "policy.voicing.shell",
           "preview": "In this exercise the fifth is left out so that the root and the two guide tones sit clearly in the left hand. That is a choice about this voicing, not a rule about the chord.",
           "completionRule": {
@@ -120,15 +155,22 @@
             "minimumRootCoverage": 8
           },
           "rewards": [
-            { "kind": "voicing_family", "value": "SHELL_1_3_7" }
+            {
+              "kind": "voicing_family",
+              "value": "SHELL_1_3_7"
+            }
           ]
         },
         {
           "id": "gate.voicing.guide_tones",
           "title": "Guide tones",
           "objective": "Play the third and seventh alone, and hear the chord anyway.",
-          "skills": ["skill.voicing.guide_tones"],
-          "prerequisites": ["gate.voicing.shell"],
+          "skills": [
+            "skill.voicing.guide_tones"
+          ],
+          "prerequisites": [
+            "gate.voicing.shell"
+          ],
           "exercisePolicyId": "policy.voicing.guide_tones",
           "preview": "Two notes are enough to say which chord this is. Once you can hear that, the root belongs to whoever is playing the bass.",
           "completionRule": {
@@ -137,25 +179,38 @@
             "minimumRootCoverage": 8
           },
           "rewards": [
-            { "kind": "voicing_family", "value": "GUIDE_TONES" }
+            {
+              "kind": "voicing_family",
+              "value": "GUIDE_TONES"
+            }
           ]
         },
         {
           "id": "gate.voicing.rootless",
           "title": "Rootless voicings",
           "objective": "Play the left-hand A position: third, fifth or thirteenth, seventh and ninth.",
-          "skills": ["skill.voicing.rootless"],
-          "prerequisites": ["gate.voicing.guide_tones"],
+          "skills": [
+            "skill.voicing.rootless"
+          ],
+          "prerequisites": [
+            "gate.voicing.guide_tones"
+          ],
           "exercisePolicyId": "policy.voicing.rootless_a",
-          "preview": "The A position puts the third lowest. The same four notes rotated give you the B position — they are the same chord, and they do not sound the same.",
+          "preview": "The A position puts the third lowest. The same four notes rotated give you the B position \u2014 they are the same chord, and they do not sound the same.",
           "completionRule": {
             "minimumAttempts": 16,
             "recentWeightedAccuracy": 0.88,
             "minimumRootCoverage": 8
           },
           "rewards": [
-            { "kind": "voicing_family", "value": "ROOTLESS_A" },
-            { "kind": "region", "value": "region.extensions" }
+            {
+              "kind": "voicing_family",
+              "value": "ROOTLESS_A"
+            },
+            {
+              "kind": "region",
+              "value": "region.extensions"
+            }
           ]
         }
       ]
@@ -164,19 +219,275 @@
       "id": "region.extensions",
       "title": "Extensions",
       "summary": "Ninths and the colour above the seventh.",
-      "prerequisites": ["region.jazz_voicings"],
+      "prerequisites": [
+        "region.jazz_voicings"
+      ],
       "gates": [
         {
           "id": "gate.extensions.ninths",
           "title": "Ninths",
           "objective": "Add a ninth to a seventh chord without losing the chord underneath it.",
-          "skills": ["skill.extension.ninth"],
-          "prerequisites": ["gate.voicing.rootless"],
+          "skills": [
+            "skill.extension.ninth"
+          ],
+          "prerequisites": [
+            "gate.voicing.rootless"
+          ],
           "exercisePolicyId": "policy.extensions.ninths",
           "completionRule": {
             "minimumAttempts": 14,
             "recentWeightedAccuracy": 0.85,
             "minimumRootCoverage": 6
+          },
+          "rewards": [
+            {
+              "kind": "region",
+              "value": "region.sus_slash"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.sus_slash",
+      "title": "Sus and Slash",
+      "summary": "Chords with the third taken away, and chords with something else underneath.",
+      "prerequisites": [
+        "region.extensions"
+      ],
+      "gates": [
+        {
+          "id": "gate.sus.build",
+          "title": "Suspended chords",
+          "objective": "Play a suspended chord without the third creeping back in.",
+          "skills": [
+            "skill.sus.build"
+          ],
+          "prerequisites": [
+            "gate.extensions.ninths"
+          ],
+          "exercisePolicyId": "policy.sus.build",
+          "preview": "A sus chord is a chord with the third replaced rather than removed. The fourth is doing the third's job, and the moment you add the third back the suspension has resolved and the chord is something else.",
+          "completionRule": {
+            "minimumAttempts": 14,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.slash.bass",
+          "title": "Slash chords",
+          "objective": "Put a named note in the bass, whether or not it belongs to the chord.",
+          "skills": [
+            "skill.slash.bass"
+          ],
+          "prerequisites": [
+            "gate.sus.build"
+          ],
+          "exercisePolicyId": "policy.slash.bass",
+          "preview": "C/E and C/A are written the same way and are two different ideas: one is an inversion, the other is a C chord with an A underneath it. The engine does not guess which you meant, and neither should you.",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            {
+              "kind": "region",
+              "value": "region.quartal_modal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.quartal_modal",
+      "title": "Quartal and Modal",
+      "summary": "Voicings built out of fourths, where the chord symbol stops being the point.",
+      "prerequisites": [
+        "region.sus_slash"
+      ],
+      "gates": [
+        {
+          "id": "gate.quartal.stacks",
+          "title": "Stacked fourths",
+          "objective": "Build a fourth-stack over a minor chord, in any rotation.",
+          "skills": [
+            "skill.quartal.stack"
+          ],
+          "prerequisites": [
+            "gate.slash.bass"
+          ],
+          "exercisePolicyId": "policy.quartal.stacks",
+          "preview": "Stack fourths instead of thirds and the sound stops belonging to one chord symbol. This is the So What voicing: four notes that are a Dm11 on paper and a colour rather than a chord in the ear.",
+          "completionRule": {
+            "minimumAttempts": 14,
+            "recentWeightedAccuracy": 0.8,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            {
+              "kind": "voicing_family",
+              "value": "QUARTAL"
+            },
+            {
+              "kind": "region",
+              "value": "region.altered_dominants"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.altered_dominants",
+      "title": "Altered Dominants",
+      "summary": "The colour tones a dominant can take, and the two notes that never move.",
+      "prerequisites": [
+        "region.quartal_modal"
+      ],
+      "gates": [
+        {
+          "id": "gate.altered.single",
+          "title": "One alteration",
+          "objective": "Alter one colour tone of a dominant and keep the guide tones where they were.",
+          "skills": [
+            "skill.altered.single"
+          ],
+          "prerequisites": [
+            "gate.quartal.stacks"
+          ],
+          "exercisePolicyId": "policy.altered.single",
+          "preview": "An altered dominant is not a new chord to memorise. It is a dominant with one note moved: the third and the seventh stay exactly where they are, and everything else is available.",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.altered.combined",
+          "title": "Combined alterations",
+          "objective": "Alter a ninth and a fifth at once without losing the chord.",
+          "skills": [
+            "skill.altered.combined"
+          ],
+          "prerequisites": [
+            "gate.altered.single"
+          ],
+          "exercisePolicyId": "policy.altered.combined",
+          "preview": "Two alterations at once, one of the ninth and one of the fifth. A ninth cannot be flat and sharp at the same time, so the pairs are fewer than they look.",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            {
+              "kind": "practice_preset",
+              "value": "policy.practice.altered_dominants"
+            },
+            {
+              "kind": "region",
+              "value": "region.diminished"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.diminished",
+      "title": "Diminished Systems",
+      "summary": "One symmetrical chord, three forms, and every dominant b9 hiding inside it.",
+      "prerequisites": [
+        "region.altered_dominants"
+      ],
+      "gates": [
+        {
+          "id": "gate.diminished.symmetry",
+          "title": "Diminished symmetry",
+          "objective": "Play a diminished seventh from any of its four notes.",
+          "skills": [
+            "skill.diminished.symmetry"
+          ],
+          "prerequisites": [
+            "gate.altered.combined"
+          ],
+          "exercisePolicyId": "policy.diminished.symmetry",
+          "preview": "A diminished seventh divides the octave into four equal parts, so it sounds the same from any of its notes. There are only three of them in all twelve keys \u2014 learn three chords and you have learned all of them.",
+          "completionRule": {
+            "minimumAttempts": 14,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.diminished.dominant",
+          "title": "Diminished and the dominant",
+          "objective": "Hear a diminished seventh as the top of a dominant b9.",
+          "skills": [
+            "skill.diminished.dominant"
+          ],
+          "prerequisites": [
+            "gate.diminished.symmetry"
+          ],
+          "exercisePolicyId": "policy.diminished.dominant",
+          "preview": "Take a dominant b9 and leave out the root: what is left is a diminished seventh. That single fact is why diminished chords resolve the way they do.",
+          "completionRule": {
+            "minimumAttempts": 14,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            {
+              "kind": "region",
+              "value": "region.substitutions"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.substitutions",
+      "title": "Substitutions",
+      "summary": "Putting a different chord where one was, and the shared tones that let you.",
+      "prerequisites": [
+        "region.diminished"
+      ],
+      "gates": [
+        {
+          "id": "gate.substitution.tritone",
+          "title": "Tritone substitution",
+          "objective": "Replace a dominant with the one a tritone away.",
+          "skills": [
+            "skill.substitution.tritone"
+          ],
+          "prerequisites": [
+            "gate.diminished.dominant"
+          ],
+          "exercisePolicyId": "policy.substitution.tritone",
+          "preview": "Db7 can stand where G7 stood because the two chords share their third and seventh: the third of one is the seventh of the other. The bass moves by a semitone instead of a fifth, and the resolution still works.",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.substitution.secondary",
+          "title": "Secondary dominants",
+          "objective": "Put a dominant in front of a chord that is not the tonic.",
+          "skills": [
+            "skill.substitution.secondary"
+          ],
+          "prerequisites": [
+            "gate.substitution.tritone"
+          ],
+          "exercisePolicyId": "policy.substitution.secondary",
+          "preview": "Any chord can be approached as though it were the tonic. Put its own dominant in front of it and you have borrowed a cadence into the middle of a tune \u2014 which is most of what makes a turnaround move.",
+          "completionRule": {
+            "minimumAttempts": 18,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
           }
         }
       ]

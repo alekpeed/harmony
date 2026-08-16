@@ -486,3 +486,32 @@ generated sources through `kotlin.sourceSets`, which AGP 9 rejects by default. T
 that uses `android.sourceSets` needs a newer Kotlin, and raising Kotlin alone would produce
 `core:music` metadata the app module could not read. AGP's own error message suggests this flag;
 it comes out when the two line up again.
+
+---
+
+## D39 — Substitution and diminished spellings prefer the interval, then the chart
+
+**Phase 11.** `Substitutions` and `DiminishedSystems` transpose roots by a `SpelledInterval` and
+fall back to a practical spelling only when the exact one needs more than one accidental.
+
+A semitone count cannot tell `C#` from `Db`, and both appear in this material for different
+reasons: the passing chord between `Cmaj7` and `Dm7` is `C#dim7` because it rose from C, while
+the tritone substitute for `G7` is `Db7` because it falls to C. So the interval decides the
+letter. But the letter it decides is sometimes unwritable in practice — a diminished fifth above
+`Eb` is `Bbb`, and a chart says `A7` — so a root needing a double accidental is respelled. The
+line is drawn at one accidental rather than at what the engine *can* spell, because `Bbb7` is
+legal notation that no player has ever read.
+
+---
+
+## D40 — An alteration pool holds sets, not alterations
+
+**Phase 11.** `ExercisePolicy.alterationPool` is a `List<Set<DominantAlteration>>`.
+
+Region 10 teaches altered dominants as transformations of a plain dominant, so the pool alters
+the formula the policy already names rather than listing `dominant_seventh_flat_nine` as a chord
+of its own — which would have meant a new formula per combination, thirty of them, each able to
+disagree with the others. Each entry is a set because `C7#9b13` is one exercise: a flat list of
+alterations would have read as an instruction to sound all of them at once. A pool applied to a
+chord that is not a dominant leaves it alone, since the authored formula is the lesson and
+inventing a `Cmaj7b9` to satisfy the pool would be teaching something else.

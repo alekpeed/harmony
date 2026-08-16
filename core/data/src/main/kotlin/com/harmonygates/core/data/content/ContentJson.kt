@@ -15,6 +15,7 @@ import com.harmonygates.core.music.exercise.ExercisePolicy
 import com.harmonygates.core.music.exercise.ExercisePolicyId
 import com.harmonygates.core.music.exercise.PresentationSpec
 import com.harmonygates.core.music.exercise.SkillId
+import com.harmonygates.core.music.harmony.DominantAlteration
 import com.harmonygates.core.music.mastery.ErrorClass
 import com.harmonygates.core.music.performance.OnsetPolicy
 import com.harmonygates.core.music.pitch.SpelledPitchClass
@@ -96,6 +97,7 @@ internal data class PolicyJson(
     @SerialName("roots") val rootPool: List<String> = emptyList(),
     @SerialName("formulas") val formulaPool: List<String>,
     @SerialName("inversions") val inversionPool: List<String> = listOf("ROOT"),
+    @SerialName("alterations") val alterationPool: List<List<String>> = emptyList(),
     val answerMode: String = "PitchClasses",
     /**
      * An `A0`..`A7` level from 01_PRODUCT_AND_FUNCTIONAL_SCOPE.md §4.
@@ -214,6 +216,22 @@ internal object ContentDecoder {
                     "Policy '${json.id}' asks for inversion '$name', which does not exist",
                 )
         }
+        // Authored as the symbols a chart uses — `[["b9"], ["#9", "b13"]]` — because that is how
+        // an author thinks about them, and each inner list is one chord rather than one tone.
+        val alterations = json.alterationPool.map { set ->
+            set.map { symbol ->
+                DominantAlteration.entries.firstOrNull { it.symbol == symbol }
+                    ?: throw ContentReferenceException(
+                        "Policy '${json.id}' asks for the alteration '$symbol', which is not one " +
+                            "of ${DominantAlteration.entries.joinToString { it.symbol }}",
+                    )
+            }.toSet()
+        }
+        if (alterations.any { it.isEmpty() }) {
+            throw ContentReferenceException(
+                "Policy '${json.id}' authors an empty alteration set, which is a plain dominant",
+            )
+        }
         val answerMode = AnswerMode.entries.firstOrNull { it.name == json.answerMode }
             ?: throw ContentReferenceException(
                 "Policy '${json.id}' uses the answer mode '${json.answerMode}', which does not exist",
@@ -253,6 +271,7 @@ internal object ContentDecoder {
             rootPool = roots,
             formulaPool = formulas,
             inversionPool = inversions,
+            alterationPool = alterations,
             answerMode = answerMode,
             // Resolved against the actual chord at generation time, because a rootless voicing
             // of Cmaj7 and of G7 need different tones. The policy records the intent only.

@@ -5,6 +5,73 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 11 — Advanced harmony
+
+**Commit:** see `git log` for `phase/11-advanced-harmony`
+
+### Implemented
+
+- `AlteredDominants` — Region 10 as transformations rather than a table. `alter()` builds any
+  altered form from a plain dominant, `singleAlterations` and `combinedAlterations` enumerate the
+  rungs a gate climbs, `altered()` is the `alt` chord, and `retainsGuideTones` is the required
+  task "retain guide tones while changing color tones" stated as a check.
+- `DiminishedSystems` — 03 §13's "dedicated submodule rather than silently mixing pedagogy
+  systems". Symmetry (`isSameChord`, `equivalentSpellings`, three `distinctFamilies`), the
+  dominant b9 relationship both ways (`asDominantSubstitute`, `fromDominant`), passing and
+  common-tone use.
+- `Substitutions` — tritone, secondary dominant, related ii, backdoor and diminished-for-dominant,
+  each carrying the tones the two chords share and a sentence saying why the ear accepts it.
+  `applyTo` and `insertBefore` rewrite a progression, because a substitution is only itself in
+  context.
+- `VoicingFamily.QUARTAL` — stacked fourths with no bass or top constraint, since an inverted
+  fourth stack is still a fourth stack. 03 §11 declines to force a conventional chord symbol here
+  and so does the recipe.
+- `ExercisePolicy.alterationPool` — authored as `[["b9"], ["#9", "b13"]]`, one chord per entry.
+  Lets Region 10 be content rather than code.
+- Content: five new regions — Sus and Slash, Quartal and Modal, Altered Dominants, Diminished
+  Systems, Substitutions — nine new gates and ten new exercise policies, chained onto
+  `gate.extensions.ninths`, which now unlocks what follows it.
+
+### Acceptance
+
+- *tests cover all formulas and representative contexts* — `AdvancedHarmonyTest` holds a
+  hand-written interval table for all thirty formulas, asserted both against the formula
+  definitions and against the realised tones from all twelve roots. The table is written out
+  rather than derived: deriving it from `ChordDegree` would have made it a test of nothing.
+  Contexts are covered by example — a tritone substitution inside `Dm7 G7 Cmaj7`, a passing
+  diminished chord between `Cmaj7` and `Dm7`, a So What voicing and its rotation, `C/E` against
+  `C/A`.
+
+### Tests
+
+540 passing, 0 failing. 42 new: `AdvancedHarmonyTest` (38) and four in `ExerciseGeneratorTest`.
+
+### What the tests caught
+
+- **A tritone substitution could be unspellable.** Transposing by a diminished fifth gave `Eb7` a
+  substitute of `Bbb7`, which then had no substitute of its own because its fifth needed a triple
+  accidental. Roots now fall back to the chart spelling past one accidental (D39).
+- **The common-tone diminished chord was on the wrong side of the root.** It was built a semitone
+  below, which is the leading-tone chord and shares nothing with a major triad. A semitone above
+  — `C - C#dim7 - C` — shares the third and the fifth, which is what the name means.
+- **A wrong note is `PARTIAL`, not `INCORRECT`.** Two tests asserted the harsher verdict; the
+  evaluator is right and the more useful assertion is the one now made, that the diagnosis names
+  the fifth by degree.
+
+### Known limitations
+
+1. **No substitution exercises yet.** `Substitutions` can rewrite a progression, but no answer
+   mode asks a player to *choose* a substitution — the two substitution gates practise the chords
+   themselves. A progression-level answer mode is Phase 13 work.
+2. **Quartal planing is not implemented.** 03 §11 lists it; moving a fourth-stack in parallel
+   needs a progression-shaped exercise rather than a chord-shaped one.
+3. **No Barry Harris material.** §13 marks it optional and asks for it to stay separate; the
+   submodule it would live in exists, and nothing has been put in it.
+4. **Pedal points and stepwise bass are unbuilt.** Region 6's two-hand tasks need an exercise that
+   can ask for one hand to hold while the other moves.
+
+---
+
 ## Phase: 9 — Sight reading core
 
 **Commit:** see `git log` for `phase/9-sight-reading`

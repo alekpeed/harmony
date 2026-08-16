@@ -1,6 +1,7 @@
 package com.harmonygates.core.music.exercise
 
 import com.harmonygates.core.music.chord.ChordFormulaId
+import com.harmonygates.core.music.harmony.DominantAlteration
 import com.harmonygates.core.music.performance.OnsetPolicy
 import com.harmonygates.core.music.pitch.SpelledPitchClass
 import com.harmonygates.core.music.voicing.Inversion
@@ -95,6 +96,7 @@ public data class PresentationSpec(
  * @param rootPool roots the generator may choose from. Empty means all twelve.
  * @param formulaPool chord qualities it may choose from.
  * @param inversionPool inversions it may ask for. Empty means root position only.
+ * @param alterationPool alteration sets a dominant may be dressed with. Empty means plain.
  * @param voicingPolicy the answer policy, used when [answerMode] is degree-aware.
  * @param sessionLength how many exercises a session of this policy runs for.
  */
@@ -104,6 +106,16 @@ public data class ExercisePolicy(
     val rootPool: List<SpelledPitchClass> = emptyList(),
     val formulaPool: List<ChordFormulaId> = emptyList(),
     val inversionPool: List<Inversion> = listOf(Inversion.ROOT),
+    /**
+     * Alterations to dress a dominant with, one authored set per entry.
+     *
+     * A list of sets rather than a set of alterations, because `C7b9` and `C7#9b13` are two
+     * exercises and "b9, #9, b13" would be an instruction to sound all three at once. Each
+     * entry is one chord the gate may ask for. Region 10 of 03_JAZZ_CURRICULUM.md teaches
+     * these as transformations of a plain dominant, so the pool alters the formula rather
+     * than replacing it.
+     */
+    val alterationPool: List<Set<DominantAlteration>> = emptyList(),
     val answerMode: AnswerMode = AnswerMode.PitchClasses,
     val voicingPolicy: VoicingPolicy? = null,
     /**
@@ -122,6 +134,10 @@ public data class ExercisePolicy(
 ) {
     init {
         require(formulaPool.isNotEmpty()) { "An exercise policy needs at least one chord quality" }
+        require(alterationPool.none { it.isEmpty() }) {
+            "An alteration set with nothing in it is a plain dominant; leave it out rather " +
+                "than authoring an exercise that silently is not the one it names"
+        }
         require(inversionPool.isNotEmpty()) { "An exercise policy needs at least one inversion" }
         require(sessionLength > 0) { "A session needs at least one exercise" }
         require(answerMode != AnswerMode.ChordPolicy || voicingPolicy != null || voicingFamily != null) {
