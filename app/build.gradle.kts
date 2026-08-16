@@ -84,7 +84,6 @@ val canSignRelease: Boolean = listOf(
     releaseKeyPassword,
 ).all { !it.isNullOrBlank() } && file(releaseKeystorePath!!).isFile
 
-
 android {
     namespace = "com.harmonygates"
     compileSdk = libs.versions.compileSdk.get().toInt()
@@ -93,11 +92,7 @@ android {
         applicationId = "com.harmonygates"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        // One per commit, so the installer can always tell an older build from a newer one.
         versionCode = gitCommitCount
-
-        // 17 §6: a semantic app version, and a content version that moves independently of it.
-        // Both are readable at runtime so a bug report can say which of the two it came from.
         versionName = harmonyVersionName
         buildConfigField("String", "CONTENT_VERSION", "\"$harmonyContentVersion\"")
         buildConfigField("int", "CONTENT_SCHEMA", harmonyContentSchema.toString())
@@ -117,11 +112,7 @@ android {
     }
 
     buildTypes {
-        debug {
-            // Debug exposes MIDI diagnostics and seeded exercise controls
-            // (17_BUILD_CI_INSTALL_RELEASE.md §1).
-            isMinifyEnabled = false
-        }
+        debug { isMinifyEnabled = false }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -177,15 +168,6 @@ dependencies {
     debugImplementation(libs.compose.ui.test.manifest)
 }
 
-/**
- * Pulls the approved artwork out of `interface/` into generated resources.
- *
- * `interface/` stays the single source of truth (see docs/INTERFACE_INTEGRATION.md): committing
- * a new export there and rebuilding is the whole workflow, with no second copy to keep in step.
- *
- * Registered per variant through the variant API, which is how AGP 9 wires a generated
- * directory together with its task dependency.
- */
 androidComponents {
     onVariants { variant ->
         val syncArtwork = tasks.register<SyncInterfaceArtwork>(
@@ -194,16 +176,10 @@ androidComponents {
             group = "build"
             description = "Copies the clean Home plate and its interaction map from interface/."
             interfaceDirectory.set(rootProject.layout.projectDirectory.dir("interface"))
-            // The clean static plate, not the approved JPG. `interface/maps/home.json` marks that
-            // JPG `legacy-reference-only` because it has runtime values baked into it — a
-            // profile name, an XP figure, a streak, a clock. Those have to be drawn from state
-            // above the plate, and a background that already contains yesterday's numbers makes
-            // that impossible to do correctly.
             sourceFileName.set("assets/home-clean-background.png")
             mapFileName.set("maps/home.json")
             resourceName.set("home_approved")
             mapResourceName.set("home_interaction_map")
-            // Matches HarmonyColorTokens.background, so a pending artwork is never a bright flash.
             placeholderColor.set("#12131A")
             artworkRequired.set(true)
         }
@@ -212,16 +188,13 @@ androidComponents {
             SyncInterfaceArtwork::generatedResourceDirectory,
         )
 
-        // The Progression Run plate: the clean room the track runs through, with no baked
-        // orbs, pedestals or path in it. Supplied under `interface/assets/`, which is where
-        // `interface/README.md` now places screen artwork.
         val syncProgressionRun = tasks.register<SyncInterfaceArtwork>(
             "sync${variant.name.replaceFirstChar(Char::uppercase)}ProgressionRunArtwork",
         ) {
             group = "build"
             description = "Copies the Progression Run plate and track map from interface/."
             interfaceDirectory.set(rootProject.layout.projectDirectory.dir("interface"))
-            sourceFileName.set("assets/progression-run-background.png")
+            sourceFileName.set("assets/progression-run-background.webp")
             mapFileName.set("maps/progression-run.json")
             resourceName.set("progression_run_background")
             mapResourceName.set("progression_run_map")
@@ -233,7 +206,6 @@ androidComponents {
             SyncInterfaceArtwork::generatedResourceDirectory,
         )
 
-        // The authored curriculum, carried into assets so `content/` stays the single copy.
         val syncContent = tasks.register<SyncContentPack>(
             "sync${variant.name.replaceFirstChar(Char::uppercase)}ContentPack",
         ) {
@@ -252,17 +224,8 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
 
-/**
- * A copy of each APK named after the build that produced it.
- *
- * AGP always writes `app-debug.apk`, whatever the version is. Three files under one name is how
- * a fix that never reached the device looks identical to a fix that did, so every build also
- * lands under a name that says which build it is.
- */
 androidComponents {
     onVariants { variant ->
-        // Both pulled out of the variant here: capturing the variant itself inside the task's
-        // rename lambda drags the whole AGP object graph into the configuration cache with it.
         val variantName = variant.name
         val taskName = variantName.replaceFirstChar(Char::uppercase)
         val targetName = "harmony-gates-$harmonyVersionName-$variantName.apk"
@@ -272,12 +235,9 @@ androidComponents {
             description = "Copies the $variantName APK to a filename carrying its version and commit."
             from(layout.buildDirectory.dir("outputs/apk/$variantName")) {
                 include("*.apk")
-                // A previous run's named copy must not be picked up and renamed onto itself.
                 exclude("harmony-gates-*.apk")
                 rename { targetName }
             }
-            // Its own directory, not AGP's: writing a second file into `outputs/apk` makes
-            // Gradle's own listing task read a directory another task is still writing to.
             into(layout.buildDirectory.dir("outputs/harmony"))
         }
         tasks.matching { it.name == "assemble$taskName" }.configureEach { finalizedBy(nameApk) }
