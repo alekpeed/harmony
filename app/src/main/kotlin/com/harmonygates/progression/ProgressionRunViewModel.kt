@@ -35,6 +35,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+private const val DEFAULT_RUN_SOUND = "Noire Grand Concert Piano"
+
 sealed interface ProgressionRunIntent {
     data object Next : ProgressionRunIntent
     data object Previous : ProgressionRunIntent
@@ -79,7 +81,7 @@ private data class RunControls(
     val timeFeel: TimeFeel = TimeFeel.Straight,
     val countIn: Boolean = true,
     val countBars: Int = 2,
-    val sound: String = DEFAULT_SOUND,
+    val sound: String = DEFAULT_RUN_SOUND,
     val octave: Int = 0,
     val highlightRoot: Boolean = true,
     val showGuideTones: Boolean = false,
@@ -342,7 +344,6 @@ class ProgressionRunViewModel(application: Application) : AndroidViewModel(appli
 
     private companion object {
         const val STOP_TIMEOUT_MS = 5_000L
-        const val DEFAULT_SOUND = "Noire Grand Concert Piano"
     }
 }
 
@@ -355,7 +356,7 @@ data class ProgressionRunUiState(
     val timeFeel: TimeFeel = TimeFeel.Straight,
     val countIn: Boolean = true,
     val countBars: Int = 2,
-    val selectedSound: String = "Noire Grand Concert Piano",
+    val selectedSound: String = DEFAULT_RUN_SOUND,
     val octave: Int = 0,
     val highlightRoot: Boolean = true,
     val showGuideTones: Boolean = false,
@@ -392,7 +393,7 @@ data class ProgressionRunUiState(
     companion object {
         private val KEY_LABELS = listOf("C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B")
         private val SOUND_LABELS = listOf(
-            "Noire Grand Concert Piano",
+            DEFAULT_RUN_SOUND,
             "Studio Grand",
             "Rhodes",
             "Wurlitzer",
