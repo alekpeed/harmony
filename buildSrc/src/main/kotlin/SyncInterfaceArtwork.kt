@@ -9,6 +9,7 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
+import java.util.Base64
 
 /**
  * Copies an approved screen out of `interface/` and into the app's resources.
@@ -17,6 +18,12 @@ import java.io.File
  * map there, then rebuilding, is the entire integration workflow — no second copy to keep in
  * step, and no chance of the app shipping last week's artwork because someone updated one of
  * the two and forgot the other.
+ *
+ * Binary artwork can also be stored as deterministic base64 parts when a repository client
+ * cannot write raw binary safely. A source ending in `.b64` is reconstructed from either that
+ * file or the lexically sorted files in `<source>.parts/`, then validated as an image before it
+ * is exposed to Android. This prevents ASCII/base64 text from ever being packaged under an image
+ * extension, which Android cannot decode at runtime.
  *
  * The drawable is generated whether or not a usable artwork exists, so `R.drawable` always
  * resolves and the app needs neither reflection nor conditional compilation. Which of the two
@@ -28,7 +35,7 @@ abstract class SyncInterfaceArtwork : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val interfaceDirectory: DirectoryProperty
 
-    /** Artwork file name inside `interface/`. */
+    /** Artwork file name inside `interface/`. `.b64` sources are decoded before validation. */
     @get:Input
     abstract val sourceFileName: Property<String>
 
@@ -48,15 +55,6 @@ abstract class SyncInterfaceArtwork : DefaultTask() {
     @get:Input
     abstract val placeholderColor: Property<String>
 
-    /**
-     * Whether a missing artwork is a build failure.
-     *
-     * False while a screen is waiting for its export: a placeholder is generated and the screen
-     * falls back. True once the asset has been supplied — because from then on, a missing file
-     * means somebody renamed or moved it, and the failure that produces is a blank screen on a
-     * tablet with nothing anywhere saying why. That is precisely the silent failure
-     * `checkInterfaceAssets` exists to prevent, and it is worth preventing here too.
-     */
     @get:Input
     abstract val artworkRequired: Property<Boolean>
 
@@ -66,8 +64,6 @@ abstract class SyncInterfaceArtwork : DefaultTask() {
     @TaskAction
     fun sync() {
         val outputRoot = generatedResourceDirectory.get().asFile
-        // A stale artwork left from a previous run would collide with a freshly generated
-        // placeholder of the same name, so the directory is rebuilt each time.
         outputRoot.deleteRecursively()
         val drawableDir = outputRoot.resolve("drawable-nodpi").apply { mkdirs() }
         val valuesDir = outputRoot.resolve("values").apply { mkdirs() }
@@ -75,46 +71,75 @@ abstract class SyncInterfaceArtwork : DefaultTask() {
 
         val interfaceRoot = interfaceDirectory.get().asFile
         val name = resourceName.get()
-        val artwork = interfaceRoot.resolve(sourceFileName.get())
-        val info = ImageHeader.read(artwork)
+        val sourceName = sourceFileName.get()
+        val artwork = materializeArtwork(interfaceRoot, sourceName, outputRoot)
+        val info = artwork?.let(ImageHeader::read)
 
         val map = interfaceRoot.resolve(mapFileName.get())
         val mapPresent = map.isFile && map.length() > 0
         if (mapPresent) {
             map.copyTo(rawDir.resolve("${mapResourceName.get()}.json"), overwrite = true)
         } else {
-            // An empty array still parses, so the app has one code path rather than two.
             rawDir.resolve("${mapResourceName.get()}.json").writeText(EMPTY_MAP)
         }
 
-        if (info != null) {
+        if (artwork != null && info != null) {
             artwork.copyTo(drawableDir.resolve("$name.${artwork.extension.lowercase()}"), overwrite = true)
             writeValues(valuesDir, name, available = true, width = info.width, height = info.height)
             logger.lifecycle(
-                "Approved artwork: ${artwork.name} (${info.format} ${info.width}x${info.height}) " +
+                "Approved artwork: $sourceName (${info.format} ${info.width}x${info.height}) " +
                     "-> R.drawable.$name" + if (mapPresent) ", map -> R.raw.${mapResourceName.get()}" else "",
             )
         } else {
-            val why = if (artwork.exists()) "is not a decodable image" else "is not present"
+            val rawSource = interfaceRoot.resolve(sourceName)
+            val parts = interfaceRoot.resolve("$sourceName.parts")
+            val exists = rawSource.exists() || (parts.isDirectory && parts.listFiles()?.isNotEmpty() == true)
+            val why = if (exists) "is not a decodable image" else "is not present"
             if (artworkRequired.getOrElse(false)) {
                 throw GradleException(
-                    "interface/${sourceFileName.get()} $why, and $name has been marked as " +
-                        "supplied. Either restore the file at that exact path or set " +
-                        "artworkRequired to false. A silent fallback here ships a blank screen.",
+                    "interface/$sourceName $why, and $name has been marked as supplied. " +
+                        "Restore a valid image source. A silent fallback here ships a blank screen.",
                 )
             }
             drawableDir.resolve("$name.xml").writeText(placeholderDrawable())
             writeValues(valuesDir, name, available = false, width = 0, height = 0)
-            logger.lifecycle(
-                "Approved artwork pending: interface/${sourceFileName.get()} $why; " +
-                    "R.drawable.$name is a placeholder and the screen falls back.",
-            )
+            logger.lifecycle("Approved artwork pending: interface/$sourceName $why; R.drawable.$name is a placeholder.")
         }
     }
 
+    private fun materializeArtwork(interfaceRoot: File, sourceName: String, outputRoot: File): File? {
+        val source = interfaceRoot.resolve(sourceName)
+        if (!sourceName.endsWith(".b64")) return source.takeIf(File::isFile)
+
+        val encoded = when {
+            source.isFile -> source.readText()
+            else -> {
+                val partsDirectory = interfaceRoot.resolve("$sourceName.parts")
+                val parts = partsDirectory.listFiles()
+                    ?.filter(File::isFile)
+                    ?.sortedBy(File::getName)
+                    .orEmpty()
+                if (parts.isEmpty()) return null
+                buildString(parts.sumOf { it.length().toInt() }) {
+                    parts.forEach { append(it.readText().trim()) }
+                }
+            }
+        }.filterNot(Char::isWhitespace)
+
+        val bytes = try {
+            Base64.getDecoder().decode(encoded)
+        } catch (error: IllegalArgumentException) {
+            throw GradleException("interface/$sourceName contains invalid base64 artwork data", error)
+        }
+
+        val decodedName = File(sourceName.removeSuffix(".b64")).name
+        val decoded = outputRoot.resolve("decoded-source/$decodedName")
+        decoded.parentFile.mkdirs()
+        decoded.writeBytes(bytes)
+        return decoded
+    }
+
     private fun writeValues(directory: File, name: String, available: Boolean, width: Int, height: Int) {
-        // Named after the resource rather than fixed, because more than one screen is synced now
-        // and two generated `interface_artwork.xml` files would be needlessly confusing to read.
         directory.resolve("interface_artwork_$name.xml").writeText(
             """
             <?xml version="1.0" encoding="utf-8"?>
@@ -129,17 +154,9 @@ abstract class SyncInterfaceArtwork : DefaultTask() {
         )
     }
 
-    /**
-     * A flat fill standing in for a missing artwork.
-     *
-     * Deliberately blank rather than an approximation of the approved design: the home screen
-     * falls back to its action list when the artwork is unavailable, so this is only ever a
-     * safe target for `R.drawable` to point at.
-     */
     private fun placeholderDrawable(): String =
         """
         <?xml version="1.0" encoding="utf-8"?>
-        <!-- Generated placeholder. No approved artwork was available at build time. -->
         <vector xmlns:android="http://schemas.android.com/apk/res/android"
             android:width="24dp"
             android:height="24dp"
