@@ -19,21 +19,36 @@ import com.harmonygates.core.designsystem.theme.HarmonyTheme
  * The activity handles configuration changes itself so that a running exercise survives a
  * window resize, which 10_ANDROID_ARCHITECTURE.md §9 requires from the start.
  *
- * Everything is wrapped in [HarmonyLandscape]: the manifest asks for landscape and Android 16
- * may decline, so the shape is also enforced from inside the window.
+ * Everything is wrapped in [RequireLandscape]: the manifest asks for landscape and Android 16
+ * may decline, and a window handed over by another app is not the tablet's shape anyway.
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Installed before anything else, so a crash during start-up is also recorded.
+        CrashLog.install(this, System.currentTimeMillis())
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         goFullScreen()
         setContent {
             HarmonyTheme(reducedMotion = animationsAreOff()) {
-                HarmonyLandscape {
+                RequireLandscape {
                     AppRoot()
                 }
             }
         }
+    }
+
+    /**
+     * The bars are hidden again on every resume as well as on focus.
+     *
+     * Returning from another app, from the notification shade, or from a permission dialog all
+     * restore them, and each is a different callback. Doing it in both places is cheap and the
+     * failure it prevents — the clock quietly reappearing over the artwork mid-session — is the
+     * kind that gets reported as "it does it sometimes".
+     */
+    override fun onResume() {
+        super.onResume()
+        goFullScreen()
     }
 
     /**

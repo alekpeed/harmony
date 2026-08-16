@@ -2,11 +2,16 @@ package com.harmonygates
 
 import android.app.Application
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -21,10 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.harmonygates.campaign.CampaignRoute
+import com.harmonygates.core.designsystem.component.SecondaryButton
+import com.harmonygates.core.designsystem.theme.HarmonyTheme
 import com.harmonygates.core.music.campaign.GateId
 import com.harmonygates.exercise.ChordGateRoute
 import com.harmonygates.exercise.ChordGateViewModel
@@ -87,8 +95,23 @@ fun AppRoot() {
         placeholder = null
     }
 
+    val context = LocalContext.current
+    var lastCrash by remember { mutableStateOf(CrashLog.lastCrash(context)) }
+
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { insets ->
         BuildStamp()
+
+        lastCrash?.let { trace ->
+            CrashReport(
+                trace = trace,
+                onDismiss = {
+                    CrashLog.clear(context)
+                    lastCrash = null
+                },
+                modifier = Modifier.padding(insets),
+            )
+            return@Scaffold
+        }
 
         when (screen) {
             // Handed the whole window, not the insets: the home frame insets itself, so that
@@ -172,6 +195,40 @@ fun AppRoot() {
                 )
             }
         }
+    }
+}
+
+/**
+ * The previous run's crash, shown before anything else.
+ *
+ * It takes over the screen rather than sitting in a corner, because the alternative is a tester
+ * reporting "it crashed when I tapped that" and nobody being able to do anything with it. The
+ * trace is selectable so it can be copied out.
+ */
+@Composable
+private fun CrashReport(trace: String, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .safeDrawingPadding()
+            .padding(HarmonyTheme.spacing.large),
+        verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.medium),
+    ) {
+        Text(
+            text = "The last session ended in a crash",
+            color = HarmonyTheme.colors.textPrimary,
+            fontSize = HarmonyTheme.typography.title,
+        )
+        SelectionContainer(modifier = Modifier.weight(1f)) {
+            Text(
+                text = trace,
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                color = HarmonyTheme.colors.textSecondary,
+                fontFamily = FontFamily.Monospace,
+                fontSize = HarmonyTheme.typography.caption,
+            )
+        }
+        SecondaryButton(label = "Carry on", onClick = onDismiss)
     }
 }
 
