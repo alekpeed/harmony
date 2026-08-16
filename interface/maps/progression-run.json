@@ -1,46 +1,83 @@
 {
-  "schemaVersion": 7,
+  "schemaVersion": 8,
   "screen": "progression-run",
   "designSize": {"width": 1536, "height": 1024},
   "figma": {
     "fileKey": "cD5gqV8A5gk94NVuGeJXg5",
-    "frameName": "Harmony Gates / Progression Run / FINAL / DEMO 01",
-    "nodeId": "77:2",
-    "backgroundLayer": {
-      "nodeId": "78:2",
-      "name": "progression 1",
-      "rule": "Clean static background only. It must not contain baked chord orbs, pedestal rings, chord labels, Roman numerals, or progression-path graphics."
-    },
-    "prototypeOnly": true,
-    "prototypePurpose": "Demonstrate the motion language of the independent progression track. The four Figma frames are animation snapshots only, not a four-chord exercise limit and not production state architecture.",
-    "prototypeStates": [
-      {"nodeId":"77:2","name":"Harmony Gates / Progression Run / FINAL / DEMO 01"},
-      {"nodeId":"80:62","name":"Harmony Gates / Progression Run / DEMO 02"},
-      {"nodeId":"80:184","name":"Harmony Gates / Progression Run / DEMO 03"},
-      {"nodeId":"80:306","name":"Harmony Gates / Progression Run / DEMO 04"}
-    ],
-    "transition": {
-      "type":"smart_animate_reference",
-      "durationMs":650,
-      "productionEasing":"cubic-bezier(0.22, 1, 0.36, 1)",
-      "note":"Compose may be micro-tuned during implementation, but the Figma motion and pacing are the visual reference."
-    }
+    "referenceNodeId": "77:2",
+    "referenceRole": "visual reference only",
+    "backgroundRule": "Production uses a clean full-screen static room plate with no baked controls, values, track, chord orbs, labels, path graphics, stats, XP, key, tempo, or navigation."
   },
   "layeringModel": [
-    "clean static background plate",
-    "independent progression path",
-    "reusable orb/pedestal renderer",
-    "orb labels and state treatment",
-    "interaction layer"
+    "full-screen clean static room plate",
+    "independent runtime progression track",
+    "minimal live practice HUD outside the chord corridor",
+    "transient navigation drawer",
+    "transient practice setup drawer"
   ],
   "productionRules": [
-    "Never bake the progression path or chord orbs into the background asset.",
+    "Never bake variable values or controls into the background asset.",
+    "The room fills the available landscape window using crop rather than letterboxed fit.",
+    "The chord corridor remains unobstructed during practice.",
+    "Navigation is hidden until MENU is pressed and closes after navigation or dismissal.",
+    "Practice setup is hidden until SETUP is pressed and collapses when configuration is complete.",
+    "Opening practice setup pauses a running progression; Done resumes a paused progression.",
+    "Only controls with real runtime behavior are exposed in production UI.",
+    "Sound, octave, time-feel, root-highlighting and guide-tone controls remain hidden until their behavior affects real audio/evaluation/rendering rather than labels only.",
     "Use one parameterized Compose track renderer for every progression.",
     "Orbs are generic reusable containers. Chord text and harmonic-function text are runtime data.",
-    "Progression length is arbitrary and must not be constrained by the number of Figma demo frames or visible orb slots.",
-    "The room/environment remains visually static while the track advances.",
-    "Do not implement four separate production screens corresponding to the four Figma demo frames."
+    "Progression length is arbitrary and not constrained by visible orb slots."
   ],
+  "practiceHud": {
+    "alwaysVisible": true,
+    "placement": "top edges and slim bottom-center active-chord readout; never in the track corridor",
+    "items": [
+      "menu button",
+      "progression title",
+      "key or 12-keys mode",
+      "tempo BPM",
+      "progress label",
+      "MIDI connection status",
+      "accuracy",
+      "elapsed time",
+      "clean count",
+      "runs completed",
+      "play/pause",
+      "setup button",
+      "current chord and optional function label"
+    ]
+  },
+  "navigationDrawer": {
+    "trigger": "MENU",
+    "dismiss": ["CLOSE", "tap outside", "select destination"],
+    "destinations": [
+      "Home",
+      "Chord Gates",
+      "Theory Lab",
+      "My Journey / Map",
+      "Quick Practice",
+      "Progress / Stats",
+      "Profile",
+      "Settings / MIDI"
+    ]
+  },
+  "setupDrawer": {
+    "trigger": "SETUP",
+    "dismiss": ["CLOSE", "tap outside", "DONE"],
+    "controls": [
+      "progression template",
+      "voicing style",
+      "all 12 keys toggle",
+      "specific key when all-keys is disabled",
+      "tempo +5 BPM with 240-to-40 wrap",
+      "loop progression",
+      "show Roman numerals",
+      "count in",
+      "count-in bars",
+      "auto-start next run",
+      "restart run"
+    ]
+  },
   "runtimeModel": {
     "progression": {
       "id": "string",
@@ -74,54 +111,51 @@
     "activeChordIndex": "integer runtime state"
   },
   "trackRenderer": {
-    "visibleWindow": {"previous":1,"current":1,"upcoming":6,"totalVisible":8},
-    "visibleWindowRule": "Eight slots are the current landscape visual target. The progression itself may contain any number of events. Off-screen events are represented by runtime data, not additional permanently mounted screen objects.",
+    "visibleWindow": {"previous": 1, "current": 1, "upcoming": 6, "totalVisible": 8},
+    "visibleWindowRule": "Eight slots are the current landscape visual target. The progression itself may contain any number of events.",
     "recyclingRule": "When activeChordIndex advances, each visible orb moves one perspective slot toward the player. The orb leaving the near end is recycled for the next event entering at the far end.",
     "slotPath": [
-      {"relativeIndex":-1,"centerPx":{"x":380,"y":570},"diameterPx":100,"role":"previous"},
-      {"relativeIndex":0,"centerPx":{"x":565,"y":548},"diameterPx":102,"role":"play-point"},
-      {"relativeIndex":1,"centerPx":{"x":758,"y":501},"diameterPx":86},
-      {"relativeIndex":2,"centerPx":{"x":914,"y":457},"diameterPx":80},
-      {"relativeIndex":3,"centerPx":{"x":1027,"y":404},"diameterPx":72},
-      {"relativeIndex":4,"centerPx":{"x":1138,"y":373},"diameterPx":66},
-      {"relativeIndex":5,"centerPx":{"x":1245,"y":351},"diameterPx":66},
-      {"relativeIndex":6,"centerPx":{"x":1348,"y":335},"diameterPx":60}
+      {"relativeIndex": -1, "centerPx": {"x": 380, "y": 570}, "diameterPx": 100, "role": "previous"},
+      {"relativeIndex": 0, "centerPx": {"x": 565, "y": 548}, "diameterPx": 102, "role": "play-point"},
+      {"relativeIndex": 1, "centerPx": {"x": 758, "y": 501}, "diameterPx": 86},
+      {"relativeIndex": 2, "centerPx": {"x": 914, "y": 457}, "diameterPx": 80},
+      {"relativeIndex": 3, "centerPx": {"x": 1027, "y": 404}, "diameterPx": 72},
+      {"relativeIndex": 4, "centerPx": {"x": 1138, "y": 373}, "diameterPx": 66},
+      {"relativeIndex": 5, "centerPx": {"x": 1245, "y": 351}, "diameterPx": 66},
+      {"relativeIndex": 6, "centerPx": {"x": 1348, "y": 335}, "diameterPx": 60}
     ],
     "orbStates": {
-      "previous":"completed/history treatment; visually subordinate",
-      "active":"current play-point; strongest gold glow/emphasis",
-      "upcoming":"normal dark orb with readable cream/gold labels",
-      "correct":"transient accepted-state feedback before/while advancing",
-      "incorrect_or_incomplete":"feedback may be shown, but the track must not advance"
+      "previous": "completed/history treatment; visually subordinate",
+      "active": "current play-point; strongest gold glow/emphasis",
+      "upcoming": "normal dark orb with readable cream/gold labels",
+      "correct": "transient accepted-state feedback before/while advancing",
+      "incorrect_or_incomplete": "feedback may be shown, but the track must not advance"
     },
     "orbContent": {
-      "container":"generic reusable visual component",
-      "primary":"ChordEvent.symbol",
-      "secondary":"ChordEvent.functionLabel when enabled by assistance mode",
-      "optional":"inversion, voicing, guide-tone, or assistance hint supplied by runtime state"
+      "container": "generic reusable visual component",
+      "primary": "ChordEvent.symbol",
+      "secondary": "ChordEvent.functionLabel when enabled by assistance mode"
     },
     "advanceAnimation": {
-      "durationMs":650,
-      "easing":"cubic-bezier(0.22, 1, 0.36, 1)",
-      "behavior":"All visible orbs slide smoothly to the next fixed perspective slot. Active emphasis transfers to the new current chord. A new upcoming chord enters at the far end. The background does not move.",
-      "interruptPolicy":"Do not start a second advance while an advance animation is running. Queue at most one valid advance event."
+      "durationMs": 650,
+      "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+      "behavior": "All visible orbs slide smoothly to the next fixed perspective slot. Active emphasis transfers to the new current chord. A new upcoming chord enters at the far end. The background does not move.",
+      "interruptPolicy": "Do not start a second advance while an advance animation is running. Queue at most one valid advance event."
     }
   },
   "midiAdvance": {
-    "primaryTrigger":"recognized_current_chord_correctly",
-    "action":"increment activeChordIndex and animate track",
-    "requirements":[
+    "primaryTrigger": "recognized_current_chord_correctly",
+    "action": "increment activeChordIndex and animate track",
+    "requirements": [
       "Evaluate the ChordEvent at activeChordIndex, not rendered label text.",
       "Wrong or incomplete chords never advance.",
       "Do not advance twice from a held chord or sustain state.",
       "Require a new qualifying note-state after each accepted advance.",
-      "Respect root, bass, inversion, omission and voicing-family policies from ChordEvent.",
-      "Figma clicks only simulate advancement. Production advancement comes from MIDI recognition or an explicit manual Next action."
+      "Respect root, bass, inversion, omission and voicing-family policies from ChordEvent."
     ]
   },
   "endBehavior": {
-    "loopFalse":"After the final event is completed, finish the run and show results.",
-    "loopTrue":"Recycle the first event into the far-upcoming position and continue seamlessly."
-  },
-  "interactionMapStatus": "Track motion semantics are current. Non-track control hit regions must be mapped from the approved 77:2 frame before production wiring; do not reuse coordinates from the deleted 49:* prototype frames."
+    "loopFalse": "After the final event is completed, finish the run and show results.",
+    "loopTrue": "Recycle the first event into the far-upcoming position and continue seamlessly."
+  }
 }
