@@ -53,6 +53,7 @@ kotlin {
 dependencies {
     implementation(projects.core.music)
     implementation(projects.core.midi)
+    implementation(projects.core.data)
     implementation(projects.core.designsystem)
 
     implementation(platform(libs.compose.bom))
@@ -124,6 +125,19 @@ androidComponents {
         variant.sources.res?.addGeneratedSourceDirectory(
             syncProgressionRun,
             SyncInterfaceArtwork::generatedResourceDirectory,
+        )
+
+        // The authored curriculum, carried into assets so `content/` stays the single copy.
+        val syncContent = tasks.register<SyncContentPack>(
+            "sync${variant.name.replaceFirstChar(Char::uppercase)}ContentPack",
+        ) {
+            group = "build"
+            description = "Copies the curriculum and exercise policies from content/ into assets."
+            contentDirectory.set(rootProject.layout.projectDirectory.dir("content"))
+        }
+        variant.sources.assets?.addGeneratedSourceDirectory(
+            syncContent,
+            SyncContentPack::generatedAssetDirectory,
         )
     }
 }

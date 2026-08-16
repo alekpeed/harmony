@@ -27,9 +27,10 @@ rootProject.name = "harmony-gates"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 // Modules are declared only once their directories exist (see 20_BOOTSTRAP_AND_MODULE_CONTRACTS.md).
-// core:audio and core:data arrive with phases 8 and 5 respectively.
+// core:audio arrives with phase 8.
 include(":app")
 include(":core:music")
 include(":core:midi")
+include(":core:data")
 include(":core:designsystem")
 include(":core:testing")

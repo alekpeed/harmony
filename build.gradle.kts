@@ -29,6 +29,20 @@ val checkInterfaceAssets = tasks.register<CheckInterfaceAssets>("checkInterfaceA
     report.set(layout.buildDirectory.file("reports/interface-assets/report.txt"))
 }
 
+/**
+ * Content validation, as 21_CONTENT_AUTHORING_GUIDE.md §9 asks for by name.
+ *
+ * It delegates to `core:data`'s unit tests rather than reimplementing the checks, because those
+ * tests already load the authored files through the same decoder the app uses and run them
+ * through the same `CurriculumValidator`. A second implementation here would be a second thing
+ * to keep in step, and the one that mattered would be the one the app actually runs.
+ */
+tasks.register("validateHarmonyContent") {
+    group = "verification"
+    description = "Loads content/ through the real decoder and fails on invalid or unplayable content."
+    dependsOn(":core:data:testDebugUnitTest")
+}
+
 tasks.register("verifyHarmony") {
     group = "verification"
     description = "Runs every unit-test and static-analysis task in the build."
@@ -36,4 +50,5 @@ tasks.register("verifyHarmony") {
     // build file keeps this correct as `core:midi`, `core:audio` and `core:data` are added.
     dependsOn(subprojects.filter { it.buildFile.exists() }.map { "${it.path}:check" })
     dependsOn(checkInterfaceAssets)
+    dependsOn("validateHarmonyContent")
 }

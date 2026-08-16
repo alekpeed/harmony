@@ -405,3 +405,84 @@ coordinate pairs into Kotlin would have made a re-composed track a code change, 
 put a second copy of the numbers somewhere to drift. The map's non-track hit regions are
 deliberately *not* read: the map marks them as pending remapping from the approved `77:2` frame,
 so the run's own controls are laid out in Compose instead of against invented coordinates.
+
+---
+
+## D32 — Mastery is domain logic, not storage logic
+
+**Phase 5.** `SkillMastery`, `MasteryUpdater` and `MasteryEvidence` live in `core:music`;
+`core:data` only reads a row, hands it to the updater and writes the answer back.
+
+The alternative — computing the estimate inside the repository — would have made the number that
+gates a player's progress untestable without a database, and would have put a teaching judgement
+(a hint is worth half an independent answer) inside a persistence class. It follows D22's line:
+the contract is domain, the implementation is transport.
+
+---
+
+## D33 — The evidence grade is stored, the weight is not
+
+**Phase 5.** An attempt row records `INDEPENDENT_CORRECT`, not `1.0`.
+
+Whether the player was helped is a fact about that attempt and will never change. What that help
+is worth is a teaching policy that may. Storing the fact and applying the policy on read is what
+lets `rebuildMastery` re-score old history under new weights without breaking
+11_DATA_MODEL_AND_PERSISTENCE.md §4's rule against silently reinterpreting old attempts.
+
+---
+
+## D34 — A gate is complete because the evidence says so
+
+**Phase 5/6.** `gate_progress` stores only *when* a gate was first passed, never *that* it was.
+
+A stored "complete" flag can disagree with the attempts behind it — after a rebuild, after a
+content edit, after a bug. Deriving status from mastery every time the map is drawn means the two
+can never diverge, and makes 15_IMPLEMENTATION_PHASES.md's "prerequisites/unlocks deterministic"
+true by construction rather than by careful bookkeeping.
+
+---
+
+## D35 — Room's schema is tested on the JVM, not on a device
+
+**Phase 5.** `RoomSchemaTest` runs the exported DDL against `sqlite-jdbc`.
+
+Room's own `MigrationTestHelper` needs an emulator, and there is not one here. What it needs the
+emulator *for* is running SQL — and the exported schema is ordinary DDL. Running it in a JVM
+SQLite proves the tables really can be created, that a deleted profile takes its attempts with
+it, and that the primary keys hold, none of which should have waited for hardware. The migration
+*chain* is checked separately, so raising the version without adding a step fails the build.
+
+---
+
+## D36 — A voicing family is authored intent, resolved per chord
+
+**Phase 6.** `ExercisePolicy` gained `voicingFamily`, alongside the existing `voicingPolicy`.
+
+Found by the content test rather than by design: a policy asking for rootless A voicings could
+not be built at all, because `ChordPolicy` mode demanded a concrete `VoicingPolicy` and a
+rootless A of `Cmaj7` is a different set of tones from one of `G7`. The family is what an author
+means; the concrete policy is what a particular chord makes of it, so resolution moved to
+generation time.
+
+---
+
+## D37 — Content validation delegates rather than duplicating
+
+**Phase 6.** `./gradlew validateHarmonyContent` depends on `core:data`'s unit tests.
+
+21_CONTENT_AUTHORING_GUIDE.md §9 asks for the task by name. Implementing the checks a second time
+inside a Gradle task would have created two validators, and the one that mattered — the one the
+app actually runs on startup — would not have been the one CI checked. The tests load the
+authored files through the production decoder and the production validator.
+
+---
+
+## D38 — KSP forced a relaxed AGP check
+
+**Phase 5.** `android.disallowKotlinSourceSets=false` is set in `gradle.properties`.
+
+KSP 2.2.10-2.0.2 — the only KSP built against the Kotlin that AGP 9.3.1 supplies — registers its
+generated sources through `kotlin.sourceSets`, which AGP 9 rejects by default. The KSP release
+that uses `android.sourceSets` needs a newer Kotlin, and raising Kotlin alone would produce
+`core:music` metadata the app module could not read. AGP's own error message suggests this flag;
+it comes out when the two line up again.

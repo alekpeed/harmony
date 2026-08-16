@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "0.1.0",
+  "regions": [
+    {
+      "id": "region.foundations",
+      "title": "Foundations",
+      "summary": "Triads in every key, and what inversion actually means.",
+      "gates": [
+        {
+          "id": "gate.triads.build",
+          "title": "Triads",
+          "objective": "Build a major or minor triad on any root.",
+          "skills": ["skill.triad.build"],
+          "prerequisites": [],
+          "exercisePolicyId": "policy.triad.major_minor.guided",
+          "preview": "A triad is three notes: the root, a third and a fifth. The third is what makes it major or minor — everything else in this game is built on hearing that one note move.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          }
+        },
+        {
+          "id": "gate.triads.inversions",
+          "title": "Triad inversions",
+          "objective": "Put any chord tone in the bass, on purpose.",
+          "skills": ["skill.triad.inversion"],
+          "prerequisites": ["gate.triads.build"],
+          "exercisePolicyId": "policy.triad.inversions",
+          "preview": "An inversion is not a different chord. It is the same chord with a different note underneath, and the bass is what a listener hears first.",
+          "completionRule": {
+            "minimumAttempts": 14,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            { "kind": "region", "value": "region.seventh_harmony" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.seventh_harmony",
+      "title": "Seventh Harmony",
+      "summary": "The four-note chords the whole language is written in.",
+      "prerequisites": ["region.foundations"],
+      "gates": [
+        {
+          "id": "gate.sevenths.build",
+          "title": "Seventh chords",
+          "objective": "Build the six common seventh and sixth chords on any root.",
+          "skills": ["skill.seventh.build"],
+          "prerequisites": ["gate.triads.inversions"],
+          "exercisePolicyId": "policy.seventh.build",
+          "preview": "Add one more third on top of a triad and you have a seventh chord. The third and the seventh together are what name it: they are the two notes a jazz musician will not leave out.",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.9,
+            "maximumCriticalErrors": 1,
+            "minimumRootCoverage": 8
+          },
+          "remediation": {
+            "MISSING_CHORD_TONE": "policy.seventh.build.remedial",
+            "WRONG_QUALITY": "policy.seventh.build.remedial"
+          },
+          "rewards": [
+            { "kind": "practice_preset", "value": "policy.practice.mixed_sevenths" }
+          ]
+        },
+        {
+          "id": "gate.sevenths.inversions",
+          "title": "Seventh inversions",
+          "objective": "Place the third, fifth or seventh in the bass of a four-note chord.",
+          "skills": ["skill.seventh.inversion"],
+          "prerequisites": ["gate.sevenths.build"],
+          "exercisePolicyId": "policy.seventh.inversions",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.88,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            { "kind": "region", "value": "region.jazz_voicings" }
+          ]
+        },
+        {
+          "id": "gate.progression.two_five_one",
+          "title": "ii-V-I",
+          "objective": "Play a ii-V-I in any key without working it out first.",
+          "skills": ["skill.progression.two_five_one"],
+          "prerequisites": ["gate.sevenths.build"],
+          "exercisePolicyId": "policy.progression.two_five_one",
+          "preview": "Most of the standard repertoire is this progression, moved around. Learn it in one key and you have learned one key; learn what it is made of and you have learned twelve.",
+          "completionRule": {
+            "minimumAttempts": 15,
+            "recentWeightedAccuracy": 0.88,
+            "minimumRootCoverage": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "region.jazz_voicings",
+      "title": "Jazz Voicings",
+      "summary": "The shapes a pianist actually plays, rather than the ones a textbook prints.",
+      "prerequisites": ["region.seventh_harmony"],
+      "gates": [
+        {
+          "id": "gate.voicing.shell",
+          "title": "Shell voicings",
+          "objective": "Play root, third and seventh — and leave the fifth out.",
+          "skills": ["skill.voicing.shell"],
+          "prerequisites": ["gate.sevenths.inversions"],
+          "exercisePolicyId": "policy.voicing.shell",
+          "preview": "In this exercise the fifth is left out so that the root and the two guide tones sit clearly in the left hand. That is a choice about this voicing, not a rule about the chord.",
+          "completionRule": {
+            "minimumAttempts": 14,
+            "recentWeightedAccuracy": 0.88,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            { "kind": "voicing_family", "value": "SHELL_1_3_7" }
+          ]
+        },
+        {
+          "id": "gate.voicing.guide_tones",
+          "title": "Guide tones",
+          "objective": "Play the third and seventh alone, and hear the chord anyway.",
+          "skills": ["skill.voicing.guide_tones"],
+          "prerequisites": ["gate.voicing.shell"],
+          "exercisePolicyId": "policy.voicing.guide_tones",
+          "preview": "Two notes are enough to say which chord this is. Once you can hear that, the root belongs to whoever is playing the bass.",
+          "completionRule": {
+            "minimumAttempts": 12,
+            "recentWeightedAccuracy": 0.88,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            { "kind": "voicing_family", "value": "GUIDE_TONES" }
+          ]
+        },
+        {
+          "id": "gate.voicing.rootless",
+          "title": "Rootless voicings",
+          "objective": "Play the left-hand A position: third, fifth or thirteenth, seventh and ninth.",
+          "skills": ["skill.voicing.rootless"],
+          "prerequisites": ["gate.voicing.guide_tones"],
+          "exercisePolicyId": "policy.voicing.rootless_a",
+          "preview": "The A position puts the third lowest. The same four notes rotated give you the B position — they are the same chord, and they do not sound the same.",
+          "completionRule": {
+            "minimumAttempts": 16,
+            "recentWeightedAccuracy": 0.88,
+            "minimumRootCoverage": 8
+          },
+          "rewards": [
+            { "kind": "voicing_family", "value": "ROOTLESS_A" },
+            { "kind": "region", "value": "region.extensions" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "region.extensions",
+      "title": "Extensions",
+      "summary": "Ninths and the colour above the seventh.",
+      "prerequisites": ["region.jazz_voicings"],
+      "gates": [
+        {
+          "id": "gate.extensions.ninths",
+          "title": "Ninths",
+          "objective": "Add a ninth to a seventh chord without losing the chord underneath it.",
+          "skills": ["skill.extension.ninth"],
+          "prerequisites": ["gate.voicing.rootless"],
+          "exercisePolicyId": "policy.extensions.ninths",
+          "completionRule": {
+            "minimumAttempts": 14,
+            "recentWeightedAccuracy": 0.85,
+            "minimumRootCoverage": 6
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -5,6 +5,102 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 6 — Campaign engine
+
+**Commit:** see `git log` for `phase/5-6-persistence-and-campaign`
+
+### Implemented
+
+- `Curriculum`, `CurriculumRegion`, `GateDefinition`, `CompletionRule`, `Unlock` — the campaign
+  as a directed acyclic graph, with no level numbers anywhere in it.
+- `CurriculumValidator` — duplicate ids, dangling references, prerequisite cycles, gates nothing
+  can reach, and a set of warnings for content that is legal and probably not meant.
+- `CampaignEvaluator` — gate status and unlocks derived from stored evidence, every time.
+- `GateSessionPlanner` — 02 §3's session phases, shaped by what the player already knows, and
+  02 §9's weighted sampling deciding which roots come first.
+- Content schema and decoder: `content/curriculum/curriculum.json` and
+  `content/exercises/exercise_policies.json`, eleven policies across four regions and nine gates.
+- `ContentRepository` reading them from assets, validating on load and refusing bad packs.
+- `./gradlew validateHarmonyContent`, wired into `verifyHarmony` and therefore into CI.
+- Campaign screen: regions, gate status, what is still missing per gate, and a Play button that
+  starts the gate's own session.
+
+### Acceptance
+
+- *prerequisites/unlocks deterministic* — `the same evidence always produces the same map`,
+  plus the rewards and prerequisite tests around it. Nothing about a gate's status is stored;
+  it is recomputed, so it cannot drift.
+- *no unreachable/cyclic content* — the validator catches three-gate cycles, two-gate deadlocks,
+  campaigns with no entry point and gates blocked forever, and `ContentPackTest` runs the same
+  checks against the curriculum that actually ships.
+
+---
+
+## Phase: 5 — Persistence and mastery
+
+**Commit:** see `git log` for `phase/5-6-persistence-and-campaign`
+
+### Implemented
+
+- `core:data`, a new module: Room database at version 1, seven entities, seven DAOs, schema
+  exported to `core/data/schemas` and committed.
+- `SkillMastery` and `MasteryUpdater` in `core:music` — 06 §9's four evidence weights, a
+  recency-weighted estimate, an error histogram, root coverage and spaced review.
+- `MasteryEvidence` — reads an attempt as evidence, and declines to score an inconclusive or
+  skipped one against the player.
+- `ProgressRepository` and `RoomProgressRepository` — attempts stored as they are judged, in one
+  transaction with the mastery they update.
+- `HarmonyPreferences` on DataStore — MIDI device, keyboard range, assistance defaults, volumes,
+  accidental preference and UI settings.
+- Progress screen: mastery per skill weakest-first, recurring errors named, and the attempt
+  history with what was asked and what was played.
+
+### Acceptance
+
+- *app restart preserves progress* — every attempt is written as it happens rather than at the
+  end of a session, and `MappersTest` proves the encoding round-trips without loss, which is
+  where this criterion is actually decided. **Not demonstrated on a device.**
+- *historical attempts are inspectable* — the Progress screen reads the attempt table back,
+  including the expected and performed snapshots and the semantic diagnosis.
+
+### Tests
+
+397 passing, 0 failing. 77 of them are new.
+
+| Suite | Covers |
+| --- | --- |
+| `MasteryTest` | The four weights, recency, the histogram, coverage, review scheduling |
+| `CampaignTest` | Cycles, unreachable gates, dangling references, unlocks, completion rules |
+| `GateSessionPlannerTest` | Session shape against player state, deterministic root ordering |
+| `RoomSchemaTest` | The exported schema creates, cascades and constrains; the migration chain |
+| `MappersTest` | Mastery and attempts round-trip; a rebuild matches the running total |
+| `ContentPackTest` | The shipped curriculum validates; 100 exercises from every policy |
+
+### Manual verification
+
+- `./gradlew verifyHarmony assembleDebug` from a clean checkout — passes
+- **Not done:** no device, so the database has never actually been closed and reopened. The
+  encoding is tested, the schema is executed against real SQLite, and the round trip through
+  Room itself remains unproven here.
+
+### Known limitations
+
+1. **Room's own round trip is untested.** `MigrationTestHelper` needs an emulator. The schema is
+   exercised as DDL against JVM SQLite instead, which covers the tables but not Room's
+   generated DAO code.
+2. **One profile.** The tables are keyed by profile and the app only ever makes one.
+3. **No export or import.** 11 §7 asks for local JSON export of progress "if practical"; the
+   attempt snapshots are designed for it, but nothing writes the file yet.
+4. **Assistance is inferred, not chosen.** Whether an answer counted as assisted is read from
+   the exercise's presentation switches. Phase 7's assistance profiles will set those switches
+   deliberately, and the evidence grades will get sharper for free.
+5. **Remediation is authored but unused.** Gates map their common errors to a remedial policy;
+   nothing routes a struggling player there until Phase 7's recovery loop.
+6. **The campaign screen is a list.** 02 §10 leaves the metaphor to Figma, and no map artwork
+   has been supplied, so it is deliberately plain.
+
+---
+
 ## Phase: 10 — Jazz voicing and progression systems
 
 **Commit:** see `git log` for `phase/10-progression-run`

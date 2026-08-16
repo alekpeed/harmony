@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "0.1.0",
+  "policies": [
+    {
+      "id": "policy.triad.major_minor.guided",
+      "skills": ["skill.triad.build"],
+      "roots": ["C", "F", "G", "D", "Bb", "A", "Eb", "E", "Ab", "B", "Db", "Gb"],
+      "formulas": ["major_triad", "minor_triad"],
+      "inversions": ["ROOT"],
+      "answerMode": "PitchClasses",
+      "presentation": { "chordSymbol": true, "inversionLabel": true },
+      "onsetPolicy": { "kind": "rolled", "maxSpreadMillis": 400 },
+      "sessionLength": 16
+    },
+    {
+      "id": "policy.triad.inversions",
+      "skills": ["skill.triad.inversion"],
+      "roots": ["C", "F", "G", "D", "Bb", "A", "Eb", "E", "Ab", "B", "Db", "Gb"],
+      "formulas": ["major_triad", "minor_triad", "diminished_triad"],
+      "inversions": ["ROOT", "FIRST", "SECOND"],
+      "answerMode": "PitchClasses",
+      "presentation": { "chordSymbol": true, "inversionLabel": true },
+      "onsetPolicy": { "kind": "rolled", "maxSpreadMillis": 400 },
+      "sessionLength": 18
+    },
+    {
+      "id": "policy.seventh.build",
+      "skills": ["skill.seventh.build"],
+      "roots": ["C", "F", "G", "D", "Bb", "A", "Eb", "E", "Ab", "B", "Db", "Gb"],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh",
+        "minor_sixth",
+        "major_sixth"
+      ],
+      "inversions": ["ROOT"],
+      "answerMode": "PitchClasses",
+      "presentation": { "chordSymbol": true, "inversionLabel": true },
+      "onsetPolicy": { "kind": "rolled", "maxSpreadMillis": 300 },
+      "sessionLength": 20
+    },
+    {
+      "id": "policy.seventh.inversions",
+      "skills": ["skill.seventh.inversion"],
+      "roots": ["C", "F", "G", "D", "Bb", "A", "Eb", "E", "Ab", "B", "Db", "Gb"],
+      "formulas": ["major_seventh", "dominant_seventh", "minor_seventh", "half_diminished_seventh"],
+      "inversions": ["ROOT", "FIRST", "SECOND", "THIRD"],
+      "answerMode": "PitchClasses",
+      "presentation": { "chordSymbol": true, "inversionLabel": true },
+      "onsetPolicy": { "kind": "rolled", "maxSpreadMillis": 300 },
+      "sessionLength": 20
+    },
+    {
+      "id": "policy.seventh.build.remedial",
+      "skills": ["skill.seventh.build"],
+      "roots": ["C", "F", "G", "D"],
+      "formulas": ["major_seventh", "dominant_seventh", "minor_seventh"],
+      "inversions": ["ROOT"],
+      "answerMode": "PitchClasses",
+      "presentation": {
+        "chordSymbol": true,
+        "noteNames": true,
+        "keyboardTargets": true,
+        "inversionLabel": true
+      },
+      "onsetPolicy": { "kind": "unrestricted" },
+      "sessionLength": 10
+    },
+    {
+      "id": "policy.voicing.shell",
+      "skills": ["skill.voicing.shell"],
+      "roots": ["C", "F", "Bb", "Eb", "Ab", "Db", "Gb", "B", "E", "A", "D", "G"],
+      "formulas": ["major_seventh", "dominant_seventh", "minor_seventh"],
+      "inversions": ["ROOT"],
+      "answerMode": "ChordPolicy",
+      "voicingFamily": "SHELL_1_3_7",
+      "presentation": { "chordSymbol": true, "voicingName": true },
+      "onsetPolicy": { "kind": "rolled", "maxSpreadMillis": 300 },
+      "lowestNote": 36,
+      "highestNote": 72,
+      "sessionLength": 16
+    },
+    {
+      "id": "policy.voicing.guide_tones",
+      "skills": ["skill.voicing.guide_tones"],
+      "roots": ["C", "F", "Bb", "Eb", "Ab", "Db", "Gb", "B", "E", "A", "D", "G"],
+      "formulas": ["major_seventh", "dominant_seventh", "minor_seventh"],
+      "inversions": ["ROOT"],
+      "answerMode": "ChordPolicy",
+      "voicingFamily": "GUIDE_TONES",
+      "presentation": { "chordSymbol": true, "voicingName": true },
+      "onsetPolicy": { "kind": "rolled", "maxSpreadMillis": 300 },
+      "lowestNote": 48,
+      "highestNote": 79,
+      "sessionLength": 14
+    },
+    {
+      "id": "policy.voicing.rootless_a",
+      "skills": ["skill.voicing.rootless"],
+      "roots": ["C", "F", "Bb", "Eb", "Ab", "Db", "Gb", "B", "E", "A", "D", "G"],
+      "formulas": ["dominant_seventh", "minor_seventh", "major_seventh"],
+      "inversions": ["ROOT"],
+      "answerMode": "ChordPolicy",
+      "voicingFamily": "ROOTLESS_A",
+      "presentation": { "chordSymbol": true, "voicingName": true },
+      "onsetPolicy": { "kind": "rolled", "maxSpreadMillis": 300 },
+      "lowestNote": 48,
+      "highestNote": 79,
+      "sessionLength": 16
+    },
+    {
+      "id": "policy.progression.two_five_one",
+      "skills": ["skill.progression.two_five_one"],
+      "roots": ["C", "F", "Bb", "Eb", "Ab", "Db", "Gb", "B", "E", "A", "D", "G"],
+      "formulas": ["major_seventh", "dominant_seventh", "minor_seventh"],
+      "inversions": ["ROOT"],
+      "answerMode": "PitchClasses",
+      "presentation": { "chordSymbol": true, "romanNumeral": true },
+      "onsetPolicy": { "kind": "rolled", "maxSpreadMillis": 300 },
+      "sessionLength": 18
+    },
+    {
+      "id": "policy.extensions.ninths",
+      "skills": ["skill.extension.ninth"],
+      "roots": ["C", "F", "Bb", "Eb", "G", "D", "A", "E"],
+      "formulas": ["dominant_ninth", "major_ninth", "minor_ninth"],
+      "inversions": ["ROOT"],
+      "answerMode": "PitchClasses",
+      "presentation": { "chordSymbol": true },
+      "onsetPolicy": { "kind": "rolled", "maxSpreadMillis": 300 },
+      "sessionLength": 16
+    },
+    {
+      "id": "policy.practice.mixed_sevenths",
+      "skills": ["skill.seventh.build", "skill.seventh.inversion"],
+      "roots": ["C", "F", "G", "D", "Bb", "A", "Eb", "E", "Ab", "B", "Db", "Gb"],
+      "formulas": [
+        "major_seventh",
+        "dominant_seventh",
+        "minor_seventh",
+        "half_diminished_seventh",
+        "minor_sixth",
+        "major_sixth"
+      ],
+      "inversions": ["ROOT", "FIRST", "SECOND", "THIRD"],
+      "answerMode": "PitchClasses",
+      "presentation": { "chordSymbol": true, "inversionLabel": true },
+      "onsetPolicy": { "kind": "rolled", "maxSpreadMillis": 300 },
+      "sessionLength": 20
+    }
+  ]
+}

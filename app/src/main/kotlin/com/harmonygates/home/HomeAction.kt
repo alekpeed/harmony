@@ -109,13 +109,18 @@ enum class HomeDestination(val isImplemented: Boolean, val arrivesInPhase: Int) 
     /** Quick practice runs the same loop with no gate around it. */
     QuickPractice(isImplemented = true, arrivesInPhase = 4),
 
-    Menu(isImplemented = false, arrivesInPhase = 6),
-    Campaign(isImplemented = false, arrivesInPhase = 6),
-    NextGate(isImplemented = false, arrivesInPhase = 6),
-    Resume(isImplemented = false, arrivesInPhase = 6),
-    DailyChallenge(isImplemented = false, arrivesInPhase = 6),
-    Progress(isImplemented = false, arrivesInPhase = 5),
-    Profile(isImplemented = false, arrivesInPhase = 5),
+    Menu(isImplemented = false, arrivesInPhase = 7),
+
+    /** The campaign map, from Phase 6. Next Gate and Resume open it at the gate to play. */
+    Campaign(isImplemented = true, arrivesInPhase = 6),
+    NextGate(isImplemented = true, arrivesInPhase = 6),
+    Resume(isImplemented = true, arrivesInPhase = 6),
+
+    DailyChallenge(isImplemented = false, arrivesInPhase = 13),
+
+    /** Mastery and attempt history, from Phase 5. */
+    Progress(isImplemented = true, arrivesInPhase = 5),
+    Profile(isImplemented = true, arrivesInPhase = 5),
     EarTraining(isImplemented = false, arrivesInPhase = 8),
     SightReading(isImplemented = false, arrivesInPhase = 9),
     /** Progression Run: the track, from Phase 10. */

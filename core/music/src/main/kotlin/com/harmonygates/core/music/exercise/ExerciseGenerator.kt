@@ -11,7 +11,9 @@ import com.harmonygates.core.music.realize.ChordRealizer
 import com.harmonygates.core.music.realize.DefaultChordRealizer
 import com.harmonygates.core.music.voicing.BassRequirement
 import com.harmonygates.core.music.voicing.Inversion
+import com.harmonygates.core.music.voicing.VoicingFamilies
 import com.harmonygates.core.music.voicing.VoicingPolicy
+import com.harmonygates.core.music.voicing.VoicingRecipe
 
 /**
  * One generated exercise.
@@ -94,17 +96,24 @@ public class DefaultExerciseGenerator(
             }?.let { ChordSpec(it, formulaId) } ?: chord
         }
 
-        val spelled = realizer.chordTones(writable)
-        val voicingPolicy = voicingPolicyFor(policy, writable, inversion)
-        val targetVoicing = realizer.generateVoicings(writable, voicingPolicy).firstOrNull()
+        // A named family is resolved here rather than in the policy, because the tones a shape
+        // needs depend on the chord it is applied to: rootless A on a dominant sounds the
+        // thirteenth, on a minor seventh the fifth. The recipe may also extend the chord with
+        // the tensions the shape supplies, which is why it can replace `writable`.
+        val recipe = policy.voicingFamily?.let { VoicingFamilies.recipe(it, writable) }
+        val judged = recipe?.chord ?: writable
+
+        val spelled = realizer.chordTones(judged)
+        val voicingPolicy = voicingPolicyFor(policy, judged, inversion, recipe)
+        val targetVoicing = realizer.generateVoicings(judged, voicingPolicy).firstOrNull()
 
         return ExerciseInstance(
             id = ExerciseInstanceId("ex-$seed-${context.index}"),
             definitionId = ExerciseDefinitionId(policy.id.value),
             seed = seed,
             skillIds = policy.skillIds,
-            chord = writable,
-            requirement = requirementFor(policy, writable, spelled, voicingPolicy, targetVoicing),
+            chord = judged,
+            requirement = requirementFor(policy, judged, spelled, voicingPolicy, targetVoicing),
             presentation = policy.presentation,
             inversion = inversion,
             spelledTones = spelled,
@@ -145,7 +154,13 @@ public class DefaultExerciseGenerator(
         policy: ExercisePolicy,
         chord: ChordSpec,
         inversion: Inversion,
+        recipe: VoicingRecipe?,
     ): VoicingPolicy {
+        // A family already says what must be lowest — rootless A puts the third there — so its
+        // own bass requirement wins over the inversion pool, which is asking a different
+        // question and would otherwise silently override the shape.
+        if (recipe != null) return recipe.policy.copy(pitchRange = policy.pitchRange)
+
         val base = policy.voicingPolicy ?: VoicingPolicy(
             requiredDegrees = chord.requiredDegrees,
             optionalDegrees = chord.optionalDegrees,

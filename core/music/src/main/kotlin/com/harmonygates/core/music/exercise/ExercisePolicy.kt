@@ -4,6 +4,7 @@ import com.harmonygates.core.music.chord.ChordFormulaId
 import com.harmonygates.core.music.performance.OnsetPolicy
 import com.harmonygates.core.music.pitch.SpelledPitchClass
 import com.harmonygates.core.music.voicing.Inversion
+import com.harmonygates.core.music.voicing.VoicingFamily
 import com.harmonygates.core.music.voicing.VoicingPolicy
 
 /** Stable identifiers. Content JSON references these strings (21_CONTENT_AUTHORING_GUIDE.md §6). */
@@ -105,6 +106,15 @@ public data class ExercisePolicy(
     val inversionPool: List<Inversion> = listOf(Inversion.ROOT),
     val answerMode: AnswerMode = AnswerMode.PitchClasses,
     val voicingPolicy: VoicingPolicy? = null,
+    /**
+     * A named shape, resolved against each chord as it is generated.
+     *
+     * A rootless A voicing of `Cmaj7` and of `G7` are different sets of notes, so a family
+     * cannot be flattened into one [VoicingPolicy] ahead of time the way a fixed constraint can.
+     * The family is the authored intent; `VoicingFamilies.recipe` turns it into the policy for
+     * a particular chord at generation time.
+     */
+    val voicingFamily: VoicingFamily? = null,
     val presentation: PresentationSpec = PresentationSpec.Independent,
     val onsetPolicy: OnsetPolicy = OnsetPolicy.NormalRoll,
     val pitchRange: IntRange = DEFAULT_RANGE,
@@ -114,8 +124,8 @@ public data class ExercisePolicy(
         require(formulaPool.isNotEmpty()) { "An exercise policy needs at least one chord quality" }
         require(inversionPool.isNotEmpty()) { "An exercise policy needs at least one inversion" }
         require(sessionLength > 0) { "A session needs at least one exercise" }
-        require(answerMode != AnswerMode.ChordPolicy || voicingPolicy != null) {
-            "A degree-aware policy match needs a voicing policy to match against"
+        require(answerMode != AnswerMode.ChordPolicy || voicingPolicy != null || voicingFamily != null) {
+            "A degree-aware policy match needs either a voicing policy or a named family"
         }
     }
 
