@@ -1,0 +1,48 @@
+name: Finalize clean Progression Run room
+
+on:
+  push:
+    branches:
+      - fix/progression-background-runtime-decode-20260816
+
+permissions:
+  contents: write
+
+jobs:
+  finalize-clean-room:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Decode and validate clean room plate
+        shell: bash
+        run: |
+          set -euo pipefail
+          src='interface/assets/progression-run-clean-room.jpg.b64'
+          dst='interface/assets/progression-run-background.jpg'
+          base64 --decode "$src" > "$dst"
+          bytes=$(stat -c '%s' "$dst")
+          magic=$(xxd -p -l 2 "$dst")
+          tail_magic=$(tail -c 2 "$dst" | xxd -p)
+          description=$(file "$dst")
+          echo "$description"
+          echo "bytes=$bytes magic=$magic tail=$tail_magic"
+          test "$bytes" -gt 100000
+          test "$magic" = 'ffd8'
+          test "$tail_magic" = 'ffd9'
+          echo "$description" | grep -q 'JPEG image data'
+          echo "$description" | grep -q '1536x1024'
+      - name: Commit canonical clean plate and remove staging helpers
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add interface/assets/progression-run-background.jpg
+          git rm -f interface/assets/progression-run-clean-room.jpg.b64
+          git rm -f .github/workflows/inspect-progression-raw.yml
+          git rm -f .github/workflows/finalize-clean-room.yml
+          git commit -m 'Install clean full-screen Progression Run room plate'
+          git push origin HEAD:${GITHUB_REF_NAME}
