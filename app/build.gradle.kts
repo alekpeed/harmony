@@ -194,7 +194,7 @@ androidComponents {
             group = "build"
             description = "Copies the Progression Run plate and track map from interface/."
             interfaceDirectory.set(rootProject.layout.projectDirectory.dir("interface"))
-            sourceFileName.set("assets/progression-run-background.webp")
+            sourceFileName.set("assets/progression-run-background.jpg")
             mapFileName.set("maps/progression-run.json")
             resourceName.set("progression_run_background")
             mapResourceName.set("progression_run_map")
