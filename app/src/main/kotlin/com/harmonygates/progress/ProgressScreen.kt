@@ -49,24 +49,20 @@ data class ProgressUiState(
     val loading: Boolean = true,
 ) {
     val totalAttempts: Int get() = skills.sumOf { it.attempts }
-
     val skillsStarted: Int get() = skills.count { it.attempts > 0 }
 }
 
 /**
  * Progress and history.
  *
- * Phase 5's second acceptance criterion is that "historical attempts are inspectable", which is
- * the whole reason this screen exists: the attempt table is not much use if nothing ever reads
- * it back. What it shows comes straight out of storage, so opening it after a restart is the
- * demonstration that the first criterion holds too.
+ * Keep the public constructor exactly `(Application)` so Android's default ViewModel factory can
+ * instantiate it. Kotlin default constructor parameters do not expose the single-argument Java
+ * constructor the factory reflects for.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class ProgressViewModel(
-    application: Application,
-    private val progress: ProgressRepository = HarmonyGraph.progress(application),
-) : AndroidViewModel(application) {
+class ProgressViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val progress: ProgressRepository = HarmonyGraph.progress(application)
     private val profile = MutableStateFlow<com.harmonygates.core.data.progress.ProfileId?>(null)
     private val due = MutableStateFlow(0)
 
@@ -79,8 +75,6 @@ class ProgressViewModel(
                 due,
             ) { mastery, attempts, dueCount ->
                 ProgressUiState(
-                    // Weakest first: the screen's job is to say what to practise, not to
-                    // congratulate. A player scanning it should land on the useful row.
                     skills = mastery.values.sortedWith(compareBy({ it.estimate }, { it.skillId.value })),
                     attempts = attempts,
                     dueForReview = dueCount,
@@ -138,8 +132,7 @@ fun ProgressScreen(
             )
 
             state.skills.isEmpty() -> Text(
-                text = "Nothing recorded yet. Play a gate and this fills up — and stays filled " +
-                    "after you close the app.",
+                text = "Nothing recorded yet. Play a gate and this fills up — and stays filled after you close the app.",
                 color = HarmonyTheme.colors.onSurfaceMuted,
                 fontSize = HarmonyTheme.typography.body,
             )
@@ -222,8 +215,6 @@ private fun SkillRow(mastery: SkillMastery) {
                 color = HarmonyTheme.colors.onSurfaceMuted,
                 fontSize = HarmonyTheme.typography.caption,
             )
-            // The commonest mistake, named. 06 §10: "specific recurring errors" is one of the
-            // things the score display is supposed to emphasise.
             mastery.recurringErrors.firstOrNull()?.let { (errorClass, count) ->
                 Text(
                     text = "Most often: ${errorClass.name.lowercase().replace('_', ' ')} ($count)",
@@ -288,7 +279,6 @@ private fun toneFor(verdict: String): FeedbackTone = when (verdict) {
     else -> FeedbackTone.NEUTRAL
 }
 
-/** Relative time, in the coarsest unit that is still true. */
 private fun ago(instant: Instant): String {
     val elapsed = Duration.between(instant, Instant.now())
     return when {
