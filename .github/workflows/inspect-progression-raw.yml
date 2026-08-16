@@ -1,0 +1,30 @@
+name: Inspect Progression Run raw Figma fills
+
+on:
+  push:
+    branches:
+      - fix/progression-background-runtime-decode-20260816
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-raw-fills:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Figma raw image fills
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/figma-raw
+          curl --fail --location --retry 3 'https://www.figma.com/api/mcp/asset/ad705334-2796-41f7-8c5f-1977b36fc774' -o /tmp/figma-raw/raw-1.png
+          curl --fail --location --retry 3 'https://www.figma.com/api/mcp/asset/574c26e8-d939-4170-abd5-7d69f0e077b0' -o /tmp/figma-raw/raw-2.png
+          file /tmp/figma-raw/*
+          stat -c '%n %s bytes' /tmp/figma-raw/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: progression-figma-raw-fills
+          path: /tmp/figma-raw/
+          if-no-files-found: error
