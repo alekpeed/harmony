@@ -1,0 +1,91 @@
+{
+  "screen": {
+    "id": "chord-gates",
+    "name": "Chord Gates",
+    "referenceSize": {
+      "width": 1536,
+      "height": 1024
+    },
+    "figma": {
+      "fileKey": "cD5gqV8A5gk94NVuGeJXg5",
+      "frameId": "101:76",
+      "frameName": "Harmony Gates / Chord Gates / CANON / WIRED 01"
+    }
+  },
+  "layers": {
+    "static": {
+      "frameId": "101:77",
+      "backgroundNodeId": "101:78",
+      "status": "placeholder_pending_canon_raster",
+      "note": "Replace the placeholder with the approved Rio-at-night Chord Gates canon image. Do not bake runtime values into the production plate."
+    },
+    "runtime": {
+      "frameId": "101:80",
+      "fields": [
+        {"key":"progressPercent","nodeId":"101:81","type":"percent","example":"56%"},
+        {"key":"progressCompleteLabel","nodeId":"101:82","type":"label","example":"COMPLETE"},
+        {"key":"gatesUnlocked","nodeId":"101:83","type":"count_pair","example":"7 / 12"},
+        {"key":"lessonsCompleted","nodeId":"101:84","type":"count_pair","example":"42 / 72"},
+        {"key":"mastery","nodeId":"101:85","type":"text","example":"Intermediate"},
+        {"key":"streak","nodeId":"101:86","type":"duration","example":"8 Days"},
+        {"key":"currentFocus","nodeId":"101:127","type":"text","example":"Shell Voicings"},
+        {"key":"enterGateLabel","nodeId":"101:128","type":"text","example":"ENTER GATE 05"},
+        {"key":"midiConnectionLabel","nodeId":"101:129","type":"connection_state","example":"MIDI CONNECTED"},
+        {"key":"midiDeviceName","nodeId":"101:130","type":"text","example":"Nord Stage 4"}
+      ],
+      "gateCards": [
+        {"gate":1,"frameId":"101:87","stateNodeId":"101:91","state":"completed"},
+        {"gate":2,"frameId":"101:92","stateNodeId":"101:96","state":"completed"},
+        {"gate":3,"frameId":"101:97","stateNodeId":"101:101","state":"completed"},
+        {"gate":4,"frameId":"101:102","stateNodeId":"101:106","state":"completed"},
+        {"gate":5,"frameId":"101:107","stateNodeId":"101:111","state":"current"},
+        {"gate":6,"frameId":"101:112","stateNodeId":"101:116","state":"locked"},
+        {"gate":7,"frameId":"101:117","stateNodeId":"101:121","state":"locked"},
+        {"gate":8,"frameId":"101:122","stateNodeId":"101:126","state":"locked"}
+      ]
+    },
+    "hitRegions": {
+      "frameId": "101:131",
+      "actions": [
+        {"action":"navigate.home","nodeId":"101:132","bounds":{"x":0,"y":126,"width":115,"height":126}},
+        {"action":"navigate.gates","nodeId":"101:133","bounds":{"x":0,"y":250,"width":115,"height":126}},
+        {"action":"navigate.practice","nodeId":"101:134","bounds":{"x":0,"y":376,"width":115,"height":126}},
+        {"action":"navigate.journal","nodeId":"101:135","bounds":{"x":0,"y":502,"width":115,"height":126}},
+        {"action":"navigate.profile","nodeId":"101:136","bounds":{"x":0,"y":628,"width":115,"height":126}},
+        {"action":"navigate.settings","nodeId":"101:137","bounds":{"x":0,"y":754,"width":115,"height":126}},
+        {"action":"open.progress","nodeId":"101:138","bounds":{"x":944,"y":512,"width":270,"height":48}},
+        {"action":"open.gate.01","nodeId":"101:139","bounds":{"x":166,"y":640,"width":140,"height":230}},
+        {"action":"open.gate.02","nodeId":"101:140","bounds":{"x":318,"y":640,"width":140,"height":230}},
+        {"action":"open.gate.03","nodeId":"101:141","bounds":{"x":470,"y":640,"width":140,"height":230}},
+        {"action":"open.gate.04","nodeId":"101:142","bounds":{"x":622,"y":640,"width":140,"height":230}},
+        {"action":"open.gate.05","nodeId":"101:143","bounds":{"x":774,"y":640,"width":140,"height":230}},
+        {"action":"open.gate.06","nodeId":"101:144","bounds":{"x":926,"y":640,"width":140,"height":230}},
+        {"action":"open.gate.07","nodeId":"101:145","bounds":{"x":1078,"y":640,"width":140,"height":230}},
+        {"action":"open.gate.08","nodeId":"101:146","bounds":{"x":1230,"y":640,"width":140,"height":230}},
+        {"action":"open.currentFocus","nodeId":"101:147","bounds":{"x":146,"y":916,"width":250,"height":76}},
+        {"action":"enter.currentGate","nodeId":"101:148","bounds":{"x":572,"y":894,"width":400,"height":62}},
+        {"action":"open.midiStatus","nodeId":"101:149","bounds":{"x":1152,"y":916,"width":278,"height":76}}
+      ]
+    }
+  },
+  "layoutAudit": {
+    "gateRow": {
+      "cardWidth": 140,
+      "cardHeight": 230,
+      "gap": 12,
+      "leftMargin": 166,
+      "rightMargin": 166,
+      "verticalPosition": 640,
+      "status": "symmetric"
+    },
+    "hitRegionsMatchVisibleGateCards": true
+  },
+  "runtimeRules": [
+    "All progress, gate-state, current-focus, and MIDI values are application state.",
+    "Gate cards must support completed, current, available, and locked visual states.",
+    "The current gate highlight must move when progression state changes.",
+    "Locked gates should not enter the exercise flow unless unlocked by curriculum rules.",
+    "MIDI status and device name must update on connect, disconnect, and reconnect.",
+    "The static environment plate must contain no user-specific or changing values."
+  ]
+}

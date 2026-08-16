@@ -1,0 +1,93 @@
+{
+  "screen": {
+    "id": "sight-reading",
+    "name": "Sight Reading",
+    "status": "approved-wired",
+    "referenceSize": { "width": 1536, "height": 1024 },
+    "figma": {
+      "fileKey": "cD5gqV8A5gk94NVuGeJXg5",
+      "frameId": "102:2",
+      "frameName": "Harmony Gates / Sight Reading / CANON / WIRED 01"
+    },
+    "asset": {
+      "intendedPath": "interface/assets/sight-reading-landing.png",
+      "role": "static-environment-reference",
+      "note": "The approved Cinque Terre loft image is the canonical visual reference. Production must keep changing values and selection/highlight state in Compose rather than treating the raster as application state."
+    }
+  },
+  "layers": {
+    "static": {
+      "frameId": "102:3",
+      "backgroundNodeId": "102:4"
+    },
+    "runtime": {
+      "frameId": "102:5",
+      "fields": [
+        { "key": "progressPercent", "nodeId": "103:3", "type": "percent", "example": "48%" },
+        { "key": "progressCompleteLabel", "nodeId": "103:4", "type": "label", "example": "COMPLETE" },
+        { "key": "lessonsCompleted", "nodeId": "103:6", "type": "count_pair", "example": "24 / 50" },
+        { "key": "mastery", "nodeId": "103:8", "type": "text", "example": "Intermediate" },
+        { "key": "bestAccuracy", "nodeId": "103:10", "type": "percent", "example": "82%" },
+        { "key": "streak", "nodeId": "103:12", "type": "duration", "example": "5 Days" },
+        { "key": "currentFocus", "nodeId": "103:54", "type": "text", "example": "Intervals: 2nds & 3rds" },
+        { "key": "continueLabel", "nodeId": "103:56", "type": "text", "example": "CONTINUE PATH 02" },
+        { "key": "midiStatus", "nodeId": "103:58", "type": "connection_state", "example": "MIDI CONNECTED" },
+        { "key": "midiDeviceName", "nodeId": "103:59", "type": "text", "example": "Nord Stage 4" }
+      ],
+      "pathCards": [
+        { "path": 1, "frameId": "103:13", "stateNodeId": "103:17", "state": "completed", "title": "Rhythm Foundation" },
+        { "path": 2, "frameId": "103:18", "stateNodeId": "103:22", "state": "current", "title": "Interval Awareness" },
+        { "path": 3, "frameId": "103:23", "stateNodeId": "103:27", "state": "locked", "title": "Treble Staff Fluency" },
+        { "path": 4, "frameId": "103:28", "stateNodeId": "103:32", "state": "locked", "title": "Bass Staff Fluency" },
+        { "path": 5, "frameId": "103:33", "stateNodeId": "103:37", "state": "locked", "title": "Hands Together" },
+        { "path": 6, "frameId": "103:38", "stateNodeId": "103:42", "state": "locked", "title": "Key Navigation" },
+        { "path": 7, "frameId": "103:43", "stateNodeId": "103:47", "state": "locked", "title": "Dynamics & Expression" },
+        { "path": 8, "frameId": "103:48", "stateNodeId": "103:52", "state": "locked", "title": "Advanced Repertoire" }
+      ]
+    },
+    "hitRegions": {
+      "frameId": "102:6",
+      "actions": [
+        { "action": "navigate.home", "nodeId": "103:60", "bounds": { "x": 0, "y": 120, "width": 126, "height": 118 } },
+        { "action": "navigate.gates", "nodeId": "103:61", "bounds": { "x": 0, "y": 239, "width": 126, "height": 116 } },
+        { "action": "navigate.practice", "nodeId": "103:62", "bounds": { "x": 0, "y": 356, "width": 126, "height": 112 } },
+        { "action": "navigate.journal", "nodeId": "103:63", "bounds": { "x": 0, "y": 469, "width": 126, "height": 110 } },
+        { "action": "navigate.profile", "nodeId": "103:64", "bounds": { "x": 0, "y": 580, "width": 126, "height": 112 } },
+        { "action": "navigate.settings", "nodeId": "103:65", "bounds": { "x": 0, "y": 692, "width": 126, "height": 114 } },
+        { "action": "open.progress", "nodeId": "103:66", "bounds": { "x": 1066, "y": 440, "width": 264, "height": 48 } },
+        { "action": "open.path.01", "nodeId": "103:67", "bounds": { "x": 152, "y": 591, "width": 140, "height": 270 } },
+        { "action": "open.path.02", "nodeId": "103:68", "bounds": { "x": 308, "y": 591, "width": 140, "height": 270 } },
+        { "action": "open.path.03", "nodeId": "103:69", "bounds": { "x": 464, "y": 591, "width": 140, "height": 270 } },
+        { "action": "open.path.04", "nodeId": "103:70", "bounds": { "x": 620, "y": 591, "width": 140, "height": 270 } },
+        { "action": "open.path.05", "nodeId": "103:71", "bounds": { "x": 776, "y": 591, "width": 140, "height": 270 } },
+        { "action": "open.path.06", "nodeId": "103:72", "bounds": { "x": 932, "y": 591, "width": 140, "height": 270 } },
+        { "action": "open.path.07", "nodeId": "103:73", "bounds": { "x": 1088, "y": 591, "width": 140, "height": 270 } },
+        { "action": "open.path.08", "nodeId": "103:74", "bounds": { "x": 1244, "y": 591, "width": 140, "height": 270 } },
+        { "action": "open.currentFocus", "nodeId": "103:75", "bounds": { "x": 145, "y": 895, "width": 322, "height": 80 } },
+        { "action": "continue.currentPath", "nodeId": "103:76", "bounds": { "x": 542, "y": 878, "width": 425, "height": 60 } },
+        { "action": "open.midiStatus", "nodeId": "103:77", "bounds": { "x": 1066, "y": 888, "width": 329, "height": 84 } }
+      ]
+    }
+  },
+  "layoutAudit": {
+    "pathRow": {
+      "cardWidth": 140,
+      "cardHeight": 270,
+      "gap": 16,
+      "leftMargin": 152,
+      "rightMargin": 152,
+      "verticalPosition": 591,
+      "status": "symmetric"
+    },
+    "hitRegionsMatchVisibleCards": true
+  },
+  "runtimeRules": [
+    "Progress percentage, lesson count, mastery, accuracy, streak, current focus, current path, path completion/locked/current state, and MIDI state are runtime values.",
+    "The purple current-path highlight must move with progression state and must not be permanently baked into the production background.",
+    "Locked paths must not enter lesson flow until curriculum rules unlock them.",
+    "Continue Current Path must enter the current unfinished sight-reading lesson/path.",
+    "MIDI status and device name update on connect, disconnect, and reconnect.",
+    "The landing screen is navigation and progress state only; actual sight-reading exercises are separate exercise views.",
+    "Use the Figma frame and JSON actions as the implementation contract while preserving existing Kotlin/Compose architecture."
+  ]
+}

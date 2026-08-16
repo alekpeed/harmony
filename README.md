@@ -1,92 +1,38 @@
 # Harmony Gates
 
-A native Android tablet jazz-harmony and sight-reading game. A real USB MIDI keyboard is the
-controller: the app presents a musical task, the player answers on the keys, and the app judges
-the actual MIDI performance. Mastery opens gates into progressively harder material.
+Before designing, implementing, or revising a major screen, read:
 
-Kotlin, Jetpack Compose, offline, tablet-first.
+- [`HARMONY_GATES_DESIGN_LANGUAGE.md`](HARMONY_GATES_DESIGN_LANGUAGE.md) — visual language, structural rules, approved Figma references, source-of-truth priority, and screen-design preflight.
+- [`SCREEN_DESIGN_WORKFLOW.md`](SCREEN_DESIGN_WORKFLOW.md) — mandatory workflow for new screens, including how to derive controls, create a draft JSON when none exists, build/wire Figma, and finalize the JSON handoff.
+- [`interface/README.md`](interface/README.md) — interface handoff conventions and implementation workflow.
+- [`interface/maps/`](interface/maps/) — machine-readable screen maps and interaction semantics.
 
-## Status
+Important: the absence of `interface/maps/<screen>.json` is **not** a reason to stop a new-screen design task. For a new screen, follow `SCREEN_DESIGN_WORKFLOW.md`: derive the functional inventory from existing project sources, create the draft contract, build the Figma screen, then finalize its JSON from the approved Figma structure.
 
-**Phases 0 through 4 complete.** Toolchain, music-theory domain, MIDI input engine, capture and
-evaluation, and a playable exercise loop. Persistence and mastery are next. See
-`docs/IMPLEMENTATION_STATUS.md` for the detailed handoff and known limitations.
+## Canonization rule
 
-| | |
-| --- | --- |
-| Tests | 268 passing |
-| Debug APK | builds |
-| Playable exercise | yes — show a chord, play it, get a verdict |
-| Verified on hardware | **not yet** — no keyboard attached to the build environment |
+Whenever a major screen is approved or materially rewired, complete the full handoff in the same task. Do not leave the design only in Figma or only in JSON. Update the corresponding `interface/maps/<screen>.json` and the relevant repository instruction/reference documents so future sessions know which frame is canonical, which values are runtime-driven, which regions are interactive, and which asset path is authoritative.
 
-## Quick start
+Primary Figma file:
+`https://www.figma.com/design/cD5gqV8A5gk94NVuGeJXg5`
 
-```bash
-./gradlew verifyHarmony     # every module's tests and lint
-./gradlew :core:music:test  # the theory engine on its own — fast
-./gradlew assembleDebug     # app/build/outputs/apk/debug/
-./gradlew installDebug      # with a tablet attached over adb
-```
+Approved visual references:
+- Home: node `28:2`
+- Progression Run: node `77:2`
+- Chord Gates: node `101:76` (`Harmony Gates / Chord Gates / CANON / WIRED 01`)
+- Sight Reading: node `102:2` (`Harmony Gates / Sight Reading / CANON / WIRED 01`)
 
-Requires JDK 21 and an Android SDK with platform 37. Point `local.properties` at it:
+Chord Gates machine-readable contract:
+`interface/maps/chord-gates.json`
 
-```properties
-sdk.dir=/path/to/android-sdk
-```
+Chord Gates production background asset path:
+`interface/assets/chord-gates-canon.png`
 
-## What exists today
+Sight Reading machine-readable contract:
+`interface/maps/sight-reading.json`
 
-The app opens on the approved home screen from `interface/`, with all twenty of its controls
-live. Two lead somewhere real:
+Sight Reading detailed handoff:
+`interface/SIGHT_READING_HANDOFF.md`
 
-- **Theory Lab** — type a chord symbol and see its degrees, its spelling and a generated
-  voicing, all answered by `core:music`.
-- **Settings** — MIDI setup and diagnostics: connection state, device picker, a live keyboard
-  showing held and pedal-sustained notes apart, the raw event stream, and a simulator so the
-  whole screen can be exercised with nothing plugged in.
-- **Chord Gates** and **Quick Practice** — the exercise loop. A chord symbol appears, you play it
-  on the keyboard, and the verdict names what was actually wrong: which degree is missing, which
-  note does not belong, whether the chord was spread too wide.
-
-The rest report which phase they arrive in rather than opening an empty room.
-
-The theory engine handles 30 chord formulas across all twelve roots, jazz chord-symbol parsing
-(`Cm7b5`, `CΔ7`, `C7alt`, `Dbmaj9/F`), degree-aware enharmonic spelling, inversions, voicing
-policies including rootless families, drop and spread transformations, spelled transposition,
-roman-numeral functional harmony, and voice-leading analysis with optimal voice assignment.
-
-## Layout
-
-```text
-app/                    Android application, Phase 1 harness, home screen
-core/music/             Pure Kotlin/JVM: all music theory. No Android dependency.
-core/midi/              Input source, byte-stream parser, sustain, note tracking, chord capture
-core/designsystem/      Tokens, placeholder theme, components, artwork hit-region layer
-core/testing/           Test doubles and readable music assertions
-content/                Curriculum and exercise policies (Phase 6 onwards)
-docs/spec/              The full specification — the source of truth
-interface/              Approved visual assets and placement references
-```
-
-`core:audio` and `core:data` arrive with Phases 8 and 5.
-
-## Design rules that shape the code
-
-- **MIDI performance is the source of truth.** No microphone transcription for correctness.
-- **Theory lives in one place.** `core:music` is a plain JVM library, so an Android dependency
-  cannot leak in. UI never decides whether a chord is correct — and `core:designsystem` does not
-  depend on `core:music`, so it never gets the chance.
-- **Spelling is preserved.** `Db7` spells Cb, not B. A chord that standard notation cannot write
-  is reported, never quietly respelled.
-- **Ambiguity is data, not code.** A dominant thirteenth permits a natural eleventh without
-  writing one; which alterations an altered dominant shows is an exercise policy. Neither is
-  hard-coded as a universal rule.
-- **Generation is deterministic.** Same seed, same exercise. Clocks and randomness are injected.
-- **Visuals come last.** Everything visual goes through a design token, so the approved design
-  system replaces values rather than screens. See `docs/INTERFACE_INTEGRATION.md`.
-
-## Contributing
-
-Read `AGENTS.md` first, then the numbered documents in `docs/spec/` for the phase you are
-working on. Every phase ends with passing tests, clean lint, a building debug APK, and an
-updated `docs/IMPLEMENTATION_STATUS.md`.
+Sight Reading production background asset path:
+`interface/assets/sight-reading-landing.png`

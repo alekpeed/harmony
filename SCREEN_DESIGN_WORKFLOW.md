@@ -176,6 +176,21 @@ Before declaring a screen complete:
 6. Confirm the JSON and Figma agree.
 7. During implementation, compare a tablet screenshot against Figma and test all mapped actions.
 
+## Phase 9: canonize and commit the complete handoff
+
+Whenever a screen becomes approved/canonical or is materially rewired, complete the repository handoff in the same task. This is mandatory, not a later cleanup step.
+
+Before ending the task:
+
+1. Create or update `interface/maps/<screen>.json` with the approved Figma node, runtime/static responsibilities, semantic actions, and current hit bounds.
+2. Update root `README.md`, `HARMONY_GATES_DESIGN_LANGUAGE.md`, `interface/README.md`, and any screen-specific handoff document needed so future sessions can discover the canonical screen without conversation history.
+3. Put the approved binary artwork in `interface/assets/` using a stable descriptive filename and record that exact path in the JSON and handoff docs.
+4. Verify that the Figma frame ID, JSON map, documented asset path, and repository references all agree.
+5. Verify that changing values and selected/highlight states remain runtime-driven rather than permanent raster content.
+6. Do not claim the screen is fully uploaded or complete if a required binary asset remains only local. State the exact filename, repository path, and remaining action.
+
+This canonization step must happen every time an approved screen is created or materially changed.
+
 ## Practical instruction for AI design sessions
 
 When asked to design a screen that lacks a JSON map, the correct response is not `there is no JSON, so I cannot proceed`.
@@ -190,5 +205,7 @@ The correct response is:
 6. obtain/establish approval
 7. finalize the JSON with the actual Figma structure
 8. hand off to Kotlin/Compose
+9. canonize the screen in repository reference documents
+10. commit the approved binary asset to the documented `interface/assets/` path, or explicitly state that this remains incomplete if tooling prevents the binary upload
 
 Only stop for user clarification when a real product decision remains unresolved after source inspection and cannot reasonably be treated as a proposed UI expression of already-required behavior.
