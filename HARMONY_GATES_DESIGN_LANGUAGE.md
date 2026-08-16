@@ -13,6 +13,10 @@ Also read `SCREEN_DESIGN_WORKFLOW.md` for the required new-screen process, inclu
 - Canonical Chord Gates: Figma node `101:76`
 - Chord Gates map: `interface/maps/chord-gates.json`
 - Chord Gates production background: `interface/assets/chord-gates-canon.png`
+- Canonical Sight Reading: Figma node `102:2`
+- Sight Reading map: `interface/maps/sight-reading.json`
+- Sight Reading handoff: `interface/SIGHT_READING_HANDOFF.md`
+- Sight Reading production background: `interface/assets/sight-reading-landing.png`
 - Interface documentation: `interface/README.md`
 - Screen maps: `interface/maps/`
 - New-screen workflow: `SCREEN_DESIGN_WORKFLOW.md`
@@ -133,6 +137,33 @@ All navigation, View Progress, each of the eight Gate cards, Current Focus, Ente
 
 The eight Gate cards are intentionally aligned as a precise row at the 1536 × 1024 reference size: 140 px card width, 230 px card height, 12 px gaps, and equal 166 px left/right margins.
 
+### Sight Reading
+
+Canonical wired frame:
+`Harmony Gates / Sight Reading / CANON / WIRED 01`
+
+Figma node:
+`102:2`
+
+Machine-readable contract:
+`interface/maps/sight-reading.json`
+
+Detailed handoff:
+`interface/SIGHT_READING_HANDOFF.md`
+
+Production background asset path:
+`interface/assets/sight-reading-landing.png`
+
+Sight Reading is the canonical landing screen for the Sight Reading module. Its environment is the approved Cinque Terre loft/music-study room. Preserve the idea of a distinct Sight Reading space rather than cloning the Home or Chord Gates rooms.
+
+Runtime-driven values include completion percentage, lessons completed, mastery, best accuracy, streak, current focus, selected/current path, individual path completion/locked state, Continue Path label, MIDI connection state, and MIDI device name. The purple current-path highlight is runtime state and must move when the user's current path changes.
+
+Interactive targets include Home, Gates, Practice, Journal, Profile, Settings, View Progress, all eight path cards, Current Focus, Continue Current Path, and MIDI Status. Use `interface/maps/sight-reading.json` for current coordinates and Figma node IDs.
+
+The eight Sight Reading path cards are intentionally aligned as a precise symmetric row at the 1536 × 1024 reference size: 140 px card width, 270 px card height, 16 px gaps, and equal 152 px left/right margins.
+
+The canonical path sequence is Rhythm Foundation, Interval Awareness, Treble Staff Fluency, Bass Staff Fluency, Hands Together, Key Navigation, Dynamics & Expression, and Advanced Repertoire. The exact user's progress through them is runtime state.
+
 ### Progression Run
 
 Figma node `77:2`
@@ -157,7 +188,7 @@ Before generating or building a new screen:
 4. Inspect the relevant file under `interface/maps/` if it exists.
 5. If it does not exist, derive the functional inventory and create a draft screen contract rather than stopping.
 6. Inspect the relevant product/spec/code sources.
-7. Inspect the approved Home, Chord Gates, and Progression Run Figma screens for visual reference where relevant.
+7. Inspect the approved Home, Chord Gates, Sight Reading, and Progression Run Figma screens for visual reference where relevant.
 8. Identify the complete required control and feature inventory for the target screen.
 9. Propose the environment and composition without changing that inventory.
 10. Verify that no required control or state has been omitted before considering the screen complete.
