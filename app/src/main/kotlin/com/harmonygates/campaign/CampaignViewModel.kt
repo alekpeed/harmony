@@ -45,18 +45,16 @@ data class CampaignUiState(
 /**
  * The campaign map.
  *
- * Nothing here decides whether a gate is open. The map is
- * `CampaignEvaluator.evaluate(curriculum, mastery)` — a pure function of authored content and
- * stored evidence — so the screen cannot drift from the rules, and the same call in a test
- * produces the same map without a database.
+ * The Android default ViewModel factory can construct AndroidViewModel subclasses only when
+ * their public constructor is exactly `(Application)`. Keep production dependencies inside the
+ * instance rather than as Kotlin default constructor parameters: defaults do not create the
+ * Java constructor Android's factory reflects for.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class CampaignViewModel(
-    application: Application,
-    private val progress: ProgressRepository = HarmonyGraph.progress(application),
-    private val content: ContentRepository = HarmonyGraph.content(application),
-) : AndroidViewModel(application) {
+class CampaignViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val progress: ProgressRepository = HarmonyGraph.progress(application)
+    private val content: ContentRepository = HarmonyGraph.content(application)
     private val evaluator = CampaignEvaluator()
     private val curriculum = MutableStateFlow<Curriculum?>(null)
     private val failure = MutableStateFlow<String?>(null)
@@ -79,8 +77,6 @@ class CampaignViewModel(
         viewModelScope.launch {
             runCatching { content.curriculum() }
                 .onSuccess { curriculum.value = it }
-                // A content pack that fails to load is a build mistake that reached a device.
-                // Saying so beats an empty map that looks like lost progress.
                 .onFailure { failure.value = it.message ?: "The curriculum could not be loaded" }
         }
     }
