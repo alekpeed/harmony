@@ -5,6 +5,56 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 15 — Release build
+
+**Commit:** see `git log` for `phase/15-release`
+
+### Implemented
+
+- **Signed release path.** `app/build.gradle.kts` finds signing material in `keystore.properties`
+  (gitignored) or in environment variables, and needs all four values. When they are absent the
+  release build still runs and is unsigned — an unsigned release APK still proves the shrinker
+  and resource stripper are happy on a machine with no secrets, and the artifact is labelled so
+  it cannot be mistaken for a shippable one.
+- **`.github/workflows/release.yml`** — a `v*` tag runs `verifyHarmony`, decodes the keystore
+  from an encrypted secret, assembles both an APK and an App Bundle, and uploads both.
+- **`docs/RELEASE.md`** — build, install over USB and wireless ADB, keystore creation, the
+  release commands, and the three version numbers.
+- **`docs/RELEASE_NOTES.md`** — what 0.1.0 contains and, at equal length, what it does not.
+- **Versioned content schema.** The content version and schema are read out of
+  `content/curriculum/curriculum.json` at build time and exposed as `BuildConfig.CONTENT_VERSION`
+  and `BuildConfig.CONTENT_SCHEMA`. `HarmonyGraph.CONTENT_VERSION` now reads the build rather
+  than holding a constant that would have gone stale the first time content changed.
+
+### Acceptance
+
+| Deliverable | State |
+| --- | --- |
+| signed APK/AAB path | Done. `assembleRelease` and `bundleRelease` both produce output; signing activates when the material is present. |
+| install instructions | Done — `docs/RELEASE.md`. |
+| GitHub Actions artifact | Done. Debug APK on every CI run; signed APK and AAB on a tag. |
+| release notes | Done — `docs/RELEASE_NOTES.md`. |
+| versioned content schema | Done, and read from the content rather than restated. |
+| known limitations | Done, in the release notes and here. |
+
+### Tests
+
+611 passing, 0 failing. No new tests: this phase is build configuration and documentation, and
+what it produces is checked by producing it — `assembleRelease` runs minified and
+resource-shrunk, 3.9 MB.
+
+### Known limitations
+
+1. **The release APK has never been installed.** It builds, shrinks and packages. Nothing has
+   put it on a device, so the ProGuard rules are unproven against runtime reflection —
+   `kotlinx.serialization` and Room are the two that would show it.
+2. **No keystore exists.** The path is implemented and has never signed anything.
+3. **No emulator job in CI.** 17 §2 asks for instrumented jobs "after the base pipeline is
+   stable"; the base pipeline is stable and the instrumented jobs are not written.
+4. **The version numbers have never been bumped.** The mechanism is there and untested by use.
+
+---
+
 ## Phase: 14 — Quality pass
 
 **Commit:** see `git log` for `phase/14-quality`

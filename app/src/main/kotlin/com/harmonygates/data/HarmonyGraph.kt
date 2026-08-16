@@ -1,5 +1,7 @@
 package com.harmonygates.data
 
+import com.harmonygates.BuildConfig
+
 import android.content.Context
 import com.harmonygates.core.data.content.AssetContentSource
 import com.harmonygates.core.data.content.ContentRepository
@@ -52,6 +54,15 @@ object HarmonyGraph {
             preferences ?: HarmonyPreferences(context).also { preferences = it }
         }
 
-    /** The content pack the stored history was recorded against (11 §4). */
-    const val CONTENT_VERSION: String = "0.1.0"
+    /**
+     * The content pack the stored history was recorded against (11 §4).
+     *
+     * Read from the build, which reads it from the authored curriculum, so the version stamped
+     * on an attempt is the version of the content that produced it. A constant here would have
+     * gone stale the first time content changed without anyone noticing.
+     */
+    val CONTENT_VERSION: String = BuildConfig.CONTENT_VERSION
+
+    /** The schema the content files are written to. Moves independently of the version (17 §6). */
+    const val CONTENT_SCHEMA: Int = BuildConfig.CONTENT_SCHEMA
 }

@@ -1,8 +1,58 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
 }
+
+/**
+ * Release signing, from somewhere that is not the repository.
+ *
+ * 17_BUILD_CI_INSTALL_RELEASE.md §3: "Release signing secrets belong in GitHub encrypted secrets
+ * or a secure local signing setup, never committed." So the keystore is found either through
+ * `keystore.properties` — which is gitignored — or through environment variables, which is how
+ * CI supplies it. When neither is present the release build is simply unsigned rather than
+ * failing, so `assembleRelease` still verifies that the shrinker and the resource stripper are
+ * happy on a machine that has no secrets.
+ */
+val keystoreProperties: Properties? = rootProject.file("keystore.properties")
+    .takeIf { it.isFile }
+    ?.let { file -> Properties().apply { file.inputStream().use { load(it) } } }
+
+fun signingValue(key: String, environmentName: String): String? =
+    keystoreProperties?.getProperty(key) ?: System.getenv(environmentName)
+
+val releaseKeystorePath: String? = signingValue("storeFile", "HARMONY_KEYSTORE_FILE")
+val releaseKeystorePassword: String? = signingValue("storePassword", "HARMONY_KEYSTORE_PASSWORD")
+val releaseKeyAlias: String? = signingValue("keyAlias", "HARMONY_KEY_ALIAS")
+val releaseKeyPassword: String? = signingValue("keyPassword", "HARMONY_KEY_PASSWORD")
+/**
+ * The content pack's own version and schema, read out of the authored curriculum.
+ *
+ * 17 §6 keeps three numbers apart: the app version, the content version, and the content schema.
+ * Reading the latter two from the file that carries them means they cannot drift from the
+ * content actually shipped — which is the whole reason they are separate numbers.
+ */
+val curriculumFile = rootProject.file("content/curriculum/curriculum.json")
+
+fun curriculumField(name: String): String =
+    Regex("\"$name\"\\s*:\\s*\"?([^\",}]+)\"?")
+        .find(curriculumFile.readText())
+        ?.groupValues
+        ?.get(1)
+        ?.trim()
+        ?: error("content/curriculum/curriculum.json has no $name")
+
+val harmonyContentVersion: String = curriculumField("contentVersion")
+val harmonyContentSchema: Int = curriculumField("schemaVersion").toInt()
+
+val canSignRelease: Boolean = listOf(
+    releaseKeystorePath,
+    releaseKeystorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+).all { !it.isNullOrBlank() } && file(releaseKeystorePath!!).isFile
 
 
 android {
@@ -14,8 +64,24 @@ android {
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
+
+        // 17 §6: a semantic app version, and a content version that moves independently of it.
+        // Both are readable at runtime so a bug report can say which of the two it came from.
         versionName = "0.1.0"
+        buildConfigField("String", "CONTENT_VERSION", "\"$harmonyContentVersion\"")
+        buildConfigField("int", "CONTENT_SCHEMA", harmonyContentSchema.toString())
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        if (canSignRelease) {
+            create("release") {
+                storeFile = file(releaseKeystorePath!!)
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
     }
 
     buildTypes {
@@ -28,11 +94,13 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     lint {

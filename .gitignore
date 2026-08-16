@@ -12,3 +12,8 @@
 local.properties
 *.hprof
 /.kotlin
+
+# Release signing. 17_BUILD_CI_INSTALL_RELEASE.md §3: never committed.
+/keystore.properties
+*.jks
+*.keystore
