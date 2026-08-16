@@ -14,6 +14,9 @@ import com.harmonygates.core.designsystem.theme.HarmonyTheme
  *
  * The activity handles configuration changes itself so that a running exercise survives a
  * window resize, which 10_ANDROID_ARCHITECTURE.md §9 requires from the start.
+ *
+ * Everything is wrapped in [HarmonyLandscape]: the manifest asks for landscape and Android 16
+ * may decline, so the shape is also enforced from inside the window.
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,7 +24,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             HarmonyTheme {
-                AppRoot()
+                HarmonyLandscape {
+                    AppRoot()
+                }
             }
         }
     }

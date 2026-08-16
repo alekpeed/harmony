@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "screen": "ear-trainer",
+  "status": "draft-pre-figma",
+  "designSize": {"width": 1536, "height": 1024},
+  "requirementsSource": [
+    "Harmony_Gates_Kotlin_Android_Coder_Pack.zip / 01_PRODUCT_AND_FUNCTIONAL_SCOPE.md",
+    "Harmony_Gates_Kotlin_Android_Coder_Pack.zip / 02_GAME_LOOP_AND_PROGRESSION.md",
+    "Harmony_Gates_Kotlin_Android_Coder_Pack.zip / 05_MIDI_INPUT_ENGINE.md",
+    "Harmony_Gates_Kotlin_Android_Coder_Pack.zip / 06_PERFORMANCE_EVALUATION_AND_SCORING.md",
+    "Harmony_Gates_Kotlin_Android_Coder_Pack.zip / 07_EAR_TRAINING_ENGINE.md",
+    "Harmony_Gates_Kotlin_Android_Coder_Pack.zip / 13_SCREEN_BEHAVIOR_SPEC.md",
+    "HARMONY_GATES_DESIGN_LANGUAGE.md",
+    "SCREEN_DESIGN_WORKFLOW.md"
+  ],
+  "requiredFeatures": [
+    "ear task families: reproduce, identify_then_play, difference_detection, function_hearing, bass_hearing, voice_leading_hearing",
+    "play/replay stimulus under gate replay policy",
+    "optional reference tonic",
+    "MIDI answer as authoritative played response",
+    "optional identify/naming response controls when required",
+    "separate harmonic complexity and assistance axes",
+    "exercise prompt/state without pre-answer leakage",
+    "semantic musical feedback after evaluation",
+    "MIDI connection status and non-destructive device-loss state",
+    "session/attempt progress",
+    "global Harmony Gates navigation"
+  ],
+  "dynamicLayers": [
+    "exercise prompt/state",
+    "stimulus/replay state",
+    "reference tonic state",
+    "identify response controls",
+    "MIDI held/performed-note state",
+    "evaluation feedback",
+    "session progress",
+    "MIDI connection state"
+  ],
+  "controls": [
+    {"id":"toggle_menu","action":"toggle_menu","requirementStatus":"inherited","figmaLayer":null,"boundsPx":null},
+    {"id":"navigate_home","action":"navigate_home","requirementStatus":"inherited","figmaLayer":null,"boundsPx":null},
+    {"id":"navigate_map","action":"navigate_map","requirementStatus":"inherited","figmaLayer":null,"boundsPx":null},
+    {"id":"navigate_practice","action":"navigate_practice","requirementStatus":"inherited","figmaLayer":null,"boundsPx":null},
+    {"id":"navigate_stats","action":"navigate_stats","requirementStatus":"inherited","figmaLayer":null,"boundsPx":null},
+    {"id":"navigate_library","action":"navigate_library","requirementStatus":"inherited","figmaLayer":null,"boundsPx":null},
+    {"id":"navigate_profile","action":"navigate_profile","requirementStatus":"inherited","figmaLayer":null,"boundsPx":null},
+    {"id":"navigate_settings","action":"navigate_settings","requirementStatus":"inherited","figmaLayer":null,"boundsPx":null},
+    {"id":"select_task_family","action":"set_ear_task_family","requirementStatus":"required","figmaLayer":null,"boundsPx":null},
+    {"id":"play_stimulus","action":"play_ear_stimulus","requirementStatus":"required","figmaLayer":null,"boundsPx":null},
+    {"id":"replay_stimulus","action":"replay_ear_stimulus_if_allowed","requirementStatus":"required","figmaLayer":null,"boundsPx":null},
+    {"id":"play_reference_tonic","action":"play_reference_tonic_if_enabled","requirementStatus":"required","figmaLayer":null,"boundsPx":null},
+    {"id":"identify_response","action":"submit_identification_if_required","requirementStatus":"required","figmaLayer":null,"boundsPx":null},
+    {"id":"harmonic_complexity","action":"set_harmonic_complexity","requirementStatus":"required","figmaLayer":null,"boundsPx":null},
+    {"id":"assistance_level","action":"set_assistance_profile","requirementStatus":"required","figmaLayer":null,"boundsPx":null}
+  ],
+  "runtimeRules": [
+    "Do not expose hidden answer information visually or through accessibility semantics before submission.",
+    "MIDI performance is the source of truth for played answers.",
+    "Replay availability follows the active gate/mode policy and replay count is assistance evidence.",
+    "Harmonic complexity and assistance remain independent values.",
+    "Feedback must identify the musical cause of failure where evaluable.",
+    "MIDI disconnect preserves the current exercise and enters a reconnect state rather than destroying the session.",
+    "Dynamic exercise content must not be baked into the static environment artwork."
+  ],
+  "figma": {
+    "fileKey": "cD5gqV8A5gk94NVuGeJXg5",
+    "nodeId": null,
+    "frameName": null
+  }
+}

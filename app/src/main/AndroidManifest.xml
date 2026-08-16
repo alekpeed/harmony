@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!--
       MIDI is the primary controller (00_README_START_HERE.md). The feature is declared as not
@@ -18,11 +19,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HarmonyGates">
 
+        <!--
+          Landscape only, deliberately.
+
+          Every approved frame is composed at 1536 x 1024, and the app is played sitting at a
+          keyboard with the tablet propped in front of it. A portrait layout is not a narrower
+          version of these screens, it is a different design that nobody has drawn: the piano
+          keyboard, the progression track's perspective and the home artwork all assume the wide
+          frame. Locking it is more honest than reflowing into something unapproved.
+
+          Two lint checks are suppressed here, and only here. `LockedOrientationActivity` is the
+          general advice to stay adaptive, which this app is deliberately not. `DiscouragedApi`
+          warns that Android 16 ignores a fixed orientation on large screens — which is true, so
+          this attribute is a request rather than a guarantee. `HarmonyLandscape` in the app
+          enforces the same shape from inside the window, where the platform cannot overrule it.
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:screenOrientation="sensorLandscape"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize|density"
             android:resizeableActivity="true"
+            tools:ignore="LockedOrientationActivity,DiscouragedApi"
             android:theme="@style/Theme.HarmonyGates">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -100,27 +100,28 @@ androidComponents {
             mapResourceName.set("home_interaction_map")
             // Matches HarmonyColorTokens.background, so a pending artwork is never a bright flash.
             placeholderColor.set("#12131A")
+            artworkRequired.set(true)
         }
         variant.sources.res?.addGeneratedSourceDirectory(
             syncArtwork,
             SyncInterfaceArtwork::generatedResourceDirectory,
         )
 
-        // The Progression Run plate. No approved background has been supplied yet, so this
-        // generates a placeholder and the screen draws its track over the theme background —
-        // which is exactly the layering the handoff requires, with or without the plate. When
-        // the clean room export lands in `interface/`, it drops in with no code change.
+        // The Progression Run plate: the clean room the track runs through, with no baked
+        // orbs, pedestals or path in it. Supplied under `interface/assets/`, which is where
+        // `interface/README.md` now places screen artwork.
         val syncProgressionRun = tasks.register<SyncInterfaceArtwork>(
             "sync${variant.name.replaceFirstChar(Char::uppercase)}ProgressionRunArtwork",
         ) {
             group = "build"
             description = "Copies the Progression Run plate and track map from interface/."
             interfaceDirectory.set(rootProject.layout.projectDirectory.dir("interface"))
-            sourceFileName.set("progression_run_background.jpg")
+            sourceFileName.set("assets/progression-run-background.png")
             mapFileName.set("maps/progression-run.json")
             resourceName.set("progression_run_background")
             mapResourceName.set("progression_run_map")
             placeholderColor.set("#12131A")
+            artworkRequired.set(true)
         }
         variant.sources.res?.addGeneratedSourceDirectory(
             syncProgressionRun,

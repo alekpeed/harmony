@@ -4,6 +4,8 @@ This directory is the handoff point for approved visual interface assets for the
 
 The app implementation is already underway. Do not treat this directory as an instruction to restart or redesign the application. Its purpose is to tell the implementation agent where approved visual assets live, how dynamic visual layers are constructed, and how they connect to existing app behavior.
 
+For the mandatory workflow used to create a brand-new screen, especially when no JSON exists yet, read root `SCREEN_DESIGN_WORKFLOW.md`.
+
 ## Figma source
 
 Figma file:
@@ -16,6 +18,15 @@ Native design size for the current tablet screens:
 
 Every approved screen must have a machine-readable JSON handoff under `interface/maps/`.
 
+A missing JSON for a **new** screen is not a blocker. The JSON is created as part of the screen-design process:
+
+1. derive the required functionality from existing product/spec/code sources
+2. create a draft pre-Figma contract containing semantic controls/features but no fabricated Figma IDs or coordinates
+3. build and approve the Figma screen
+4. finalize the JSON using the actual approved Figma frame, layer names, hit regions, dynamic-rendering rules, and semantic actions
+
+Do not reply that a new screen cannot be designed merely because its JSON does not yet exist. See `SCREEN_DESIGN_WORKFLOW.md` for the full procedure.
+
 Depending on the screen, a map may describe:
 - the approved Figma frame and node ID
 - the 1536 × 1024 design coordinate system
@@ -24,8 +35,19 @@ Depending on the screen, a map may describe:
 - semantic actions for wiring into existing app behavior
 - dynamic rendering rules for screens that cannot be represented by one static image
 - motion/state contracts where Figma is being used as a visual reference
+- a requirements inventory and requirement status for controls during draft design work
 
 Do not invent or reuse stale hit coordinates. If a screen has been structurally rebuilt, old interaction-region coordinates are invalid until remapped against the new approved frame.
+
+### Draft JSON status
+
+For a screen that has not yet been structurally approved in Figma, use a draft status such as:
+
+`"status": "draft-pre-figma"`
+
+At that stage, semantic requirements may be recorded, but Figma node IDs and `boundsPx` that do not yet exist must remain null/unset. Do not fabricate them.
+
+After Figma approval, replace the placeholders with the actual frame/layer information and current measurements.
 
 Current maps:
 - `interface/maps/home.json`
@@ -103,13 +125,24 @@ A correct qualifying chord advances the track. Wrong or incomplete input does no
 
 ## Intended workflow
 
+For an already-approved screen:
+
 1. Continue building the existing app architecture normally.
 2. Treat approved Figma screens as visual/motion targets, not alternate application architectures.
-3. Read the corresponding JSON map before implementing a screen.
+3. Read the corresponding JSON map before implementing the screen.
 4. Build dynamic elements parametrically in Compose rather than copying Figma demo states literally.
 5. Connect semantic actions to the existing MIDI, curriculum, game, state and navigation layers.
 6. Compare Android tablet screenshots and motion against the approved Figma reference.
-7. Add or update interaction-region maps only after the corresponding approved Figma frame is structurally final.
-8. Preserve existing app architecture unless visual integration requires a small local adjustment.
+7. Preserve existing app architecture unless visual integration requires a small local adjustment.
 
-In short: Figma defines the approved appearance and motion language; JSON defines the runtime/rendering contract and interaction semantics; the existing Kotlin/Compose app supplies the real behavior.
+For a new/unmapped screen:
+
+1. Follow root `SCREEN_DESIGN_WORKFLOW.md`.
+2. Derive the full functional inventory from project sources.
+3. Create the draft JSON contract.
+4. Design/build the Figma screen without losing required functionality.
+5. Name interaction and dynamic layers semantically.
+6. After structural approval, measure/map the current frame and finalize the JSON.
+7. Then hand the approved Figma + finalized JSON to the Kotlin/Compose implementation.
+
+In short: Figma defines the approved appearance and motion language; JSON defines the semantic/layout/runtime contract; the existing Kotlin/Compose app supplies the real behavior.

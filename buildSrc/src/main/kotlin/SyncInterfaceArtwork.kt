@@ -1,4 +1,5 @@
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -47,6 +48,18 @@ abstract class SyncInterfaceArtwork : DefaultTask() {
     @get:Input
     abstract val placeholderColor: Property<String>
 
+    /**
+     * Whether a missing artwork is a build failure.
+     *
+     * False while a screen is waiting for its export: a placeholder is generated and the screen
+     * falls back. True once the asset has been supplied — because from then on, a missing file
+     * means somebody renamed or moved it, and the failure that produces is a blank screen on a
+     * tablet with nothing anywhere saying why. That is precisely the silent failure
+     * `checkInterfaceAssets` exists to prevent, and it is worth preventing here too.
+     */
+    @get:Input
+    abstract val artworkRequired: Property<Boolean>
+
     @get:OutputDirectory
     abstract val generatedResourceDirectory: DirectoryProperty
 
@@ -82,12 +95,19 @@ abstract class SyncInterfaceArtwork : DefaultTask() {
                     "-> R.drawable.$name" + if (mapPresent) ", map -> R.raw.${mapResourceName.get()}" else "",
             )
         } else {
+            val why = if (artwork.exists()) "is not a decodable image" else "is not present"
+            if (artworkRequired.getOrElse(false)) {
+                throw GradleException(
+                    "interface/${sourceFileName.get()} $why, and $name has been marked as " +
+                        "supplied. Either restore the file at that exact path or set " +
+                        "artworkRequired to false. A silent fallback here ships a blank screen.",
+                )
+            }
             drawableDir.resolve("$name.xml").writeText(placeholderDrawable())
             writeValues(valuesDir, name, available = false, width = 0, height = 0)
-            val why = if (artwork.exists()) "is not a decodable image" else "is not present"
             logger.lifecycle(
-                "Approved artwork pending: interface/${artwork.name} $why; " +
-                    "R.drawable.$name is a placeholder and the home screen falls back to its action list.",
+                "Approved artwork pending: interface/${sourceFileName.get()} $why; " +
+                    "R.drawable.$name is a placeholder and the screen falls back.",
             )
         }
     }

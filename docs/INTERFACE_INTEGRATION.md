@@ -38,9 +38,9 @@ it is worth correcting in the next map export.
 | Item | State |
 | --- | --- |
 | `interface/maps/progression-run.json` | 8 slots, advance timing and easing, read at runtime |
-| `interface/progression_run_background.jpg` | Not supplied. The track draws over the theme background |
+| `interface/assets/progression-run-background.png` | PNG 1536 x 1024, supplied and live |
 | Wiring | `HomeDestination.ProgressionLab` → the run screen |
-| Verified | Geometry rendered from the supplied slot path and inspected; no device test yet |
+| Verified | Track composited over the supplied plate; the orbs land on the painted path |
 
 This screen is layered rather than flat, which is the difference between it and home. Home is
 one piece of artwork because nothing on it moves; here the room is a plate and everything that
@@ -49,7 +49,7 @@ a baked track, orbs, pedestal rings or labels, so the renderer is transparent by
 
 | Layer | Where |
 | --- | --- |
-| Clean room plate | `R.drawable.progression_run_background`, from `interface/` |
+| Clean room plate | `R.drawable.progression_run_background`, from `interface/assets/` |
 | Path and orbs | `ProgressionTrack` in `core:designsystem` |
 | Chord and function labels | Runtime data on generic orbs |
 | HUD and controls | `ProgressionRunScreen` in `app` |
@@ -68,6 +68,17 @@ Three things about the handoff shaped the implementation rather than its appeara
 
 The slot path, the 650 ms duration and the `cubic-bezier(0.22, 1, 0.36, 1)` easing are read from
 the map at runtime, so a re-composed track is a re-export rather than a code change.
+
+The plate is drawn with `ContentScale.Fit`, not `Crop`, and that is load-bearing: the track
+places its orbs inside the same fitted 1536 x 1024 rectangle, so a cropped plate would be scaled
+and offset differently and the orbs would slide off the room on any tablet that is not exactly
+3:2.
+
+A missing artwork is now a build failure rather than a silent fallback. `SyncInterfaceArtwork`
+takes an `artworkRequired` flag, set for both screens now that both assets exist: the first
+version of this wiring looked for `progression_run_background.jpg` while the export arrived as
+`assets/progression-run-background.png`, and the only symptom was a blank background on a
+tablet with nothing anywhere saying why.
 
 The map's **non-track hit regions are deliberately not read**. The map marks them as pending
 remapping from the approved `77:2` frame — "do not reuse coordinates from the deleted `49:*`

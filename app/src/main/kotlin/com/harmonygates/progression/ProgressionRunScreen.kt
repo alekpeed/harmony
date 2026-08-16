@@ -103,6 +103,12 @@ fun ProgressionRunScreen(
  * chord labels, so this draws the supplied plate and nothing else. Until one is supplied the
  * generated placeholder is skipped entirely and the theme background shows through, which keeps
  * the layering identical either way.
+ *
+ * Fitted, not cropped, and that is not a detail. The track places its orbs inside the same
+ * fitted 1536 x 1024 rectangle; a cropped plate would be scaled and offset differently, so on
+ * any tablet that is not exactly 3:2 the orbs would slide off the room they are supposed to be
+ * standing in. The handoff's validation list asks for "orb centers and perspective" and
+ * "pedestal alignment" to be checked against the reference — this is what makes them line up.
  */
 @Composable
 private fun BackgroundPlate() {
@@ -111,7 +117,7 @@ private fun BackgroundPlate() {
         painter = painterResource(R.drawable.progression_run_background),
         contentDescription = null,
         modifier = Modifier.fillMaxSize(),
-        contentScale = ContentScale.Crop,
+        contentScale = ContentScale.Fit,
     )
 }
 
