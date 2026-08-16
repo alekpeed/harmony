@@ -5,6 +5,53 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 7 — Assistance system
+
+**Commit:** see `git log` for `phase/7-assistance`
+
+### Implemented
+
+- `AssistanceChannel` — the twelve independent switches of 01 §5, with `revealsTheAnswer`
+  marking the ones that hand over the notes rather than pose the question.
+- `AssistanceProfile` — a set of channels, converting both ways with `PresentationSpec`, so the
+  whole exercise pipeline gained a hint ladder without changing shape.
+- `AssistanceLevel` A0–A7 and `DifficultyPreset` Learn/Guided/Practice/Challenge/Blind. Both
+  resolve to profiles; neither is stored, which keeps the assistance and harmonic-content
+  sliders separate as 02 §8 requires.
+- `HintLadder` — one channel per request, structure before notes, and it runs out rather than
+  repeating. `forError` targets the mistake actually made: a wrong bass reveals the bass, not
+  the metronome.
+- `RecoveryPolicy` — 02 §6's loop. Two of the same mistake offers a scaffolded retry; three
+  isolates the failing component. Three *different* mistakes is exploring, not being stuck.
+- Engine: `requestHint()` reveals and re-presents, `acceptRecovery()` takes the offer without
+  counting it as a hint the player went looking for.
+- Content: a policy can name `"assistanceLevel": "A1"` instead of listing switches. Setting both
+  is refused, because which one won would not be visible in the file.
+
+### Acceptance
+
+- *same exercise can be presented at multiple assistance levels without changing answer logic* —
+  `the same exercise at every assistance level asks the same question` generates the same seed
+  at all eight levels and asserts one distinct `ExerciseRequirement`, and the chord test does
+  the same for the material. Re-presenting after a hint copies the instance with a new
+  presentation, so the requirement is the same object it always was.
+
+### Tests
+
+414 passing, 0 failing. 17 of them are new (`AssistanceTest`).
+
+### Known limitations
+
+1. **Four channels have no renderer.** Fingering, reference audio, metronome and surrounding
+   chords are modelled and selectable but nothing draws or plays them; audio arrives in Phase 8,
+   notation in Phase 9. The round-trip test states which channels this affects rather than
+   quietly dropping them.
+2. **Remediation still does not route.** `Recovery.Isolate` names the error class and the gate
+   maps it to a policy; nothing yet launches that policy and returns.
+3. **The UI is minimal.** A Hint button and the recovery offer, in the plain Phase 4 screen.
+
+---
+
 ## Phase: 6 — Campaign engine
 
 **Commit:** see `git log` for `phase/5-6-persistence-and-campaign`

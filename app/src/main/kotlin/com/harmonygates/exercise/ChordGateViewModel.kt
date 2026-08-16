@@ -41,6 +41,7 @@ sealed interface ChordGateIntent {
     data object Next : ChordGateIntent
     data object Skip : ChordGateIntent
     data object Hint : ChordGateIntent
+    data object AcceptRecovery : ChordGateIntent
     data object Restart : ChordGateIntent
 }
 
@@ -133,6 +134,10 @@ class ChordGateViewModel(
                 ChordGateIntent.Next -> engine.next()
                 ChordGateIntent.Skip -> engine.skip(SkipReason.PlayerRequested)
                 ChordGateIntent.Hint -> engine.requestHint()
+                ChordGateIntent.AcceptRecovery -> {
+                    engine.acceptRecovery()
+                    engine.next()
+                }
                 ChordGateIntent.Restart -> {
                     _sessionSeed.value = System.currentTimeMillis()
                     startSession()

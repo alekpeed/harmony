@@ -26,6 +26,7 @@ import com.harmonygates.core.designsystem.component.HarmonyPanel
 import com.harmonygates.core.designsystem.component.HarmonyStatusChip
 import com.harmonygates.core.designsystem.component.PianoKeyboard
 import com.harmonygates.core.designsystem.theme.HarmonyTheme
+import com.harmonygates.core.music.assistance.Recovery
 import com.harmonygates.core.music.performance.FeedbackModel
 import com.harmonygates.core.music.session.ExercisePresentationModel
 import com.harmonygates.core.music.session.ExerciseSessionState
@@ -145,8 +146,19 @@ private fun ExerciseBody(
                         fontSize = HarmonyTheme.typography.body,
                     )
                 }
+                exercise.romanNumeral?.let { HarmonyLabelledValue("Function", it) }
+                exercise.voicingName?.let { HarmonyLabelledValue("Voicing", it) }
+                exercise.targetBassNote?.let { HarmonyLabelledValue("Bass", it) }
                 if (exercise.spelledNoteNames.isNotEmpty()) {
                     HarmonyLabelledValue("Notes", exercise.spelledNoteNames.joinToString("  "))
+                }
+                // Named so the player knows what just appeared and that they asked for it.
+                exercise.lastHint?.let {
+                    Text(
+                        text = "Hint: $it",
+                        color = HarmonyTheme.colors.onSurfaceMuted,
+                        fontSize = HarmonyTheme.typography.caption,
+                    )
                 }
             }
         }
@@ -183,6 +195,7 @@ private fun WaitingPanel(
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
+            OutlinedButton(onClick = { onIntent(ChordGateIntent.Hint) }) { Text("Hint") }
             OutlinedButton(onClick = { onIntent(ChordGateIntent.Skip) }) { Text("Skip") }
         }
     }
@@ -221,8 +234,40 @@ private fun FeedbackPanel(
                 }
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
-                Button(onClick = { onIntent(ChordGateIntent.Next) }) { Text("Next") }
+            // 02 §6: failure does not simply restart the same set. When the engine has decided
+            // what would help, the offer is made here rather than the player being left to
+            // guess that a hint exists.
+            when (val recovery = feedback.recovery) {
+                is Recovery.Scaffold -> {
+                    Text(
+                        text = recovery.explanation,
+                        color = HarmonyTheme.colors.onSurfaceMuted,
+                        fontSize = HarmonyTheme.typography.body,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
+                        Button(onClick = { onIntent(ChordGateIntent.AcceptRecovery) }) {
+                            Text("Show me")
+                        }
+                        OutlinedButton(onClick = { onIntent(ChordGateIntent.Next) }) { Text("Next") }
+                    }
+                }
+
+                is Recovery.Isolate -> {
+                    Text(
+                        text = recovery.explanation,
+                        color = HarmonyTheme.colors.onSurfaceMuted,
+                        fontSize = HarmonyTheme.typography.body,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
+                        Button(onClick = { onIntent(ChordGateIntent.Next) }) { Text("Next") }
+                    }
+                }
+
+                Recovery.CarryOn -> Row(
+                    horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+                ) {
+                    Button(onClick = { onIntent(ChordGateIntent.Next) }) { Text("Next") }
+                }
             }
         }
     }

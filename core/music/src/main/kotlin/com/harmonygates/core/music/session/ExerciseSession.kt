@@ -1,5 +1,6 @@
 package com.harmonygates.core.music.session
 
+import com.harmonygates.core.music.assistance.Recovery
 import com.harmonygates.core.music.exercise.ExerciseInstance
 import com.harmonygates.core.music.exercise.ExercisePolicy
 import com.harmonygates.core.music.exercise.PresentationSpec
@@ -35,6 +36,14 @@ public data class ExercisePresentationModel(
     val keyboardTargets: List<Int>,
     val inversionLabel: String?,
     val instruction: String,
+    /** Set when the roman-numeral channel is on and the exercise knows its function. */
+    val romanNumeral: String? = null,
+    /** Set when the voicing-name channel is on. */
+    val voicingName: String? = null,
+    /** Set when the target-bass channel is on. */
+    val targetBassNote: String? = null,
+    /** The last hint revealed, so a screen can say what just appeared. */
+    val lastHint: String? = null,
 ) {
     public companion object {
         /**
@@ -47,6 +56,7 @@ public data class ExercisePresentationModel(
             instance: ExerciseInstance,
             index: Int,
             total: Int,
+            lastHint: String? = null,
         ): ExercisePresentationModel {
             val spec: PresentationSpec = instance.presentation
             return ExercisePresentationModel(
@@ -63,6 +73,14 @@ public data class ExercisePresentationModel(
                     .takeIf { spec.showInversionLabel && it != Inversion.OTHER }
                     ?.let { inversionLabel(it) },
                 instruction = instructionFor(instance),
+                voicingName = instance.chord.formula.displayName.takeIf { spec.showVoicingName },
+                // The bass is derived from the inversion the exercise asked for, so the channel
+                // reveals something the player would otherwise have to work out.
+                targetBassNote = instance.spelledTones
+                    .getOrNull(bassIndexFor(instance.inversion))
+                    ?.toString()
+                    ?.takeIf { spec.showTargetBassNote },
+                lastHint = lastHint,
             )
         }
 
@@ -72,6 +90,15 @@ public data class ExercisePresentationModel(
             Inversion.SECOND -> "Second inversion"
             Inversion.THIRD -> "Third inversion"
             Inversion.OTHER -> "Any inversion"
+        }
+
+        /** Which of the stacked tones the asked-for inversion puts underneath. */
+        private fun bassIndexFor(inversion: Inversion): Int = when (inversion) {
+            Inversion.ROOT -> 0
+            Inversion.FIRST -> 1
+            Inversion.SECOND -> 2
+            Inversion.THIRD -> 3
+            Inversion.OTHER -> 0
         }
 
         private fun instructionFor(instance: ExerciseInstance): String =
@@ -168,6 +195,13 @@ public sealed interface ExerciseSessionState {
         val exercise: ExercisePresentationModel,
         val result: EvaluationResult,
         val nextAvailable: Boolean,
+        /**
+         * What to do about a run of mistakes, when there has been one.
+         *
+         * 02_GAME_LOOP_AND_PROGRESSION.md §6: "Failure does not simply restart the same set."
+         * The engine decides; the screen decides how to say it.
+         */
+        val recovery: Recovery = Recovery.CarryOn,
     ) : ExerciseSessionState
 
     public data class Paused(val reason: PauseReason) : ExerciseSessionState

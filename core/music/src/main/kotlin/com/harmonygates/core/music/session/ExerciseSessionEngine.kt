@@ -1,5 +1,9 @@
 package com.harmonygates.core.music.session
 
+import com.harmonygates.core.music.assistance.AssistanceProfile
+import com.harmonygates.core.music.assistance.HintLadder
+import com.harmonygates.core.music.assistance.Recovery
+import com.harmonygates.core.music.assistance.RecoveryPolicy
 import com.harmonygates.core.music.exercise.DefaultExerciseGenerator
 import com.harmonygates.core.music.exercise.ExerciseGenerator
 import com.harmonygates.core.music.exercise.ExerciseInstance
@@ -8,6 +12,7 @@ import com.harmonygates.core.music.performance.CapturePolicy
 import com.harmonygates.core.music.performance.DefaultPerformanceEvaluator
 import com.harmonygates.core.music.performance.PerformanceAttempt
 import com.harmonygates.core.music.performance.PerformanceCapture
+import com.harmonygates.core.music.mastery.ErrorClass
 import com.harmonygates.core.music.performance.PerformanceEvaluator
 import com.harmonygates.core.music.pitch.SpelledPitchClass
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +46,9 @@ public interface ExerciseSessionEngine {
 
     public suspend fun requestHint()
 
+    /** Takes the scaffolded retry the recovery loop offered, if it offered one. */
+    public suspend fun acceptRecovery()
+
     public suspend fun next()
 
     public suspend fun skip(reason: SkipReason)
@@ -67,6 +75,8 @@ public class DefaultExerciseSessionEngine(
     private val scope: CoroutineScope,
     private val generator: ExerciseGenerator = DefaultExerciseGenerator(),
     private val evaluator: PerformanceEvaluator = DefaultPerformanceEvaluator(),
+    private val hints: HintLadder = HintLadder(),
+    private val recovery: RecoveryPolicy = RecoveryPolicy(),
     /** Live sounding notes, for the capturing state. Empty when the host does not supply them. */
     private val soundingNotes: StateFlow<List<Int>> = MutableStateFlow(emptyList()),
 ) : ExerciseSessionEngine {
@@ -83,6 +93,13 @@ public class DefaultExerciseSessionEngine(
     private var hintsThisExercise = 0
     private var totalHints = 0
     private var rootsSeen = mutableSetOf<SpelledPitchClass>()
+
+    /** What is on screen for the current exercise. Raised by a hint, reset by the next chord. */
+    private var assistance: AssistanceProfile = AssistanceProfile.Nothing
+    private var lastHint: String? = null
+
+    /** Diagnoses of consecutive failures on the current exercise, newest last. */
+    private val recentErrors = mutableListOf<ErrorClass>()
     private var collectionJob: Job? = null
     private var pausedFrom: ExerciseSessionState? = null
 
@@ -134,12 +151,38 @@ public class DefaultExerciseSessionEngine(
         evaluate(attempt)
     }
 
+    /**
+     * Reveals one more thing.
+     *
+     * One channel per request, never the whole answer: 02_GAME_LOOP_AND_PROGRESSION.md §6 asks
+     * assistance to come down "by only one dimension at a time", which is also what makes the
+     * next attempt evidence about that one dimension.
+     *
+     * The count rises whether or not there was anything left to reveal — asking is what
+     * 06_PERFORMANCE_EVALUATION_AND_SCORING.md §9 weights, and a player who asked and found no
+     * more help still asked.
+     */
     override suspend fun requestHint() {
-        // Hint usage is recorded now because 06_PERFORMANCE_EVALUATION_AND_SCORING.md §9 weights
-        // "correct after hint" below "independent correct". The assistance channels a hint
-        // reveals arrive with Phase 7; the evidence trail starts here so it is never backfilled.
         hintsThisExercise++
         totalHints++
+
+        val hint = hints.next(assistance) ?: return
+        assistance = hint.profile
+        lastHint = hint.label
+        represent()
+    }
+
+    /**
+     * Accepts the help the recovery loop offered.
+     *
+     * Separate from [requestHint] because it is not the player asking: §6's scaffolded retry is
+     * offered, and taking it should not be counted against them as a hint they went looking for.
+     */
+    override suspend fun acceptRecovery() {
+        val offered = (_state.value as? ExerciseSessionState.Feedback)?.recovery
+        val scaffold = offered as? Recovery.Scaffold ?: return
+        assistance = scaffold.hint.profile
+        lastHint = scaffold.hint.label
     }
 
     override suspend fun next() {
@@ -218,9 +261,34 @@ public class DefaultExerciseSessionEngine(
         )
         current = instance
         rootsSeen += instance.chord.root
+        assistance = AssistanceProfile.from(instance.presentation)
+        lastHint = null
+        recentErrors.clear()
         _state.value = ExerciseSessionState.Presenting(
             ExercisePresentationModel.of(instance, index, sessionConfig.exerciseCount),
         )
+    }
+
+    /**
+     * Redraws the exercise at the assistance now in force.
+     *
+     * The instance is copied with a new presentation rather than regenerated: the chord, the
+     * seed and above all the requirement stay exactly as they were, which is Phase 7's whole
+     * acceptance criterion — the same exercise at a different assistance level is the same
+     * question.
+     */
+    private fun represent() {
+        val instance = current ?: return
+        val sessionConfig = config ?: return
+        val revealed = instance.copy(presentation = assistance.presentation)
+        val model = ExercisePresentationModel.of(revealed, index, sessionConfig.exerciseCount, lastHint)
+
+        _state.value = when (val state = _state.value) {
+            is ExerciseSessionState.Presenting -> ExerciseSessionState.Presenting(model)
+            is ExerciseSessionState.Armed -> ExerciseSessionState.Armed(model)
+            is ExerciseSessionState.Capturing -> ExerciseSessionState.Capturing(state.live.copy(exercise = model))
+            else -> return
+        }
     }
 
     private fun evaluate(attempt: PerformanceAttempt) {
@@ -231,10 +299,24 @@ public class DefaultExerciseSessionEngine(
         val result = evaluator.evaluate(instance.requirement, attempt, sessionConfig.policy.onsetPolicy)
         _records += AttemptRecord(instance, attempt, result, hintsUsed = hintsThisExercise)
 
+        // A run of the *same* diagnosis is what the recovery loop reacts to, so the list is
+        // cleared by a correct answer rather than accumulating across the whole session.
+        if (result.verdict.isCorrect) {
+            recentErrors.clear()
+        } else {
+            result.semanticErrors.firstOrNull()?.let { recentErrors += ErrorClass.of(it) }
+        }
+
         _state.value = ExerciseSessionState.Feedback(
-            exercise = ExercisePresentationModel.of(instance, index, sessionConfig.exerciseCount),
+            exercise = ExercisePresentationModel.of(
+                instance.copy(presentation = assistance.presentation),
+                index,
+                sessionConfig.exerciseCount,
+                lastHint,
+            ),
             result = result,
             nextAvailable = true,
+            recovery = recovery.decide(recentErrors.toList(), assistance),
         )
     }
 

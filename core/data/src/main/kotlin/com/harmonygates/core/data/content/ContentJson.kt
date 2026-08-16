@@ -6,6 +6,7 @@ import com.harmonygates.core.music.campaign.CurriculumRegion
 import com.harmonygates.core.music.campaign.GateDefinition
 import com.harmonygates.core.music.campaign.GateId
 import com.harmonygates.core.music.campaign.RegionId
+import com.harmonygates.core.music.assistance.AssistanceLevel
 import com.harmonygates.core.music.campaign.Unlock
 import com.harmonygates.core.music.chord.ChordFormulaId
 import com.harmonygates.core.music.chord.ChordFormulas
@@ -96,6 +97,14 @@ internal data class PolicyJson(
     @SerialName("formulas") val formulaPool: List<String>,
     @SerialName("inversions") val inversionPool: List<String> = listOf("ROOT"),
     val answerMode: String = "PitchClasses",
+    /**
+     * An `A0`..`A7` level from 01_PRODUCT_AND_FUNCTIONAL_SCOPE.md §4.
+     *
+     * A shorthand for [presentation]: an author who writes `"assistanceLevel": "A1"` gets that
+     * level's channels. Setting both is an authoring mistake and is refused rather than silently
+     * resolved one way, because which one wins would be invisible in the file.
+     */
+    val assistanceLevel: String? = null,
     /** A named family from `VoicingFamily`, resolved per chord at generation time. */
     val voicingFamily: String? = null,
     val presentation: PresentationJson = PresentationJson(),
@@ -225,6 +234,19 @@ internal object ContentDecoder {
                 ?: throw ContentReferenceException("Policy '${json.id}' uses '$name' as a root")
         }
 
+        val level = json.assistanceLevel?.let { id ->
+            AssistanceLevel.byId(id)
+                ?: throw ContentReferenceException(
+                    "Policy '${json.id}' asks for assistance level '$id', which does not exist",
+                )
+        }
+        if (level != null && json.presentation != PresentationJson()) {
+            throw ContentReferenceException(
+                "Policy '${json.id}' sets both an assistance level and presentation switches; " +
+                    "pick one, because which of them wins would not be visible in the file",
+            )
+        }
+
         return ExercisePolicy(
             id = ExercisePolicyId(json.id),
             skillIds = json.skills.map { SkillId(it) }.toSet(),
@@ -235,7 +257,7 @@ internal object ContentDecoder {
             // Resolved against the actual chord at generation time, because a rootless voicing
             // of Cmaj7 and of G7 need different tones. The policy records the intent only.
             voicingFamily = family,
-            presentation = PresentationSpec(
+            presentation = level?.profile?.presentation ?: PresentationSpec(
                 showChordSymbol = json.presentation.chordSymbol,
                 showSpelledNoteNames = json.presentation.noteNames,
                 showKeyboardTargets = json.presentation.keyboardTargets,
