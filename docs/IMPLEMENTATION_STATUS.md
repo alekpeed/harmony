@@ -5,6 +5,59 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 9 — Sight reading core
+
+**Commit:** see `git log` for `phase/9-sight-reading`
+
+### Implemented
+
+- `RationalBeat` — exact musical duration. 08 §3 forbids floating-point durations, and the test
+  says why: three triplet eighths are exactly one quarter here and 0.9999999999999999 in doubles.
+- `TimeSignature`, `ScoreEvent`, `Measure`, `ScorePhrase` — 08 §3's model, with `validate()`
+  reporting a bar that does not add up rather than letting it reach a renderer.
+- `StaffPlacement` — vertical position from letter and octave, not from MIDI, so F and F# share
+  a line and G# and Ab do not.
+- `DefaultPhraseGenerator` — single notes, intervals and triads, drawn from the key's own scale
+  so a phrase in Eb needs no sharps. Every bar holds exactly its meter, for every seed tested.
+- `ReadingEvaluator` — pitch and rhythm scored separately, notes claimed by nearest written time
+  so one missed note does not derail the rest, and tolerance windows as content.
+- `CountIn` — clicks in the meter's own beat unit, so 6/8 counts in eighths.
+- `StaffGeometry` and `NotationStaff` — Compose Canvas rendering with the layout arithmetic in
+  plain Kotlin, per 08 §2, and no WebView.
+
+### Acceptance
+
+- *generated phrase displays and grades against injected clock* — the evaluator is handed
+  timestamps rather than reading a clock, so `a perfect performance grades perfectly`,
+  `right notes played late are a timing problem, not a pitch one` and
+  `grading is deterministic and needs no clock` all run instantly and identically.
+
+### Tests
+
+498 passing, 0 failing. 47 new: `SightReadingTest` (30) and `StaffGeometryTest` (17).
+
+### What the tests caught
+
+- **Pitch and rhythm were coupled.** The evaluator initially refused to count a note as in time
+  unless it was also the right note, which made both scores move together and destroyed the
+  distinction 08 §5 exists for. A reader hitting wrong notes exactly on the beat has good time
+  and a pitch problem, and now hears that.
+- **A ledger-line test was wrong, not the code.** D4 below a treble staff is written in the space
+  with no ledger line; only C4 sits on one. The test now states the rule properly.
+
+### Known limitations
+
+1. **No beams, ties or key signatures are drawn.** The model carries ties and key context; the
+   renderer draws heads, stems, ledger lines, accidentals, dots, rests and barlines. 08 §1's
+   full v1 list is not finished.
+2. **Rests are a plain mark.** Legible, not engraved, and not distinguished by duration.
+3. **No sight-reading screen.** The domain and the renderer exist; nothing has put them together
+   with a clock and a MIDI input yet.
+4. **Two reading modes are unbuilt.** Continuous stream and lead-sheet reading from §4 need a
+   scrolling renderer and a comping evaluator respectively.
+
+---
+
 ## Phase: 8 — Ear training and sampler
 
 **Commit:** see `git log` for `phase/8-ear-training`
