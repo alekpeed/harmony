@@ -118,7 +118,8 @@ enum class HomeDestination(val isImplemented: Boolean, val arrivesInPhase: Int) 
     Profile(isImplemented = false, arrivesInPhase = 5),
     EarTraining(isImplemented = false, arrivesInPhase = 8),
     SightReading(isImplemented = false, arrivesInPhase = 9),
-    ProgressionLab(isImplemented = false, arrivesInPhase = 10),
+    /** Progression Run: the track, from Phase 10. */
+    ProgressionLab(isImplemented = true, arrivesInPhase = 10),
     VoicingLab(isImplemented = false, arrivesInPhase = 10),
     Library(isImplemented = false, arrivesInPhase = 13),
 }

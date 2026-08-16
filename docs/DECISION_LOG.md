@@ -330,3 +330,78 @@ With the default `StandardTestDispatcher`, the engine's `SharedFlow` collectors 
 subscribed when the test delivered an attempt, and a replay-free `SharedFlow` drops what nobody
 is listening for — so six tests failed against correct production code. Worth recording because
 the symptom (state stuck at `Armed`) looks exactly like an engine bug and is not one.
+
+---
+
+## D26 — A named voicing family is a policy, not a voicing
+
+**Phase 10.** `VoicingFamilies.recipe(family, chord)` returns a `VoicingPolicy`, never a fixed
+`Voicing`.
+
+Region 7's whole point is that a rootless A on `G7` has many correct renderings — any register,
+any spacing, either hand. Storing one canonical voicing per chord would have made all the others
+wrong, so the family says what must sound, what must not, and what has to be lowest, and the
+evaluator accepts anything that satisfies it. Two shapes with identical pitch content — the two
+shell inversions, rootless A against rootless B — are told apart by bass and top note, which is
+also how a player hears the difference and how a mistake gets diagnosed.
+
+---
+
+## D27 — A rootless family extends the chord it is asked about
+
+**Phase 10.** The recipe for a rootless voicing of `C7` carries a chord containing the ninth and
+thirteenth, while the orb still shows `C7`.
+
+`degreeOf` names a pitch class by looking it up in the chord's own degrees, so a ninth the chord
+did not know about would come back as "a note that is not part of the chord" — true of the
+symbol and useless to a player who left out a tone the shape requires. Extending the chord makes
+the diagnosis "missing the ninth". The display symbol is kept separately, so what is asked for
+and what is judged can differ without the screen ever knowing.
+
+---
+
+## D28 — The fifth is droppable, the altered fifth is not
+
+**Phase 10.** An any-voicing progression run accepts a seventh chord with no fifth.
+
+`DegreeRole` already calls the fifth "usually the first tone a jazz voicing drops", and a run
+that rejected `Dm7` played as D-F-C would be arguing with every jazz pianist alive. Two limits
+keep it honest: only a perfect fifth, because the b5 of a `m7b5` and the #5 of an altered
+dominant are what those chords *are*; and only from a chord with a seventh or sixth, because a
+triad without its fifth is not a voicing of the triad, it is two notes.
+
+---
+
+## D29 — One accepted chord locks the track until the keyboard is quiet
+
+**Phase 10.** After a correct chord, the run stops evaluating until nothing is sounding.
+
+`interface/PROGRESSION_RUN_HANDOFF.md` §7 requires that a held voicing or a sustain pedal must
+not advance twice, and that a new qualifying note state is needed before the next acceptance.
+The gate is set only when notes are actually down: most chords finish *by* being released, and
+gating on a release that has already happened would leave the run waiting forever.
+
+---
+
+## D30 — The track animates one number, so advances cannot overlap
+
+**Phase 10.** Every orb is drawn one slot further out than it has settled into, closing to zero
+over a single animation keyed to the run's advance count.
+
+The handoff asks for no overlapping advance animations, and offers a queue as the remedy. One
+shared progress value is the safer equivalent it allows: a second advance arriving mid-flight
+restarts the same animation rather than starting a competing one, so there is no queue to drain,
+no state to get stuck in, and the domain never has to know how long a transition takes.
+
+---
+
+## D31 — The track geometry and timing are read from the map, not transcribed
+
+**Phase 10.** The slot path, advance duration and easing curve come out of
+`interface/maps/progression-run.json` at runtime.
+
+§11 of the handoff names that file "the current runtime/rendering contract". Transcribing eight
+coordinate pairs into Kotlin would have made a re-composed track a code change, and would have
+put a second copy of the numbers somewhere to drift. The map's non-track hit regions are
+deliberately *not* read: the map marks them as pending remapping from the approved `77:2` frame,
+so the run's own controls are laid out in Compose instead of against invented coordinates.

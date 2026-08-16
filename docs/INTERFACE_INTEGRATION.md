@@ -31,40 +31,49 @@ go from `main` as well.
 name. Nothing reads that field — the build takes the artwork path from the Gradle task — but
 it is worth correcting in the next map export.
 
-## Progression Run — handed over, not yet built
+## Progression Run
 
-`interface/PROGRESSION_RUN_HANDOFF.md` and `interface/maps/progression-run.json` describe the
-Progression Run screen. Progression Run is **Phase 10** work, so nothing in the app consumes
-either file yet; `HomeAction.ProgressionRun` resolves to
-`HomeDestination.ProgressionLab(isImplemented = false, arrivesInPhase = 10)` and says so on the
-home screen.
+**Integrated.** The track is live and reached from `HIT / Progression Run` on the home artwork.
 
-The handoff invalidates the coordinates that came from the deleted `49:*` prototype frames.
-Nothing in this repository ever read them — the only interaction map the build consumes is
-`maps/home.json`, from frame `28:2`, which is unaffected — so there is nothing to unwind.
-`syncInterfaceArtwork` is wired to that one map by name, not to `interface/maps/**`, so a new
-map file cannot leak into the app by simply existing.
+| Item | State |
+| --- | --- |
+| `interface/maps/progression-run.json` | 8 slots, advance timing and easing, read at runtime |
+| `interface/progression_run_background.jpg` | Not supplied. The track draws over the theme background |
+| Wiring | `HomeDestination.ProgressionLab` → the run screen |
+| Verified | Geometry rendered from the supplied slot path and inspected; no device test yet |
 
-Three points in the handoff are architectural rather than cosmetic, and are recorded here so
-Phase 10 does not have to rediscover them:
+This screen is layered rather than flat, which is the difference between it and home. Home is
+one piece of artwork because nothing on it moves; here the room is a plate and everything that
+moves is drawn over it. `interface/README.md` is explicit that the background must never contain
+a baked track, orbs, pedestal rings or labels, so the renderer is transparent by construction:
 
-- **The background is a plate, not the screen.** Track, orbs, pedestals and labels are drawn by
-  Compose over a clean background. This is the same split the home screen deliberately did not
-  need — home is flat artwork because nothing on it moves — so `ArtworkScreen` supplies the
-  plate and framing only, and the track gets its own renderer.
-- **Eight slots are a viewport, not a limit.** The progression is an arbitrary-length
-  `ChordEvent` list; the eight visible positions are recycled orb instances. The four Figma
-  frames are Smart Animate snapshots, not four screens and not a four-chord exercise.
-- **Advancement is a domain decision, not a UI one.** The track advances when the evaluator
-  accepts the `ChordEvent` at `activeChordIndex` — never from the label rendered in the orb, and
-  never twice from one held chord or a sustained pedal. That is the same rule `AGENTS.md`
-  already imposes ("UI must never decide whether a chord is musically correct") and the same
-  new-qualifying-note-state requirement `OnsetAggregator` enforces today, so Phase 10 reuses
-  the capture and evaluation path rather than growing a second one.
+| Layer | Where |
+| --- | --- |
+| Clean room plate | `R.drawable.progression_run_background`, from `interface/` |
+| Path and orbs | `ProgressionTrack` in `core:designsystem` |
+| Chord and function labels | Runtime data on generic orbs |
+| HUD and controls | `ProgressionRunScreen` in `app` |
 
-The `ChordEvent` contract in §8 of the handoff overlaps heavily with types that already exist
-(`ChordSpec`, `ChordDegree`, `Inversion`, `ExerciseRequirement`). Per the handoff's own
-instruction, Phase 10 maps onto those rather than duplicating them.
+Three things about the handoff shaped the implementation rather than its appearance:
+
+- **Eight slots are a viewport, not a limit.** `Progression` holds an arbitrary-length event
+  list and `window()` returns the chords around the play point; the renderer draws whatever it
+  is handed. The four Figma frames are Smart Animate snapshots, not four screens.
+- **Advancement is a domain decision.** `DefaultProgressionRunEngine` evaluates the
+  `ChordEvent` at `activeChordIndex` — never the symbol drawn on the orb — and holds the track
+  until the keyboard is quiet, so a held chord or a pedal cannot advance it twice.
+- **The `ChordEvent` contract maps onto existing types.** Root, bass, inversion, omission and
+  voicing-family policy are `ChordSpec` plus `VoicingPolicy`, exactly as §8 of the handoff asks
+  ("do not create duplicate theory models merely to match these property names").
+
+The slot path, the 650 ms duration and the `cubic-bezier(0.22, 1, 0.36, 1)` easing are read from
+the map at runtime, so a re-composed track is a re-export rather than a code change.
+
+The map's **non-track hit regions are deliberately not read**. The map marks them as pending
+remapping from the approved `77:2` frame — "do not reuse coordinates from the deleted `49:*`
+prototype frames" — so the run's own controls are laid out in Compose until a remapped frame
+arrives. Nothing in this repository ever consumed the invalidated coordinates: the only
+interaction map with hit regions is `maps/home.json`, from frame `28:2`, which is unaffected.
 
 ## How the seam works
 

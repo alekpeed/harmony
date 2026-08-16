@@ -5,6 +5,84 @@ phase so a new session can pick up without re-deriving context.
 
 ---
 
+## Phase: 10 — Jazz voicing and progression systems
+
+**Commit:** see `git log` for `phase/10-progression-run`
+
+Taken out of order, at the user's request, so that the approved home screen and the Progression
+Run track can be seen working together. Phases 5 to 9 are untouched and still to come; nothing
+here depends on them, because the run holds its results in memory exactly as the exercise
+session already does.
+
+### Implemented
+
+- `VoicingFamilies` — shells (`1-3-7`, `1-7-3`), guide tones, and rootless A and B, each
+  resolved for a particular chord as a `VoicingPolicy` rather than as a fixed voicing. The two
+  shell inversions differ by top note; A and B differ by which tone is lowest.
+- `Progression`, `ChordEvent`, `VisibleChord` — an ordered run of arbitrary length, and the
+  window the track draws around the play point. Nothing in the domain knows there are eight
+  slots.
+- `ProgressionTemplates` and `DefaultProgressionGenerator` — ii-V-I major and minor, the
+  I-vi-ii-V turnaround, the tritone substitution and the backdoor cadence, placed in any key or
+  run through all twelve. Deterministic, including the seeded key shuffle.
+- `DefaultProgressionRunEngine` — evaluate the event at `activeChordIndex`, advance on
+  acceptance, never on wrong or incomplete input, and never twice from one held chord.
+- `ProgressionTrack` and `TrackGeometry` in `core:designsystem` — one parameterised renderer,
+  generic orbs, perspective sampled continuously so an orb can be between slots.
+- `TrackMapReader` — the slot path, advance duration and easing read from
+  `interface/maps/progression-run.json` at runtime.
+- Progression Run screen, reached from the home artwork's `HIT / Progression Run` region.
+
+### Tests
+
+320 passing, 0 failing. 52 of them are new.
+
+| Suite | Covers |
+| --- | --- |
+| `VoicingFamiliesTest` | Shell, guide-tone and rootless shapes; wrong rotation diagnosed as bass or top note |
+| `ProgressionTest` | Templates placed in keys, the twelve-key run, windowing, loop identity, several renderings accepted |
+| `ProgressionRunEngineTest` | Advance on the right chord only, the held-chord gate, loop wrap, manual next, pause and resume |
+| `TrackGeometryTest` | Slot interpolation, extrapolation past both ends, perspective ordering |
+| `TrackMapTest` | The supplied map parses to the approved eight-slot track and its timing |
+
+### Acceptance
+
+15_IMPLEMENTATION_PHASES.md asks for two things of this phase, and both are covered by tests:
+
+- *multiple valid voicings accepted where policy allows* — `an any-voicing run accepts
+  inversions, omissions and doublings of the same chord` plays a `Dm7` five different ways, in
+  root position, in inversion, with the seventh in the bass, without the fifth, and doubled
+  across two hands.
+- *wrong inversion/bass diagnosed correctly* — `a root-position run diagnoses an inversion as a
+  wrong bass` and `playing the B rotation when A was asked for is diagnosed as a wrong bass`.
+
+### Manual verification
+
+- `./gradlew verifyHarmony assembleDebug` from a clean checkout — passes
+- Track geometry rendered from the supplied slot path and inspected as a drawing; the eight orbs
+  sit on a receding path with the play point nearest and largest.
+- **Not done:** nobody has played the run on a tablet with a keyboard. Same gap as Phase 4, and
+  now the larger of the two, because the held-chord gate and the 650 ms advance are precisely
+  the things that can only be judged under the hands.
+
+### Known limitations
+
+1. **No approved background plate yet.** `interface/progression_run_background.jpg` has not been
+   supplied, so the track draws over the theme background. The layering is already the one the
+   handoff requires, so the plate drops in with no code change when it arrives.
+2. **The run's own controls are not mapped.** `interface/maps/progression-run.json` marks its
+   non-track hit regions as pending remapping from frame `77:2`, so the template, voicing and
+   Next controls are ordinary Compose buttons rather than regions on the artwork.
+3. **Orb colours are placeholder tokens.** The approved treatment is dark orbs with cream and
+   gold labels; the values come with the Phase 12 palette, and the components already read them
+   from tokens.
+4. **A rejected chord needs a fresh strike.** After a wrong answer the run re-arms, but the
+   notes still held are not part of the next attempt — adding the missing tone without lifting
+   will not be seen. That is Phase 3's capture model, not new here.
+5. **Nothing is persisted.** A finished run reports how it went and then forgets. Phase 5.
+
+---
+
 ## Phase: 4 — Minimal playable vertical slice
 
 **Commit:** see `git log` for `phase/4-vertical-slice`

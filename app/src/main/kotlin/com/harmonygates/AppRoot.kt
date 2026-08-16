@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import com.harmonygates.exercise.ChordGateRoute
+import com.harmonygates.progression.ProgressionRunRoute
 import com.harmonygates.harness.HarmonyLabRoute
 import com.harmonygates.midi.MidiDiagnosticsRoute
 import com.harmonygates.home.HomeDestination
@@ -26,6 +27,7 @@ enum class AppScreen {
     TheoryLab,
     MidiSetup,
     ChordGate,
+    ProgressionRun,
 }
 
 /**
@@ -68,6 +70,9 @@ fun AppRoot() {
                         action.destination == HomeDestination.ChordGate ||
                             action.destination == HomeDestination.QuickPractice ->
                             screen = AppScreen.ChordGate
+
+                        action.destination == HomeDestination.ProgressionLab ->
+                            screen = AppScreen.ProgressionRun
                         // Saying "not yet" is better than navigating into an empty room. The
                         // phase number turns a dead end into a schedule.
                         !action.destination.isImplemented ->
@@ -83,6 +88,10 @@ fun AppRoot() {
             AppScreen.MidiSetup -> MidiDiagnosticsRoute(modifier = Modifier.padding(insets))
 
             AppScreen.ChordGate -> ChordGateRoute(modifier = Modifier.padding(insets))
+
+            // The track draws to the edges, so it is handed the window rather than the insets;
+            // its own HUD applies `safeDrawingPadding` to the parts that carry text.
+            AppScreen.ProgressionRun -> ProgressionRunRoute()
         }
     }
 }
