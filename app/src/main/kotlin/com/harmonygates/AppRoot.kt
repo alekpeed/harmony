@@ -34,6 +34,7 @@ import com.harmonygates.campaign.CampaignRoute
 import com.harmonygates.core.designsystem.component.SecondaryButton
 import com.harmonygates.core.designsystem.theme.HarmonyTheme
 import com.harmonygates.core.music.campaign.GateId
+import com.harmonygates.eartraining.EarTrainingRoute
 import com.harmonygates.exercise.ChordGateRoute
 import com.harmonygates.exercise.ChordGateViewModel
 import com.harmonygates.exercise.SessionRequest
@@ -53,6 +54,7 @@ enum class AppScreen {
     MidiSetup,
     Settings,
     ChordGate,
+    EarTraining,
     ProgressionRun,
     Campaign,
     Progress,
@@ -84,6 +86,7 @@ fun AppRoot() {
         when (destination) {
             HomeDestination.TheoryLab -> screen = AppScreen.TheoryLab
             HomeDestination.Settings -> screen = AppScreen.Settings
+            HomeDestination.EarTraining -> screen = AppScreen.EarTraining
             HomeDestination.ProgressionLab -> screen = AppScreen.ProgressionRun
             HomeDestination.Campaign,
             HomeDestination.NextGate,
@@ -146,6 +149,7 @@ fun AppRoot() {
                 modifier = Modifier.padding(insets),
             )
             AppScreen.ChordGate -> ChordGateSession(gateId = gate, modifier = Modifier.padding(insets))
+            AppScreen.EarTraining -> EarTrainingRoute(modifier = Modifier.padding(insets))
             AppScreen.ProgressionRun -> ProgressionRunRoute(onNavigate = ::navigate)
             AppScreen.Campaign -> CampaignRoute(
                 modifier = Modifier.padding(insets),

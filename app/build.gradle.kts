@@ -145,6 +145,7 @@ dependencies {
     implementation(projects.core.music)
     implementation(projects.core.midi)
     implementation(projects.core.data)
+    implementation(projects.core.audio)
     implementation(projects.core.designsystem)
 
     implementation(platform(libs.compose.bom))

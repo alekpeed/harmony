@@ -137,14 +137,11 @@ enum class HomeDestination(
     /** Mastery and attempt history, from Phase 5. */
     Progress(isImplemented = true, arrivesInPhase = 5),
     Profile(isImplemented = true, arrivesInPhase = 5),
-    EarTraining(
-        isImplemented = false,
-        arrivesInPhase = 8,
-        summary = "Hear a chord and play it back, name a quality, or say what moved.",
-        engineStatus = "Built and tested: a pure-Kotlin mixer with a synthesised piano, four " +
-            "exercise families, and four authored gates waiting in the campaign. What is " +
-            "missing is only the screen.",
-    ),
+    /**
+     * Ear training, from Phase 8. The screen arrived after the engine, and plays the four
+     * authored families through the synthesised practice tone. Attempts are not yet recorded.
+     */
+    EarTraining(isImplemented = true, arrivesInPhase = 8),
     SightReading(
         isImplemented = false,
         arrivesInPhase = 9,

@@ -1,0 +1,47 @@
+{
+  "chromatic_pitch_classes": [
+    "C",
+    "C#/Db",
+    "D",
+    "D#/Eb",
+    "E",
+    "F",
+    "F#/Gb",
+    "G",
+    "G#/Ab",
+    "A",
+    "A#/Bb",
+    "B"
+  ],
+  "preferred_display_examples": {
+    "sharp_context": [
+      "C",
+      "C\u266f",
+      "D",
+      "D\u266f",
+      "E",
+      "F",
+      "F\u266f",
+      "G",
+      "G\u266f",
+      "A",
+      "A\u266f",
+      "B"
+    ],
+    "flat_context": [
+      "C",
+      "D\u266d",
+      "D",
+      "E\u266d",
+      "E",
+      "F",
+      "G\u266d",
+      "G",
+      "A\u266d",
+      "A",
+      "B\u266d",
+      "B"
+    ]
+  },
+  "implementation": "Render note names as live Compose text over note_button_active_blank.png or note_button_idle_blank.png. Do not create one PNG per pitch."
+}

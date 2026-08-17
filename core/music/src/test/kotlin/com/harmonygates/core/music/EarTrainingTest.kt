@@ -233,4 +233,74 @@ class EarTrainingTest {
             "07 §4 wants a small approved set, not free choice: ${chosen.distinct()}",
         )
     }
+
+    // --- What the ear training screen relies on --------------------------------------------------
+
+    /**
+     * The screen retries a few seeds before declaring a family unplayable, because a single null
+     * means "this seed landed on a chord that cannot be spelled", not "this family is unsupported".
+     * These pin the loop it runs: every buildable family must produce an exercise well inside the
+     * retry budget, for every exercise of a full session.
+     */
+    @Test
+    fun `every buildable family generates an exercise within the screen's retry budget`() {
+        val buildable = listOf(
+            EarTaskFamily.REPRODUCE,
+            EarTaskFamily.IDENTIFY_THEN_PLAY,
+            EarTaskFamily.DIFFERENCE_DETECTION,
+            EarTaskFamily.FUNCTION_HEARING,
+        )
+
+        for (family in buildable) {
+            for (index in 0 until policy.sessionLength) {
+                val exercise = (0 until SCREEN_RETRY_BUDGET).firstNotNullOfOrNull { attempt ->
+                    generate(family, seed = BASE_SEED + index * 1_000L + attempt, key = keyFor(index))
+                }
+                assertNotNull(exercise, "$family produced nothing for exercise $index")
+                assertTrue(
+                    exercise.stimulus.events.isNotEmpty(),
+                    "$family produced a stimulus with nothing to play",
+                )
+            }
+        }
+    }
+
+    /** Every event the screen plays must carry one velocity per pitch, or playback would desync. */
+    @Test
+    fun `a stimulus is playable note by note`() {
+        val exercise = assertNotNull(generate(EarTaskFamily.DIFFERENCE_DETECTION, seed = 77))
+
+        exercise.stimulus.events.forEach { event ->
+            assertEquals(
+                event.voicing.pitches.size,
+                event.velocities.size,
+                "The player pairs pitch with velocity by index",
+            )
+            assertTrue(event.atMillis >= 0)
+        }
+        // The two chords are separated in time, which is what the screen's delay loop walks.
+        assertTrue(
+            exercise.stimulus.events.map { it.atMillis }.distinct().size > 1,
+            "A comparison task must not play both chords at once",
+        )
+    }
+
+    /** The families the screen must refuse rather than present as broken. */
+    @Test
+    fun `the two unbuilt families stay unbuilt whatever seed or key is offered`() {
+        for (family in listOf(EarTaskFamily.BASS_HEARING, EarTaskFamily.VOICE_LEADING_HEARING)) {
+            val anything = (1L..20L).firstNotNullOfOrNull { seed ->
+                generate(family, seed = seed, key = keyFor(seed.toInt()))
+            }
+            assertNull(anything, "$family is not built yet and must say so rather than improvise")
+        }
+    }
+
+    private fun keyFor(index: Int) = KeyContext(root(KEYS[index.mod(KEYS.size)]))
+
+    private companion object {
+        const val SCREEN_RETRY_BUDGET = 8
+        const val BASE_SEED = 5_000L
+        val KEYS = listOf("C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B")
+    }
 }
