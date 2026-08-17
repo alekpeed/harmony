@@ -20,6 +20,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.Text
 import com.harmonygates.R
+import com.harmonygates.artwork.DesignHit
+import com.harmonygates.artwork.DesignImage
+import com.harmonygates.artwork.DesignRect
+import com.harmonygates.artwork.DesignScope
+import com.harmonygates.artwork.DesignSurface
+import com.harmonygates.artwork.LabelOverflow
+import com.harmonygates.artwork.Plate
 import com.harmonygates.core.designsystem.theme.HarmonyTheme
 import com.harmonygates.core.music.eartraining.EarTaskFamily
 import com.harmonygates.core.music.performance.FeedbackModel

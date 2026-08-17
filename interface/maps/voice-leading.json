@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "screen": "voice-leading",
-  "status": "implemented-compose-primitives",
+  "status": "implemented",
   "designSize": {
     "width": 1536,
     "height": 1024
@@ -35,80 +35,90 @@
       "action": "toggle_menu",
       "figmaLayer": null,
       "boundsPx": null,
-      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
-      "implemented": false
+      "implementedBy": "Compose component wearing the named asset",
+      "implemented": false,
+      "skin": null
     },
     {
       "id": "navigate_home",
       "action": "navigate_home",
       "figmaLayer": null,
       "boundsPx": null,
-      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
-      "implemented": true
+      "implementedBy": "Compose component wearing the named asset",
+      "implemented": true,
+      "skin": "icon-button-default + icon-home"
     },
     {
       "id": "navigate_practice",
       "action": "navigate_practice",
       "figmaLayer": null,
       "boundsPx": null,
-      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
-      "implemented": true
+      "implementedBy": "Compose component wearing the named asset",
+      "implemented": true,
+      "skin": "chip-default / chip-selected"
     },
     {
       "id": "play_prompt",
       "action": "play_voice_leading_prompt",
       "figmaLayer": null,
       "boundsPx": null,
-      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
-      "implemented": true
+      "implementedBy": "Compose component wearing the named asset",
+      "implemented": true,
+      "skin": "icon-button-default + icon-replay"
     },
     {
       "id": "replay_prompt",
       "action": "replay_voice_leading_prompt_if_allowed",
       "figmaLayer": null,
       "boundsPx": null,
-      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
-      "implemented": true
+      "implementedBy": "Compose component wearing the named asset",
+      "implemented": true,
+      "skin": "icon-button-default + icon-replay"
     },
     {
       "id": "start_exercise",
       "action": "start_voice_leading_exercise",
       "figmaLayer": null,
       "boundsPx": null,
-      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
-      "implemented": true
+      "implementedBy": "Compose component wearing the named asset",
+      "implemented": true,
+      "skin": "button-primary-default / -pressed / -disabled"
     },
     {
       "id": "next_exercise",
       "action": "advance_voice_leading_exercise",
       "figmaLayer": null,
       "boundsPx": null,
-      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
-      "implemented": true
+      "implementedBy": "Compose component wearing the named asset",
+      "implemented": true,
+      "skin": "icon-button-default / -active + icon-next"
     },
     {
       "id": "open_setup",
       "action": "open_voice_leading_setup",
       "figmaLayer": null,
       "boundsPx": null,
-      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
-      "implemented": true
+      "implementedBy": "Compose component wearing the named asset",
+      "implemented": true,
+      "skin": "button-secondary-default"
     },
     {
       "id": "open_settings",
       "action": "open_settings",
       "figmaLayer": null,
       "boundsPx": null,
-      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
-      "implemented": false
+      "implementedBy": "Compose component wearing the named asset",
+      "implemented": false,
+      "skin": null
     },
     {
       "id": "midi_status",
       "action": "open_midi_status",
       "figmaLayer": null,
       "boundsPx": null,
-      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
-      "implemented": true
+      "implementedBy": "Compose component wearing the named asset",
+      "implemented": true,
+      "skin": "midi-connected / midi-disconnected"
     }
   ],
   "runtimeRules": [
@@ -122,7 +132,7 @@
     "nodeId": null,
     "frameName": null
   },
-  "statusReason": "Bounds stay null on purpose. This screen's own ASSET_USAGE_RULES.md requires that visible interactive elements be real Compose components rather than hit regions over artwork, so there is no illustrated control to measure against. The approved plate is the environment only; geometry belongs to the composables and moves with the layout.",
+  "statusReason": "Controls are real Compose components that wear the pack's own control assets, laid out in the regions 10_templates names. Bounds are design pixels in VoiceLeadingLayout.kt, mirrored here.",
   "background": {
     "asset": "assets/voice_leading/background/voice-leading-background-approved.png",
     "resource": "voice_leading_background",
@@ -130,9 +140,11 @@
   },
   "primitiveLibrary": {
     "root": "assets/voice_leading",
-    "role": "design reference. SVG shells are translated into Compose components reading design tokens, which ASSET_USAGE_RULES.md permits; they are not shipped as runtime drawables.",
-    "shippedAtRuntime": [
-      "background/voice-leading-background-approved.png"
+    "svgSource": "category folders (01_controls .. 09_transient_surfaces) - editable vector source",
+    "shippedAtRuntime": "png_exports/, as vl_* drawables; Android cannot load SVG at runtime and the pack's README supplies these rasters for exactly that reason",
+    "excludedFromRuntime": [
+      "10_templates (layout wireframes)",
+      "11_guides (design grid)"
     ]
   },
   "engineContract": {
@@ -149,5 +161,67 @@
     ],
     "evaluation": "DefaultPerformanceEvaluator against ExerciseRequirement.VoiceLeadingTarget decides the chord; VoiceLeadingAnalyzer measures the move (total motion, largest leap, common tones, per-voice motion) and it is compared with the smoothest voicing the policy allows.",
     "notPersisted": "No ExerciseInstance exists for a voice-leading move, so no AttemptRecord is written. Mastery and gate completion are unaffected."
+  },
+  "regions": {
+    "shared": {
+      "nav": {
+        "x": 40,
+        "y": 30,
+        "width": 1456,
+        "height": 84
+      }
+    },
+    "landing": {
+      "moduleIntro": {
+        "x": 62,
+        "y": 155,
+        "width": 530,
+        "height": 300
+      },
+      "progress": {
+        "x": 910,
+        "y": 157,
+        "width": 560,
+        "height": 272
+      },
+      "practiceModes": {
+        "x": 62,
+        "y": 498,
+        "width": 1400,
+        "height": 390
+      },
+      "midiStatus": {
+        "x": 1150,
+        "y": 930,
+        "width": 320,
+        "height": 56
+      }
+    },
+    "practice": {
+      "exerciseVisualization": {
+        "x": 62,
+        "y": 128,
+        "width": 975,
+        "height": 680
+      },
+      "controls": {
+        "x": 1070,
+        "y": 128,
+        "width": 405,
+        "height": 680
+      },
+      "feedback": {
+        "x": 62,
+        "y": 805,
+        "width": 975,
+        "height": 158
+      },
+      "sessionStatus": {
+        "x": 1070,
+        "y": 805,
+        "width": 405,
+        "height": 158
+      }
+    }
   }
 }

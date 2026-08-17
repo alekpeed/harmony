@@ -207,22 +207,16 @@ androidComponents {
             SyncInterfaceArtwork::generatedResourceDirectory,
         )
 
-        val syncVoiceLeading = tasks.register<SyncInterfaceArtwork>(
-            "sync${variant.name.replaceFirstChar(Char::uppercase)}VoiceLeadingArtwork",
+        val syncVoiceLeading = tasks.register<SyncVoiceLeadingAssets>(
+            "sync${variant.name.replaceFirstChar(Char::uppercase)}VoiceLeadingAssets",
         ) {
             group = "build"
-            description = "Copies the Voice Leading environment plate and screen map from interface/."
+            description = "Copies the Voice Leading plate, control primitives and map from interface/."
             interfaceDirectory.set(rootProject.layout.projectDirectory.dir("interface"))
-            sourceFileName.set("assets/voice_leading/background/voice-leading-background-approved.png")
-            mapFileName.set("maps/voice-leading.json")
-            resourceName.set("voice_leading_background")
-            mapResourceName.set("voice_leading_map")
-            placeholderColor.set("#0E1018")
-            artworkRequired.set(true)
         }
         variant.sources.res?.addGeneratedSourceDirectory(
             syncVoiceLeading,
-            SyncInterfaceArtwork::generatedResourceDirectory,
+            SyncVoiceLeadingAssets::generatedResourceDirectory,
         )
 
         val syncEarTraining = tasks.register<SyncEarTrainingAssets>(

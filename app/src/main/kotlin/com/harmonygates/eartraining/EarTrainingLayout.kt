@@ -1,6 +1,7 @@
 package com.harmonygates.eartraining
 
 import com.harmonygates.R
+import com.harmonygates.artwork.DesignRect
 
 /**
  * Where every Ear Training control sits, in design pixels.

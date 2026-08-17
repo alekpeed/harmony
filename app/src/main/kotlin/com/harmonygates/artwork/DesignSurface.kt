@@ -1,4 +1,4 @@
-package com.harmonygates.eartraining
+package com.harmonygates.artwork
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -180,4 +180,4 @@ fun DesignScope.DesignHit(
 private const val MINIMUM_TOUCH_DP = 48f
 
 /** Text overflow used by every dynamic label, so a long value clips rather than reflows a panel. */
-internal val LabelOverflow = TextOverflow.Ellipsis
+public val LabelOverflow = TextOverflow.Ellipsis
