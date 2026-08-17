@@ -127,8 +127,8 @@ fun DesignScope.Plate(resourceId: Int, contentDescription: String? = null) {
 fun DesignScope.DesignImage(
     resourceId: Int,
     rect: DesignRect,
-    contentDescription: String? = null,
     modifier: Modifier = Modifier,
+    contentDescription: String? = null,
 ) {
     Image(
         painter = painterResource(resourceId),
