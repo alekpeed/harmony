@@ -47,6 +47,7 @@ import com.harmonygates.placeholder.PlaceholderScreen
 import com.harmonygates.progress.ProgressRoute
 import com.harmonygates.progression.ProgressionRunRoute
 import com.harmonygates.settings.SettingsRoute
+import com.harmonygates.voiceleading.VoiceLeadingRoute
 
 enum class AppScreen {
     Home,
@@ -55,6 +56,7 @@ enum class AppScreen {
     Settings,
     ChordGate,
     EarTraining,
+    VoiceLeading,
     ProgressionRun,
     Campaign,
     Progress,
@@ -87,6 +89,7 @@ fun AppRoot() {
             HomeDestination.TheoryLab -> screen = AppScreen.TheoryLab
             HomeDestination.Settings -> screen = AppScreen.Settings
             HomeDestination.EarTraining -> screen = AppScreen.EarTraining
+            HomeDestination.VoicingLab -> screen = AppScreen.VoiceLeading
             HomeDestination.ProgressionLab -> screen = AppScreen.ProgressionRun
             HomeDestination.Campaign,
             HomeDestination.NextGate,
@@ -154,6 +157,7 @@ fun AppRoot() {
                 onExit = { screen = AppScreen.Home },
                 onOpenSettings = { screen = AppScreen.Settings },
             )
+            AppScreen.VoiceLeading -> VoiceLeadingRoute(onExit = { screen = AppScreen.Home })
             AppScreen.ProgressionRun -> ProgressionRunRoute(onNavigate = ::navigate)
             AppScreen.Campaign -> CampaignRoute(
                 modifier = Modifier.padding(insets),

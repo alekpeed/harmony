@@ -152,14 +152,11 @@ enum class HomeDestination(
     ),
     /** Progression Run: the track, from Phase 10. */
     ProgressionLab(isImplemented = true, arrivesInPhase = 10),
-    VoicingLab(
-        isImplemented = false,
-        arrivesInPhase = 10,
-        summary = "Move between chords with the least motion that works.",
-        engineStatus = "The voice-leading engine scores total motion, largest leap and " +
-            "retained common tones, and two gates practise the material as progressions. " +
-            "The screen that shows a starting voicing and asks for the next one is not built.",
-    ),
+    /**
+     * Voice Leading. The screen that shows a starting voicing and asks for the next one, which
+     * the engine has been able to score since Phase 1. Moves are not recorded yet.
+     */
+    VoicingLab(isImplemented = true, arrivesInPhase = 10),
     Library(
         isImplemented = false,
         arrivesInPhase = 13,

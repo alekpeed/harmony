@@ -1,0 +1,88 @@
+name: Sideload APK
+
+# A downloadable, installable APK.
+#
+# `release.yml` builds the *release* variant and uploads it as a workflow artifact. That is the
+# right thing for a shipping build and the wrong thing for putting a build on a tablet: an
+# artifact needs a GitHub login and a zip step to get at, and without the signing secrets the
+# release variant is unsigned and will not install at all.
+#
+# This publishes the debug variant as a GitHub Release asset instead. It carries the standard
+# debug signature, so it installs by tapping the link on the tablet, and a release asset has a
+# plain URL that does not expire the way an artifact does.
+on:
+  push:
+    tags: ['apk-v*']
+  workflow_dispatch:
+    inputs:
+      note:
+        description: What is in this build
+        required: false
+
+concurrency:
+  group: sideload-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    name: Debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          # Must match javaToolchain in gradle/libs.versions.toml.
+          java-version: '21'
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Verify
+        # The same gate everything else passes. An installable build that skipped the tests is
+        # how a broken APK ends up on the device it was meant to prove.
+        run: ./gradlew verifyHarmony --no-daemon
+
+      - name: Assemble debug APK
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Name the build
+        id: build
+        run: |
+          apk="$(find app/build/outputs/harmony -name '*.apk' | head -1)"
+          if [ -z "$apk" ]; then
+            apk="$(find app/build/outputs/apk/debug -name '*.apk' | head -1)"
+          fi
+          echo "path=$apk" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "$apk")" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=apk-build-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish as a release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.build.outputs.tag }}" \
+            "${{ steps.build.outputs.path }}" \
+            --repo "${{ github.repository }}" \
+            --title "Sideload build ${{ steps.build.outputs.tag }}" \
+            --notes "Debug-signed APK for sideloading onto a tablet.
+
+          Commit: ${{ github.sha }}
+          File: ${{ steps.build.outputs.name }}
+
+          Install with \`adb install -r <file>\`, or open the link on the tablet and allow
+          installation from this source. Debug builds are not for distribution: they are
+          unminified, debuggable, and signed with the shared debug key." \
+            --latest=false

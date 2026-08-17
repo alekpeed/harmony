@@ -1,0 +1,799 @@
+{
+  "screen": "voice-leading",
+  "assetCount": 198,
+  "pngExports": 94,
+  "assets": [
+    {
+      "path": "00_background/voice-leading-background-approved.png",
+      "type": "png"
+    },
+    {
+      "path": "01_controls/buttons/button-danger-default.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/buttons/button-primary-default.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/buttons/button-primary-disabled.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/buttons/button-primary-pressed.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/buttons/button-secondary-default.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/buttons/button-secondary-pressed.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-back.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-button-active.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-button-default.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-button-disabled.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-button-pressed.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-check.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-close.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-home.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-info.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-menu.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-midi.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-next.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-play.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-replay.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-settings.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-sound.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/icon_buttons/icon-x.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/selectors/chip-default.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/selectors/chip-selected.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/selectors/dropdown-shell.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/selectors/segmented-control-3.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/selectors/slider.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/selectors/toggle-off.svg",
+      "type": "svg"
+    },
+    {
+      "path": "01_controls/selectors/toggle-on.svg",
+      "type": "svg"
+    },
+    {
+      "path": "02_navigation/nav-tab-active.svg",
+      "type": "svg"
+    },
+    {
+      "path": "02_navigation/nav-tab-default.svg",
+      "type": "svg"
+    },
+    {
+      "path": "02_navigation/section-title-plate.svg",
+      "type": "svg"
+    },
+    {
+      "path": "02_navigation/top-nav-bar.svg",
+      "type": "svg"
+    },
+    {
+      "path": "03_panels/control-panel.svg",
+      "type": "svg"
+    },
+    {
+      "path": "03_panels/exercise-panel-large.svg",
+      "type": "svg"
+    },
+    {
+      "path": "03_panels/exercise-panel-medium.svg",
+      "type": "svg"
+    },
+    {
+      "path": "03_panels/feedback-panel.svg",
+      "type": "svg"
+    },
+    {
+      "path": "03_panels/keyboard-panel.svg",
+      "type": "svg"
+    },
+    {
+      "path": "03_panels/mini-card.svg",
+      "type": "svg"
+    },
+    {
+      "path": "03_panels/staff-panel.svg",
+      "type": "svg"
+    },
+    {
+      "path": "03_panels/stats-panel.svg",
+      "type": "svg"
+    },
+    {
+      "path": "03_panels/voicing-card.svg",
+      "type": "svg"
+    },
+    {
+      "path": "04_progress_bars/accuracy-meter.svg",
+      "type": "svg"
+    },
+    {
+      "path": "04_progress_bars/level-meter.svg",
+      "type": "svg"
+    },
+    {
+      "path": "04_progress_bars/mastery-meter.svg",
+      "type": "svg"
+    },
+    {
+      "path": "04_progress_bars/progress-bar-25.svg",
+      "type": "svg"
+    },
+    {
+      "path": "04_progress_bars/progress-bar-50.svg",
+      "type": "svg"
+    },
+    {
+      "path": "04_progress_bars/progress-bar-75.svg",
+      "type": "svg"
+    },
+    {
+      "path": "04_progress_bars/progress-bar-empty.svg",
+      "type": "svg"
+    },
+    {
+      "path": "04_progress_bars/progress-bar-full.svg",
+      "type": "svg"
+    },
+    {
+      "path": "05_status_indicators/midi-connected.svg",
+      "type": "svg"
+    },
+    {
+      "path": "05_status_indicators/midi-disconnected.svg",
+      "type": "svg"
+    },
+    {
+      "path": "05_status_indicators/midi-reconnecting.svg",
+      "type": "svg"
+    },
+    {
+      "path": "05_status_indicators/status-complete.svg",
+      "type": "svg"
+    },
+    {
+      "path": "05_status_indicators/status-evaluating.svg",
+      "type": "svg"
+    },
+    {
+      "path": "05_status_indicators/status-listening.svg",
+      "type": "svg"
+    },
+    {
+      "path": "05_status_indicators/status-locked.svg",
+      "type": "svg"
+    },
+    {
+      "path": "05_status_indicators/status-ready.svg",
+      "type": "svg"
+    },
+    {
+      "path": "06_voice_motion/active-ring.svg",
+      "type": "svg"
+    },
+    {
+      "path": "06_voice_motion/history-ring.svg",
+      "type": "svg"
+    },
+    {
+      "path": "06_voice_motion/motion-arrow-curved.svg",
+      "type": "svg"
+    },
+    {
+      "path": "06_voice_motion/motion-arrow-right.svg",
+      "type": "svg"
+    },
+    {
+      "path": "06_voice_motion/target-ring.svg",
+      "type": "svg"
+    },
+    {
+      "path": "06_voice_motion/voice-line-common-tone.svg",
+      "type": "svg"
+    },
+    {
+      "path": "06_voice_motion/voice-line-down.svg",
+      "type": "svg"
+    },
+    {
+      "path": "06_voice_motion/voice-line-leap.svg",
+      "type": "svg"
+    },
+    {
+      "path": "06_voice_motion/voice-line-step.svg",
+      "type": "svg"
+    },
+    {
+      "path": "06_voice_motion/voice-line-up.svg",
+      "type": "svg"
+    },
+    {
+      "path": "07_note_tokens/key-black-active.svg",
+      "type": "svg"
+    },
+    {
+      "path": "07_note_tokens/key-black.svg",
+      "type": "svg"
+    },
+    {
+      "path": "07_note_tokens/key-white-active.svg",
+      "type": "svg"
+    },
+    {
+      "path": "07_note_tokens/key-white.svg",
+      "type": "svg"
+    },
+    {
+      "path": "07_note_tokens/note-token-active.svg",
+      "type": "svg"
+    },
+    {
+      "path": "07_note_tokens/note-token-correct.svg",
+      "type": "svg"
+    },
+    {
+      "path": "07_note_tokens/note-token-incorrect.svg",
+      "type": "svg"
+    },
+    {
+      "path": "07_note_tokens/note-token-neutral.svg",
+      "type": "svg"
+    },
+    {
+      "path": "07_note_tokens/note-token-target.svg",
+      "type": "svg"
+    },
+    {
+      "path": "08_feedback/feedback-correct.svg",
+      "type": "svg"
+    },
+    {
+      "path": "08_feedback/feedback-hint.svg",
+      "type": "svg"
+    },
+    {
+      "path": "08_feedback/feedback-incorrect.svg",
+      "type": "svg"
+    },
+    {
+      "path": "08_feedback/feedback-neutral.svg",
+      "type": "svg"
+    },
+    {
+      "path": "08_feedback/feedback-partial.svg",
+      "type": "svg"
+    },
+    {
+      "path": "09_transient_surfaces/bottom-sheet.svg",
+      "type": "svg"
+    },
+    {
+      "path": "09_transient_surfaces/dropdown-menu.svg",
+      "type": "svg"
+    },
+    {
+      "path": "09_transient_surfaces/exercise-setup-modal.svg",
+      "type": "svg"
+    },
+    {
+      "path": "09_transient_surfaces/help-modal.svg",
+      "type": "svg"
+    },
+    {
+      "path": "09_transient_surfaces/settings-modal.svg",
+      "type": "svg"
+    },
+    {
+      "path": "09_transient_surfaces/side-drawer.svg",
+      "type": "svg"
+    },
+    {
+      "path": "10_templates/template-keyboard-practice.svg",
+      "type": "svg"
+    },
+    {
+      "path": "10_templates/template-landing.svg",
+      "type": "svg"
+    },
+    {
+      "path": "10_templates/template-practice.svg",
+      "type": "svg"
+    },
+    {
+      "path": "10_templates/template-voice-path.svg",
+      "type": "svg"
+    },
+    {
+      "path": "11_guides/1536x1024-grid-safe-zone.svg",
+      "type": "svg"
+    },
+    {
+      "path": "11_guides/component-sizing.json",
+      "type": "json"
+    },
+    {
+      "path": "12_maps/asset-manifest.json",
+      "type": "json"
+    },
+    {
+      "path": "12_maps/state-matrix.json",
+      "type": "json"
+    },
+    {
+      "path": "12_maps/voice-leading.json",
+      "type": "json"
+    },
+    {
+      "path": "13_docs/ASSET_USAGE_RULES.md",
+      "type": "md"
+    },
+    {
+      "path": "13_docs/COMPOSE_LAYERING.md",
+      "type": "md"
+    },
+    {
+      "path": "13_docs/FIGMA_ASSEMBLY_ORDER.md",
+      "type": "md"
+    },
+    {
+      "path": "14_compose_reference/VoiceLeadingUiContract.kt",
+      "type": "kt"
+    },
+    {
+      "path": "15_png_exports/1536x1024-grid-safe-zone.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/accuracy-meter.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/active-ring.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/bottom-sheet.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/button-danger-default.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/button-primary-default.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/button-primary-disabled.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/button-primary-pressed.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/button-secondary-default.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/button-secondary-pressed.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/chip-default.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/chip-selected.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/control-panel.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/dropdown-menu.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/dropdown-shell.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/exercise-panel-large.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/exercise-panel-medium.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/exercise-setup-modal.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/feedback-correct.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/feedback-hint.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/feedback-incorrect.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/feedback-neutral.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/feedback-panel.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/feedback-partial.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/help-modal.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/history-ring.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-back.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-button-active.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-button-default.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-button-disabled.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-button-pressed.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-check.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-close.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-home.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-info.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-menu.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-midi.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-next.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-play.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-replay.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-settings.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-sound.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/icon-x.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/key-black-active.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/key-black.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/key-white-active.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/key-white.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/keyboard-panel.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/level-meter.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/mastery-meter.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/midi-connected.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/midi-disconnected.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/midi-reconnecting.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/mini-card.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/motion-arrow-curved.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/motion-arrow-right.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/nav-tab-active.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/nav-tab-default.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/note-token-active.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/note-token-correct.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/note-token-incorrect.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/note-token-neutral.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/note-token-target.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/progress-bar-25.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/progress-bar-50.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/progress-bar-75.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/progress-bar-empty.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/progress-bar-full.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/section-title-plate.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/segmented-control-3.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/settings-modal.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/side-drawer.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/slider.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/staff-panel.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/stats-panel.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/status-complete.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/status-evaluating.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/status-listening.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/status-locked.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/status-ready.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/target-ring.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/template-keyboard-practice.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/template-landing.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/template-practice.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/template-voice-path.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/toggle-off.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/toggle-on.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/top-nav-bar.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/voice-line-common-tone.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/voice-line-down.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/voice-line-leap.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/voice-line-step.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/voice-line-up.png",
+      "type": "png"
+    },
+    {
+      "path": "15_png_exports/voicing-card.png",
+      "type": "png"
+    },
+    {
+      "path": "README.md",
+      "type": "md"
+    }
+  ]
+}

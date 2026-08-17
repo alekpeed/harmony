@@ -1,0 +1,16 @@
+// Reference only: naming/state contract, not a replacement for existing architecture.
+enum class UiPressState { Default, Pressed, Disabled }
+enum class MidiUiState { Connected, Disconnected, Reconnecting }
+enum class ExerciseUiState { Ready, Listening, Evaluating, Complete }
+enum class NoteUiState { Neutral, Active, Target, Correct, Incorrect }
+enum class FeedbackUiState { Neutral, Correct, Incorrect, Partial, Hint }
+
+data class VoiceLeadingScreenUiState(
+    val midiState: MidiUiState,
+    val exerciseState: ExerciseUiState,
+    val progress: Float,
+    val accuracy: Float?,
+    val sourceVoicingLabel: String?,
+    val targetVoicingLabel: String?,
+    val feedback: String?
+)

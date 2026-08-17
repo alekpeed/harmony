@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "screen": "voice-leading",
+  "status": "implemented-compose-primitives",
+  "designSize": {
+    "width": 1536,
+    "height": 1024
+  },
+  "requirementsBasis": [
+    "Harmony Gates design language",
+    "static-art \u2192 dynamic-screen implementation pattern",
+    "Ear Trainer draft map workflow reference"
+  ],
+  "requiredArchitecture": [
+    "static environment plate",
+    "runtime Compose UI",
+    "transient interaction surfaces"
+  ],
+  "dynamicLayers": [
+    "module title/subtitle when runtime-dependent",
+    "exercise prompt",
+    "source voicing",
+    "target voicing",
+    "individual voice/note state",
+    "voice-motion visualization",
+    "MIDI held/performed-note state",
+    "evaluation feedback",
+    "session progress",
+    "accuracy/mastery",
+    "MIDI connection state"
+  ],
+  "controls": [
+    {
+      "id": "toggle_menu",
+      "action": "toggle_menu",
+      "figmaLayer": null,
+      "boundsPx": null,
+      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
+      "implemented": false
+    },
+    {
+      "id": "navigate_home",
+      "action": "navigate_home",
+      "figmaLayer": null,
+      "boundsPx": null,
+      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
+      "implemented": true
+    },
+    {
+      "id": "navigate_practice",
+      "action": "navigate_practice",
+      "figmaLayer": null,
+      "boundsPx": null,
+      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
+      "implemented": true
+    },
+    {
+      "id": "play_prompt",
+      "action": "play_voice_leading_prompt",
+      "figmaLayer": null,
+      "boundsPx": null,
+      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
+      "implemented": true
+    },
+    {
+      "id": "replay_prompt",
+      "action": "replay_voice_leading_prompt_if_allowed",
+      "figmaLayer": null,
+      "boundsPx": null,
+      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
+      "implemented": true
+    },
+    {
+      "id": "start_exercise",
+      "action": "start_voice_leading_exercise",
+      "figmaLayer": null,
+      "boundsPx": null,
+      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
+      "implemented": true
+    },
+    {
+      "id": "next_exercise",
+      "action": "advance_voice_leading_exercise",
+      "figmaLayer": null,
+      "boundsPx": null,
+      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
+      "implemented": true
+    },
+    {
+      "id": "open_setup",
+      "action": "open_voice_leading_setup",
+      "figmaLayer": null,
+      "boundsPx": null,
+      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
+      "implemented": true
+    },
+    {
+      "id": "open_settings",
+      "action": "open_settings",
+      "figmaLayer": null,
+      "boundsPx": null,
+      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
+      "implemented": false
+    },
+    {
+      "id": "midi_status",
+      "action": "open_midi_status",
+      "figmaLayer": null,
+      "boundsPx": null,
+      "implementedBy": "Compose component in VoiceLeadingScreen.kt",
+      "implemented": true
+    }
+  ],
+  "runtimeRules": [
+    "Do not bake exercise state, answers, labels, progress, MIDI state, or feedback into the environmental image.",
+    "Visible interactive elements must be real Compose components, not invisible hitboxes over screenshot controls.",
+    "Figma IDs and final coordinates remain null until the screen is structurally approved and measured.",
+    "MIDI disconnect must be represented as runtime state without destroying the current exercise."
+  ],
+  "figma": {
+    "fileKey": "cD5gqV8A5gk94NVuGeJXg5",
+    "nodeId": null,
+    "frameName": null
+  },
+  "statusReason": "Bounds stay null on purpose. This screen's own ASSET_USAGE_RULES.md requires that visible interactive elements be real Compose components rather than hit regions over artwork, so there is no illustrated control to measure against. The approved plate is the environment only; geometry belongs to the composables and moves with the layout.",
+  "background": {
+    "asset": "assets/voice_leading/background/voice-leading-background-approved.png",
+    "resource": "voice_leading_background",
+    "role": "environment only, no baked runtime state"
+  },
+  "primitiveLibrary": {
+    "root": "assets/voice_leading",
+    "role": "design reference. SVG shells are translated into Compose components reading design tokens, which ASSET_USAGE_RULES.md permits; they are not shipped as runtime drawables.",
+    "shippedAtRuntime": [
+      "background/voice-leading-background-approved.png"
+    ]
+  },
+  "engineContract": {
+    "viewModel": "com.harmonygates.voiceleading.VoiceLeadingViewModel",
+    "state": "VoiceLeadingUiState",
+    "intents": [
+      "PlaySource",
+      "Next",
+      "Skip",
+      "StartExercise",
+      "ExitToSetup",
+      "ChooseProgression",
+      "ChooseStyle"
+    ],
+    "evaluation": "DefaultPerformanceEvaluator against ExerciseRequirement.VoiceLeadingTarget decides the chord; VoiceLeadingAnalyzer measures the move (total motion, largest leap, common tones, per-voice motion) and it is compared with the smoothest voicing the policy allows.",
+    "notPersisted": "No ExerciseInstance exists for a voice-leading move, so no AttemptRecord is written. Mastery and gate completion are unaffected."
+  }
+}

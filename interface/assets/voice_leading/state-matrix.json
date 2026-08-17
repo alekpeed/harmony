@@ -1,0 +1,45 @@
+{
+  "buttons": [
+    "default",
+    "pressed",
+    "disabled"
+  ],
+  "iconButtons": [
+    "default",
+    "active",
+    "pressed",
+    "disabled"
+  ],
+  "midi": [
+    "connected",
+    "disconnected",
+    "reconnecting"
+  ],
+  "exercise": [
+    "ready",
+    "listening",
+    "evaluating",
+    "complete"
+  ],
+  "notes": [
+    "neutral",
+    "active",
+    "correct",
+    "incorrect",
+    "target"
+  ],
+  "feedback": [
+    "neutral",
+    "correct",
+    "incorrect",
+    "partial",
+    "hint"
+  ],
+  "progress": [
+    "empty",
+    "25",
+    "50",
+    "75",
+    "full"
+  ]
+}

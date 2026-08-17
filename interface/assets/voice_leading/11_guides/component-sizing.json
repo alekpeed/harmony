@@ -1,0 +1,37 @@
+{
+  "designSize": {
+    "width": 1536,
+    "height": 1024
+  },
+  "minimumTouchTargetDp": 48,
+  "recommendedMarginsPx": {
+    "outer": 40,
+    "panelGap": 24
+  },
+  "components": {
+    "primaryButton": {
+      "w": 280,
+      "h": 72
+    },
+    "secondaryButton": {
+      "w": 240,
+      "h": 64
+    },
+    "iconButton": {
+      "w": 60,
+      "h": 60
+    },
+    "statusPill": {
+      "w": 220,
+      "h": 52
+    },
+    "largeExercisePanel": {
+      "w": 680,
+      "h": 340
+    },
+    "feedbackPanel": {
+      "w": 560,
+      "h": 180
+    }
+  }
+}
