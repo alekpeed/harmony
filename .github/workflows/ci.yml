@@ -13,7 +13,9 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  # write, not read: the sideload step below publishes the debug APK as a release asset so it
+  # can be installed by tapping a link, instead of a login-gated artifact zip.
+  contents: write
 
 jobs:
   verify:
@@ -58,6 +60,24 @@ jobs:
           name: harmony-gates-debug
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
+      - name: Publish sideload APK as a release asset
+        # A workflow artifact is a zip behind a GitHub login, and its timestamps are UTC with no
+        # zone, so an extracted APK looks hours into the future. A release asset is the bare
+        # .apk at a permanent URL that installs from a tap on the tablet.
+        if: github.ref != 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          apk="$(find app/build/outputs/harmony -name '*.apk' | head -1)"
+          [ -n "$apk" ] || apk="$(find app/build/outputs/apk/debug -name '*.apk' | head -1)"
+          tag="apk-${{ github.run_number }}-$(git rev-parse --short HEAD)"
+          gh release create "$tag" "$apk" \
+            --repo "${{ github.repository }}" \
+            --title "Harmony Gates sideload $tag" \
+            --notes "Debug-signed APK. Commit ${{ github.sha }}. Install with adb install -r, or open on the tablet." \
+            --prerelease
+          echo "RELEASE: $(gh release view "$tag" --repo "${{ github.repository }}" --json url -q .url)"
 
       - name: Upload test reports
         if: always()
