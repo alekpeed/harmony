@@ -41,6 +41,17 @@ sealed interface ProgressionRunIntent {
     data object Next : ProgressionRunIntent
     data object Previous : ProgressionRunIntent
     data object Restart : ProgressionRunIntent
+
+    /**
+     * Resume, but only if the run is actually paused.
+     *
+     * The setup drawer pauses on open and wants to resume on close. It used to decide that by
+     * reading the status it had been composed with, which is a snapshot: if anything changed the
+     * run while the drawer was open — RESTART RUN, most obviously — the snapshot was stale and
+     * the drawer "resumed" a run that was already going, which pauses it. The decision belongs
+     * where the live engine state is.
+     */
+    data object ResumeIfPaused : ProgressionRunIntent
     data object TogglePlaying : ProgressionRunIntent
     data class ChooseTemplate(val template: ProgressionTemplate) : ProgressionRunIntent
     data class ChooseStyle(val style: VoicingStyle) : ProgressionRunIntent
@@ -193,6 +204,8 @@ class ProgressionRunViewModel(application: Application) : AndroidViewModel(appli
                 ProgressionRunIntent.Next -> engine.advanceManually()
                 ProgressionRunIntent.Previous -> previousChord()
                 ProgressionRunIntent.Restart -> startRun()
+                ProgressionRunIntent.ResumeIfPaused ->
+                    if (engine.state.value.status == ProgressionRunStatus.PAUSED) resumeWithCountIn()
                 ProgressionRunIntent.TogglePlaying -> togglePlaying()
                 is ProgressionRunIntent.ChooseTemplate -> {
                     _setup.value = _setup.value.copy(template = intent.template)

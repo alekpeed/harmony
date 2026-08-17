@@ -88,10 +88,25 @@ fun ProgressionRunScreen(
 
     fun closeSetup() {
         drawer = null
-        if (resumeAfterSetup && state.run.status == ProgressionRunStatus.PAUSED) {
-            onIntent(ProgressionRunIntent.TogglePlaying)
-        }
+        // Asks the view model to resume only if the engine is still paused, rather than deciding
+        // from the status this composition was handed. Between opening the drawer and closing it
+        // the run may have been restarted, and a resume issued against a stale status pauses it.
+        if (resumeAfterSetup) onIntent(ProgressionRunIntent.ResumeIfPaused)
         resumeAfterSetup = false
+    }
+
+    /**
+     * Restart, and get out of the way so it can be seen.
+     *
+     * The button used to leave the drawer open over the track, so a restart that worked
+     * perfectly looked like a button that did nothing — and the next tap raced it. Closing here
+     * also drops the pending resume: a restarted run is already running, and there is nothing
+     * left to resume.
+     */
+    fun restartRun() {
+        onIntent(ProgressionRunIntent.Restart)
+        resumeAfterSetup = false
+        drawer = null
     }
 
     Box(
@@ -140,6 +155,7 @@ fun ProgressionRunScreen(
                 Drawer.Setup -> SetupDrawer(
                     state = state,
                     onIntent = onIntent,
+                    onRestart = ::restartRun,
                     onDone = ::closeSetup,
                     onDismiss = ::closeSetup,
                     modifier = Modifier.align(Alignment.CenterEnd),
@@ -351,6 +367,7 @@ private fun NavButton(label: String, onClick: () -> Unit) {
 private fun SetupDrawer(
     state: ProgressionRunUiState,
     onIntent: (ProgressionRunIntent) -> Unit,
+    onRestart: () -> Unit,
     onDone: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
@@ -467,7 +484,7 @@ private fun SetupDrawer(
             Text("DONE")
         }
         OutlinedButton(
-            onClick = { onIntent(ProgressionRunIntent.Restart) },
+            onClick = onRestart,
             modifier = Modifier.fillMaxWidth(),
         ) { Text("RESTART RUN") }
     }
