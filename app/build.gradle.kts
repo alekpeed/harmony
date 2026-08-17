@@ -207,6 +207,18 @@ androidComponents {
             SyncInterfaceArtwork::generatedResourceDirectory,
         )
 
+        val syncEarTraining = tasks.register<SyncEarTrainingAssets>(
+            "sync${variant.name.replaceFirstChar(Char::uppercase)}EarTrainingAssets",
+        ) {
+            group = "build"
+            description = "Copies the approved Ear Training plates, controls and map from interface/."
+            interfaceDirectory.set(rootProject.layout.projectDirectory.dir("interface"))
+        }
+        variant.sources.res?.addGeneratedSourceDirectory(
+            syncEarTraining,
+            SyncEarTrainingAssets::generatedResourceDirectory,
+        )
+
         val syncContent = tasks.register<SyncContentPack>(
             "sync${variant.name.replaceFirstChar(Char::uppercase)}ContentPack",
         ) {

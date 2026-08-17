@@ -149,7 +149,11 @@ fun AppRoot() {
                 modifier = Modifier.padding(insets),
             )
             AppScreen.ChordGate -> ChordGateSession(gateId = gate, modifier = Modifier.padding(insets))
-            AppScreen.EarTraining -> EarTrainingRoute(modifier = Modifier.padding(insets))
+            // Full-bleed, like Home and Progression Run: the artwork insets itself.
+            AppScreen.EarTraining -> EarTrainingRoute(
+                onExit = { screen = AppScreen.Home },
+                onOpenSettings = { screen = AppScreen.Settings },
+            )
             AppScreen.ProgressionRun -> ProgressionRunRoute(onNavigate = ::navigate)
             AppScreen.Campaign -> CampaignRoute(
                 modifier = Modifier.padding(insets),

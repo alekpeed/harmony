@@ -1,322 +1,442 @@
 package com.harmonygates.eartraining
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.harmonygates.core.designsystem.component.FeedbackTone
-import com.harmonygates.core.designsystem.component.FilterChip
-import com.harmonygates.core.designsystem.component.HarmonyChordSymbol
-import com.harmonygates.core.designsystem.component.HarmonyLabelledValue
-import com.harmonygates.core.designsystem.component.HarmonyPanel
-import com.harmonygates.core.designsystem.component.HarmonyStatusChip
-import com.harmonygates.core.designsystem.component.PianoKeyboard
+import androidx.compose.material3.Text
+import com.harmonygates.R
 import com.harmonygates.core.designsystem.theme.HarmonyTheme
+import com.harmonygates.core.music.eartraining.EarTaskFamily
 import com.harmonygates.core.music.performance.FeedbackModel
 import com.harmonygates.exercise.describe
 
 /**
- * Ear training, in the plain idiom.
+ * Ear Training, as the approved layered console.
  *
- * No approved artwork exists for this screen yet — it is being drawn now — so this is deliberately
- * the same functional Compose the MIDI and settings screens use: it exists to be played rather
- * than to be looked at, and the plate drops in later without the loop changing.
+ * The artwork is the interface. Every plate, control and label is placed through one shared
+ * design transform (see [DesignSurface]), so the console, the moving parts, the live text and the
+ * touch targets stay registered to one another at any tablet size.
+ *
+ * Nothing here holds state. Everything comes from [EarTrainingViewModel], which is also what MIDI
+ * drives, so a control cannot show one thing while the exercise engine believes another.
+ *
+ * Controls with no engine state behind them are deliberately left as artwork with no touch
+ * target: the interval, mode, direction and option panels are part of the approved plate and are
+ * where those features belong when they exist, but drawing a live-looking switch over a setting
+ * the engine cannot read would be a lie the player only discovers by pressing it.
  */
 @Composable
 fun EarTrainingRoute(
+    onExit: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: EarTrainingViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    EarTrainingScreen(state = state, onIntent = viewModel::onIntent, modifier = modifier)
+    EarTrainingScreen(
+        state = state,
+        onIntent = viewModel::onIntent,
+        onExit = onExit,
+        onOpenSettings = onOpenSettings,
+        modifier = modifier,
+    )
 }
 
 @Composable
 fun EarTrainingScreen(
     state: EarTrainingUiState,
     onIntent: (EarTrainingIntent) -> Unit,
+    onExit: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .safeDrawingPadding()
-            .padding(HarmonyTheme.spacing.large),
-        verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.medium),
-    ) {
-        Header(state)
-        FamilyPicker(state, onIntent)
+    Box(modifier = modifier.fillMaxSize()) {
+        DesignSurface {
+            // The room is common to both modes and never moves; only what stands in front of it
+            // changes, which is what makes the console read as an object in the space.
+            Plate(R.drawable.et_ear_training_background_cinque_terre)
 
-        when (state.phase) {
-            EarPhase.COMPLETED -> SessionResult(state, onIntent)
-            EarPhase.UNAVAILABLE -> UnavailableNotice(state)
-            else -> ExerciseBody(state, onIntent)
-        }
-    }
-}
-
-@Composable
-private fun Header(state: EarTrainingUiState) {
-    Column(verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.tight)) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "Ear training",
-                color = HarmonyTheme.colors.onSurface,
-                fontSize = HarmonyTheme.typography.heading,
-            )
-            HarmonyStatusChip(
-                label = state.midiStatus,
-                tone = if (state.midiConnected) FeedbackTone.CORRECT else FeedbackTone.INCORRECT,
-            )
-        }
-        if (state.sessionLength > 0 && state.phase != EarPhase.COMPLETED) {
-            Text(
-                text = state.progressLabel,
-                color = HarmonyTheme.colors.onSurfaceMuted,
-                fontSize = HarmonyTheme.typography.caption,
-            )
-            LinearProgressIndicator(
-                progress = { state.exerciseNumber.toFloat() / state.sessionLength },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics { contentDescription = state.progressLabel },
-            )
-        }
-    }
-}
-
-@Composable
-private fun FamilyPicker(state: EarTrainingUiState, onIntent: (EarTrainingIntent) -> Unit) {
-    if (state.families.isEmpty()) return
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
-        verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
-    ) {
-        state.families.forEach { family ->
-            FilterChip(
-                label = family.label,
-                selected = family == state.family,
-                onToggle = { onIntent(EarTrainingIntent.ChooseFamily(family)) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun ExerciseBody(state: EarTrainingUiState, onIntent: (EarTrainingIntent) -> Unit) {
-    HarmonyPanel(modifier = Modifier.fillMaxWidth()) {
-        Column(verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
-            Text(
-                text = state.instruction.ifBlank { "Getting an exercise ready…" },
-                color = HarmonyTheme.colors.textPrimary,
-                fontSize = HarmonyTheme.typography.body,
-                fontWeight = FontWeight.SemiBold,
-            )
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
-                verticalAlignment = Alignment.CenterVertically,
+            AnimatedVisibility(
+                visible = state.mode == EarMode.SETUP,
+                enter = fadeIn(tween(CONSOLE_FADE_MS)) +
+                    slideInVertically(tween(CONSOLE_FADE_MS)) { -it / CONSOLE_SLIDE_FRACTION },
+                exit = fadeOut(tween(CONSOLE_FADE_MS)) +
+                    slideOutVertically(tween(CONSOLE_FADE_MS)) { -it / CONSOLE_SLIDE_FRACTION },
             ) {
-                Button(
-                    onClick = { onIntent(EarTrainingIntent.Play) },
-                    enabled = state.canReplay,
-                    modifier = Modifier.semantics {
-                        contentDescription = if (state.plays == 0) {
-                            "Play the chord"
-                        } else {
-                            "Play the chord again. Heard ${state.plays} times so far."
-                        }
-                    },
-                ) {
-                    Text(if (state.plays == 0) "Play" else "Play again")
-                }
-                HarmonyStatusChip(
-                    label = when (state.phase) {
-                        EarPhase.PLAYING -> "Listen"
-                        EarPhase.LISTENING -> "Play it back"
-                        EarPhase.FEEDBACK -> "Answered"
-                        else -> "Getting ready"
-                    },
-                    tone = FeedbackTone.NEUTRAL,
-                )
-                // 07 §5: replays are assistance evidence, so the count is shown rather than
-                // quietly tracked — a player should know a fifth hearing is not a first one.
-                if (state.plays > 0) {
-                    Text(
-                        text = "Heard ${state.plays}×",
-                        color = HarmonyTheme.colors.onSurfaceMuted,
-                        fontSize = HarmonyTheme.typography.caption,
-                    )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Plate(R.drawable.et_ear_training_setup_shell)
+                    Plate(R.drawable.et_ear_training_section_layout)
                 }
             }
+
+            AnimatedVisibility(
+                visible = state.mode == EarMode.TRAINING,
+                enter = fadeIn(tween(CONSOLE_FADE_MS)),
+                exit = fadeOut(tween(CONSOLE_FADE_MS)),
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    DesignImage(R.drawable.et_ear_training_training_bar_shell, EarLayout.TrainingBar)
+                }
+            }
+
+            if (state.mode == EarMode.SETUP) {
+                SetupControls(state, onIntent)
+            } else {
+                TrainingControls(state, onIntent)
+            }
+
+            TransportBar(state, onIntent, onExit, onOpenSettings)
         }
     }
+}
 
-    PianoKeyboard(
-        lowNote = KEYBOARD_LOW,
-        highNote = KEYBOARD_HIGH,
-        held = state.soundingNotes.toSet(),
+// --- Setup ---------------------------------------------------------------------------------------
+
+@Composable
+private fun DesignScope.SetupControls(
+    state: EarTrainingUiState,
+    onIntent: (EarTrainingIntent) -> Unit,
+) {
+    state.families.forEachIndexed { index, family ->
+        val selected = family == state.family
+        DesignImage(
+            resourceId = if (selected) R.drawable.et_music_note_active else R.drawable.et_music_note_idle,
+            rect = EarLayout.familyRowIcon(index),
+        )
+        DesignLabel(
+            text = family.label,
+            rect = EarLayout.familyRowLabel(index),
+            size = 21f,
+            colour = if (selected) HarmonyTheme.colors.textPrimary else HarmonyTheme.colors.textSecondary,
+            weight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            align = TextAlign.Start,
+        )
+        DesignHit(
+            rect = EarLayout.familyRow(index),
+            contentDescription = "${family.label} exercises" + if (selected) ", selected" else "",
+            onClick = { onIntent(EarTrainingIntent.ChooseFamily(family)) },
+        )
+    }
+
+    // The generator places every session through all twelve keys; the panel states that rather
+    // than offering a choice the engine does not read.
+    DesignLabel(
+        text = "All 12 keys",
+        rect = EarLayout.RootKeyPanel,
+        size = 22f,
+        colour = HarmonyTheme.colors.textSecondary,
     )
 
-    if (!state.midiConnected) {
-        Text(
-            text = "Connect a MIDI keyboard to answer. The chord still plays without one.",
-            color = HarmonyTheme.colors.onSurfaceMuted,
-            fontSize = HarmonyTheme.typography.body,
-        )
-    }
+    DesignLabel(
+        text = if (state.sessionLength > 0) "${state.sessionLength} questions" else "",
+        rect = EarLayout.SessionRowLabel,
+        size = 19f,
+        colour = HarmonyTheme.colors.textSecondary,
+        align = TextAlign.Start,
+    )
 
-    when (state.phase) {
-        EarPhase.FEEDBACK -> FeedbackPanel(state, onIntent)
-        else -> Row(horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
-            OutlinedButton(
-                onClick = { onIntent(EarTrainingIntent.Skip) },
-                modifier = Modifier.semantics { contentDescription = "Skip this exercise and move on" },
-            ) { Text("Skip") }
-        }
+    DesignLabel(
+        text = "START",
+        rect = EarLayout.StartPill,
+        size = 30f,
+        colour = HarmonyTheme.colors.textPrimary,
+        weight = FontWeight.SemiBold,
+    )
+    DesignHit(
+        rect = EarLayout.StartPill,
+        contentDescription = "Start ear training",
+        onClick = { onIntent(EarTrainingIntent.StartTraining) },
+        enabled = state.canStart,
+    )
+
+    if (state.phase == EarPhase.UNAVAILABLE && state.message != null) {
+        DesignLabel(
+            text = state.message,
+            rect = EarLayout.IntervalSettingsPanel,
+            size = 17f,
+            colour = HarmonyTheme.colors.onSurfaceMuted,
+            lines = 3,
+        )
     }
 }
 
+// --- Training ------------------------------------------------------------------------------------
+
 @Composable
-private fun FeedbackPanel(state: EarTrainingUiState, onIntent: (EarTrainingIntent) -> Unit) {
-    val result = state.result ?: return
-    val tone = when (result.explanation.headline) {
-        FeedbackModel.Headline.CORRECT, FeedbackModel.Headline.CORRECT_VARIATION -> FeedbackTone.CORRECT
-        FeedbackModel.Headline.ALMOST -> FeedbackTone.PARTIAL
-        FeedbackModel.Headline.NOT_YET -> FeedbackTone.INCORRECT
-        else -> FeedbackTone.NEUTRAL
-    }
+private fun DesignScope.TrainingControls(
+    state: EarTrainingUiState,
+    onIntent: (EarTrainingIntent) -> Unit,
+) {
+    when (state.phase) {
+        EarPhase.COMPLETED -> {
+            DesignLabel(
+                text = "Session finished — ${state.correctCount} of ${state.sessionLength} correct",
+                rect = EarLayout.TrainingInstruction,
+                size = 30f,
+                colour = HarmonyTheme.colors.textPrimary,
+                weight = FontWeight.SemiBold,
+            )
+            DesignLabel(
+                text = "Ear sessions are not recorded yet: this changes no mastery and opens no gate.",
+                rect = EarLayout.TrainingVerdict,
+                size = 17f,
+                colour = HarmonyTheme.colors.onSurfaceMuted,
+                lines = 2,
+            )
+        }
 
-    HarmonyPanel(modifier = Modifier.fillMaxWidth()) {
-        Column(verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
-            HarmonyStatusChip(label = headlineText(result.explanation.headline), tone = tone)
+        EarPhase.UNAVAILABLE -> DesignLabel(
+            text = state.message.orEmpty(),
+            rect = EarLayout.TrainingMessage,
+            size = 19f,
+            colour = HarmonyTheme.colors.onSurfaceMuted,
+            lines = 4,
+        )
 
-            // The answer is revealed once it has been given, never before: naming it is half of
-            // what identify-then-play is testing.
-            state.answerSymbol?.let { symbol ->
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "That was",
-                        color = HarmonyTheme.colors.onSurfaceMuted,
-                        fontSize = HarmonyTheme.typography.body,
-                    )
-                    HarmonyChordSymbol(symbol = symbol)
+        else -> {
+            // The key is shown only where it is part of the question. For the other families the
+            // key is an implementation detail of generation and telling the player would be noise.
+            if (state.family == EarTaskFamily.FUNCTION_HEARING) {
+                state.keySpelling?.let { spelling ->
+                    EarLayout.noteButton(spelling, active = true)?.let { resource ->
+                        DesignImage(
+                            resourceId = resource,
+                            rect = EarLayout.TrainingKeyButton,
+                            contentDescription = "Key of $spelling",
+                        )
+                    }
                 }
             }
 
-            state.differenceDescription?.let { difference ->
-                Text(
-                    text = difference,
-                    color = HarmonyTheme.colors.onSurfaceMuted,
-                    fontSize = HarmonyTheme.typography.body,
-                )
-            }
+            DesignLabel(
+                text = state.instruction,
+                rect = EarLayout.TrainingInstruction,
+                size = 27f,
+                colour = HarmonyTheme.colors.textPrimary,
+                weight = FontWeight.SemiBold,
+            )
 
-            result.explanation.errors.take(MAX_REASONS).forEach { error ->
-                Text(
-                    text = describe(error),
-                    color = HarmonyTheme.colors.onSurfaceMuted,
-                    fontSize = HarmonyTheme.typography.body,
+            if (state.phase == EarPhase.FEEDBACK) {
+                DesignLabel(
+                    text = feedbackLine(state),
+                    rect = EarLayout.TrainingVerdict,
+                    size = 20f,
+                    colour = HarmonyTheme.colors.textSecondary,
+                    lines = 2,
                 )
-            }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
-                Button(onClick = { onIntent(EarTrainingIntent.Next) }) { Text("Next") }
-                OutlinedButton(onClick = { onIntent(EarTrainingIntent.Play) }) { Text("Hear it again") }
+            } else if (state.plays > 0) {
+                DesignLabel(
+                    text = if (state.phase == EarPhase.PLAYING) "Listen" else "Heard ${state.plays}×",
+                    rect = EarLayout.TrainingVerdict,
+                    size = 20f,
+                    colour = HarmonyTheme.colors.onSurfaceMuted,
+                )
             }
         }
     }
 }
 
-@Composable
-private fun SessionResult(state: EarTrainingUiState, onIntent: (EarTrainingIntent) -> Unit) {
-    HarmonyPanel(modifier = Modifier.fillMaxWidth()) {
-        Column(verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
-            Text(
-                text = "Session finished",
-                color = HarmonyTheme.colors.textPrimary,
-                fontSize = HarmonyTheme.typography.heading,
-            )
-            HarmonyLabelledValue(
-                label = "Correct",
-                value = "${state.correctCount} of ${state.sessionLength}",
-            )
-            // Phase 8's engines are reachable now; the attempt store is not wired to them yet.
-            Text(
-                text = "Ear sessions are not recorded yet — nothing here changes your mastery or " +
-                    "opens a gate.",
-                color = HarmonyTheme.colors.onSurfaceMuted,
-                fontSize = HarmonyTheme.typography.caption,
-            )
-            Button(onClick = { onIntent(EarTrainingIntent.Restart) }) { Text("Go again") }
-        }
+/** Verdict, revealed answer and diagnosis, in the order a player can use them. */
+private fun feedbackLine(state: EarTrainingUiState): String {
+    val result = state.result ?: return ""
+    val headline = when (result.explanation.headline) {
+        FeedbackModel.Headline.CORRECT, FeedbackModel.Headline.CORRECT_VARIATION -> "Correct"
+        FeedbackModel.Headline.ALMOST -> "Almost"
+        FeedbackModel.Headline.NOT_YET -> "Not yet"
+        FeedbackModel.Headline.NOTHING_PLAYED -> "Nothing played"
+        FeedbackModel.Headline.DEVICE_LOST -> "Keyboard disconnected"
     }
+    val answer = state.answerSymbol?.let { " · that was $it" }.orEmpty()
+    val why = result.explanation.primaryError?.let { " · ${describe(it)}" }.orEmpty()
+    val difference = state.differenceDescription?.let { " · $it" }.orEmpty()
+    return headline + answer + why + difference
 }
 
+// --- The bar, in both modes ----------------------------------------------------------------------
+
 @Composable
-private fun UnavailableNotice(state: EarTrainingUiState) {
-    HarmonyPanel(modifier = Modifier.fillMaxWidth()) {
+private fun DesignScope.TransportBar(
+    state: EarTrainingUiState,
+    onIntent: (EarTrainingIntent) -> Unit,
+    onExit: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    val training = state.mode == EarMode.TRAINING
+
+    // MIDI: green when notes are arriving, amber when a keyboard is there but not connected, dark
+    // when there is none. 18_ACCEPTANCE_CRITERIA.md forbids colour alone, so the wording beside it
+    // says the same thing.
+    DesignImage(
+        resourceId = when {
+            state.midiConnected -> R.drawable.et_status_green_on
+            state.midiStatus == "Keyboard available" -> R.drawable.et_status_amber_on
+            else -> R.drawable.et_status_off
+        },
+        rect = EarLayout.BarMidiLamp,
+    )
+    DesignLabel(
+        text = state.midiStatus,
+        rect = EarLayout.BarMidiLabel,
+        size = 18f,
+        colour = HarmonyTheme.colors.textSecondary,
+        align = TextAlign.Start,
+    )
+
+    DesignImage(
+        resourceId = if (state.phase == EarPhase.PLAYING) {
+            R.drawable.et_play_active_large
+        } else {
+            R.drawable.et_play_idle_large
+        },
+        rect = EarLayout.BarPlay,
+    )
+    DesignHit(
+        rect = EarLayout.BarPlay,
+        contentDescription = if (training) {
+            if (state.plays == 0) "Play the chord" else "Play the chord again"
+        } else {
+            "Start ear training"
+        },
+        onClick = {
+            onIntent(if (training) EarTrainingIntent.Play else EarTrainingIntent.StartTraining)
+        },
+        enabled = if (training) state.canReplay else state.canStart,
+    )
+
+    if (training) {
+        DesignImage(
+            resourceId = if (state.canReplay) R.drawable.et_repeat_active else R.drawable.et_repeat_idle,
+            rect = EarLayout.BarReplay,
+        )
+        DesignHit(
+            rect = EarLayout.BarReplay,
+            contentDescription = "Hear it again. Heard ${state.plays} times so far.",
+            onClick = { onIntent(EarTrainingIntent.Play) },
+            enabled = state.canReplay,
+        )
+
+        DesignImage(
+            resourceId = if (state.phase == EarPhase.FEEDBACK) {
+                R.drawable.et_shuffle_active
+            } else {
+                R.drawable.et_shuffle_idle
+            },
+            rect = EarLayout.BarNext,
+        )
+        DesignHit(
+            rect = EarLayout.BarNext,
+            contentDescription = if (state.phase == EarPhase.FEEDBACK) "Next exercise" else "Skip this exercise",
+            onClick = { onIntent(EarTrainingIntent.Next) },
+            enabled = state.phase != EarPhase.COMPLETED,
+        )
+
+        DesignLabel(
+            text = state.progressLabel,
+            rect = EarLayout.BarRightPanel,
+            size = 22f,
+            colour = HarmonyTheme.colors.textPrimary,
+        )
+    } else {
+        DesignLabel(
+            text = state.family?.label.orEmpty(),
+            rect = EarLayout.BarRightPanel,
+            size = 20f,
+            colour = HarmonyTheme.colors.textSecondary,
+        )
+    }
+
+    // Left circle leaves whatever is on screen: the session in training, the screen in setup.
+    DesignImage(
+        resourceId = R.drawable.et_previous_idle,
+        rect = EarLayout.BarLeftCircle,
+    )
+    DesignHit(
+        rect = EarLayout.BarLeftCircle,
+        contentDescription = if (training) "End the session and return to setup" else "Leave ear training",
+        onClick = { if (training) onIntent(EarTrainingIntent.ExitToSetup) else onExit() },
+    )
+
+    DesignImage(resourceId = R.drawable.et_level_meter, rect = EarLayout.BarSettings)
+    DesignHit(
+        rect = EarLayout.BarSettings,
+        contentDescription = "Settings",
+        onClick = onOpenSettings,
+    )
+
+    DesignImage(resourceId = R.drawable.et_eye, rect = EarLayout.BarRightCircle)
+    DesignHit(
+        rect = EarLayout.BarRightCircle,
+        contentDescription = "Leave ear training",
+        onClick = onExit,
+    )
+}
+
+// --- Text ----------------------------------------------------------------------------------------
+
+/**
+ * A live value, placed in its slot on the plate.
+ *
+ * Everything that can change is drawn here rather than baked into artwork, which is the whole
+ * reason the approved plates ship with empty fields.
+ */
+@Composable
+private fun DesignScope.DesignLabel(
+    text: String,
+    rect: DesignRect,
+    size: Float,
+    colour: Color,
+    weight: FontWeight = FontWeight.Normal,
+    align: TextAlign = TextAlign.Center,
+    lines: Int = 1,
+) {
+    if (text.isEmpty()) return
+    Box(modifier = Modifier.designRect(rect), contentAlignment = Alignment.Center) {
         Text(
-            text = state.message ?: "This exercise family is not available.",
-            color = HarmonyTheme.colors.onSurfaceMuted,
-            fontSize = HarmonyTheme.typography.body,
+            text = text,
+            color = colour,
+            fontSize = textSize(size),
+            fontWeight = weight,
+            textAlign = align,
+            maxLines = lines,
+            overflow = LabelOverflow,
         )
     }
 }
 
-private fun headlineText(headline: FeedbackModel.Headline): String = when (headline) {
-    FeedbackModel.Headline.CORRECT -> "Correct"
-    FeedbackModel.Headline.CORRECT_VARIATION -> "Correct"
-    FeedbackModel.Headline.ALMOST -> "Almost"
-    FeedbackModel.Headline.NOT_YET -> "Not yet"
-    FeedbackModel.Headline.NOTHING_PLAYED -> "Nothing played"
-    FeedbackModel.Headline.DEVICE_LOST -> "Keyboard disconnected"
-}
+private const val CONSOLE_FADE_MS = 260
+private const val CONSOLE_SLIDE_FRACTION = 6
 
-private const val KEYBOARD_LOW = 48
-private const val KEYBOARD_HIGH = 84
-private const val MAX_REASONS = 3
-
-@Preview(showBackground = true, widthDp = 1000, heightDp = 800)
+@Preview(showBackground = true, widthDp = 1024, heightDp = 683)
 @Composable
-private fun EarTrainingPreview() {
+private fun EarTrainingSetupPreview() {
     HarmonyTheme {
         EarTrainingScreen(
             state = EarTrainingUiState(
-                phase = EarPhase.LISTENING,
-                instruction = "Play what you hear.",
-                exerciseNumber = 3,
+                mode = EarMode.SETUP,
+                families = EarTaskFamily.entries.take(4),
+                family = EarTaskFamily.REPRODUCE,
                 sessionLength = 16,
-                plays = 1,
-                canReplay = true,
-                midiConnected = true,
                 midiStatus = "Studio keyboard",
+                midiConnected = true,
             ),
             onIntent = {},
+            onExit = {},
+            onOpenSettings = {},
         )
     }
 }

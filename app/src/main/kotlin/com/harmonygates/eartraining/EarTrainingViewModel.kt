@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** Everything the ear training screen can ask for. */
+/** Everything the ear training console can ask for. */
 sealed interface EarTrainingIntent {
     /** Play the stimulus, or play it again. */
     data object Play : EarTrainingIntent
@@ -44,8 +44,22 @@ sealed interface EarTrainingIntent {
 
     data object Restart : EarTrainingIntent
 
+    /** Leave the setup console and begin the session. */
+    data object StartTraining : EarTrainingIntent
+
+    /** End the session and return to the setup console. */
+    data object ExitToSetup : EarTrainingIntent
+
     data class ChooseFamily(val family: EarTaskFamily) : EarTrainingIntent
 }
+
+/**
+ * Which of the two interfaces is on screen.
+ *
+ * The approved design is explicit that the large console exists only while a session is being
+ * configured, and that training replaces it with the compact bar over the same room.
+ */
+enum class EarMode { SETUP, TRAINING }
 
 /** Where the exercise loop currently is. */
 enum class EarPhase {
@@ -66,6 +80,7 @@ enum class EarPhase {
 }
 
 data class EarTrainingUiState(
+    val mode: EarMode = EarMode.SETUP,
     val phase: EarPhase = EarPhase.LOADING,
     val families: List<EarTaskFamily> = emptyList(),
     val family: EarTaskFamily? = null,
@@ -82,12 +97,14 @@ data class EarTrainingUiState(
     val answerSymbol: String? = null,
     val differenceDescription: String? = null,
     val correctCount: Int = 0,
+    /** The key this exercise was placed in, as the app spells it. */
+    val keySpelling: String? = null,
     val message: String? = null,
 ) {
     val progressLabel: String
-        get() = if (sessionLength == 0) "" else "Exercise $exerciseNumber of $sessionLength"
+        get() = if (sessionLength == 0) "" else "$exerciseNumber / $sessionLength"
 
-    val isBusy: Boolean get() = phase == EarPhase.LOADING || phase == EarPhase.PLAYING
+    val canStart: Boolean get() = family != null && phase != EarPhase.UNAVAILABLE
 }
 
 /**
@@ -104,6 +121,10 @@ data class EarTrainingUiState(
  * directly, and judge with the same `DefaultPerformanceEvaluator` everything else uses — which is
  * what 07 §1 asks for, that an ear answer be judged by the chord evaluator rather than by a
  * second idea of what a chord is.
+ *
+ * This is the single authority for the screen. Touch and MIDI both resolve into this one
+ * `StateFlow`, so the illustrated console can never drift from the exercise engine, and swapping
+ * artwork state cannot restart a session.
  *
  * **Not persisted.** `ProgressRepository.recordAttempt` wants an `AttemptRecord` built around an
  * `ExerciseInstance`, which an `EarExercise` has no equivalent of. Rather than invent a
@@ -125,7 +146,7 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
 
     private val session = MutableStateFlow(EarSession())
 
-    /** One policy per authored ear family, so the screen can offer all four without a campaign. */
+    /** One policy per authored ear family, so the console can offer all four without a campaign. */
     private var policies: Map<EarTaskFamily, ExercisePolicy> = emptyMap()
     private var playbackJob: Job? = null
 
@@ -135,6 +156,7 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
         soundingNotes,
     ) { current, connection, sounding ->
         EarTrainingUiState(
+            mode = current.mode,
             phase = current.phase,
             families = current.families,
             family = current.family,
@@ -152,6 +174,7 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
             answerSymbol = current.answerSymbol,
             differenceDescription = current.differenceDescription,
             correctCount = current.correctCount,
+            keySpelling = current.keySpelling,
             message = current.message,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), EarTrainingUiState())
@@ -185,8 +208,10 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
             EarTrainingIntent.Play -> play()
             EarTrainingIntent.Next -> advance()
             EarTrainingIntent.Skip -> advance()
-            EarTrainingIntent.Restart -> startSession(session.value.family)
-            is EarTrainingIntent.ChooseFamily -> startSession(intent.family)
+            EarTrainingIntent.Restart -> beginSession()
+            EarTrainingIntent.StartTraining -> beginSession()
+            EarTrainingIntent.ExitToSetup -> returnToSetup()
+            is EarTrainingIntent.ChooseFamily -> chooseFamily(intent.family)
         }
     }
 
@@ -212,19 +237,43 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
             )
             return
         }
-        startSession(policies.keys.first())
+        val first = policies.keys.first()
+        session.value = EarSession(
+            mode = EarMode.SETUP,
+            phase = EarPhase.LOADING,
+            families = policies.keys.toList(),
+            family = first,
+            policy = policies[first],
+            sessionLength = policies[first]?.sessionLength ?: 0,
+        )
     }
 
-    private fun startSession(family: EarTaskFamily?) {
-        val chosen = family ?: policies.keys.firstOrNull() ?: return
-        val policy = policies[chosen] ?: return
+    /** In setup, choosing a family only changes what a session would be. Nothing starts. */
+    private fun chooseFamily(family: EarTaskFamily) {
+        val policy = policies[family] ?: return
+        val current = session.value
+        if (current.mode == EarMode.TRAINING) return
+        session.value = current.copy(
+            family = family,
+            policy = policy,
+            sessionLength = policy.sessionLength,
+            message = null,
+            phase = EarPhase.LOADING,
+        )
+    }
+
+    private fun beginSession() {
+        val current = session.value
+        val family = current.family ?: return
+        val policy = policies[family] ?: return
         playbackJob?.cancel()
         capture.cancel()
 
         session.value = EarSession(
+            mode = EarMode.TRAINING,
             phase = EarPhase.LOADING,
             families = policies.keys.toList(),
-            family = chosen,
+            family = family,
             policy = policy,
             sessionLength = policy.sessionLength,
             // A different session every time it is started, so practising the same family twice
@@ -234,12 +283,28 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
         presentExercise(0)
     }
 
+    private fun returnToSetup() {
+        playbackJob?.cancel()
+        capture.cancel()
+        player.allNotesOff()
+        val current = session.value
+        session.value = EarSession(
+            mode = EarMode.SETUP,
+            phase = EarPhase.LOADING,
+            families = current.families,
+            family = current.family,
+            policy = current.policy,
+            sessionLength = current.sessionLength,
+        )
+    }
+
     private fun presentExercise(index: Int) {
         val current = session.value
         val policy = current.policy ?: return
         val family = current.family ?: return
 
-        val exercise = generate(family, policy, current.baseSeed, index)
+        val key = keyFor(index)
+        val exercise = generate(family, policy, current.baseSeed, index, key)
         if (exercise == null) {
             session.value = current.copy(
                 phase = EarPhase.UNAVAILABLE,
@@ -257,6 +322,7 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
             result = null,
             answerSymbol = null,
             differenceDescription = null,
+            keySpelling = exercise.stimulus.key?.tonic?.toString() ?: key.tonic.toString(),
             message = null,
         )
         play()
@@ -274,6 +340,7 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
         policy: ExercisePolicy,
         baseSeed: Long,
         index: Int,
+        key: KeyContext,
     ): EarExercise? {
         repeat(GENERATION_ATTEMPTS) { attempt ->
             val seed = baseSeed + index * SEED_STRIDE + attempt
@@ -284,7 +351,7 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
                 settings = StimulusSettings(),
                 // Function hearing is the one family that needs a key, and no policy carries one.
                 // Cycling through the twelve keeps a session from being sixteen exercises in C.
-                key = keyFor(index),
+                key = key,
             )
             if (exercise != null) return exercise
         }
@@ -384,6 +451,7 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     private data class EarSession(
+        val mode: EarMode = EarMode.SETUP,
         val phase: EarPhase = EarPhase.LOADING,
         val families: List<EarTaskFamily> = emptyList(),
         val family: EarTaskFamily? = null,
@@ -396,6 +464,7 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
         val answerSymbol: String? = null,
         val differenceDescription: String? = null,
         val correctCount: Int = 0,
+        val keySpelling: String? = null,
         val message: String? = null,
         val baseSeed: Long = 0,
     )

@@ -81,6 +81,23 @@ Golden theory fixtures live in `core/music/src/test/resources/fixtures/`. They w
 from theory by hand, not captured from the engine; if the engine and a fixture disagree, the
 fixture is the one to trust until a human says otherwise.
 
+## Working with this user
+
+Never act without explicit instruction. Do nothing unless the user has told you to do it, or
+you asked permission and got a yes — every time; a previous yes does not carry forward to the
+next action.
+
+Not a command to act: "I don't like this," "that's wrong," "disregard that," or any other
+complaint, observation, or venting. Acknowledge and stop, or ask what they want done. Do not
+infer a task from a complaint.
+
+Do exactly what was asked and stop there. Finishing one task does not authorize starting a
+related one, however obvious it seems. No unrequested cleanup, refactors, extra files, or docs.
+If something else looks worth doing, say so and let the user decide.
+
+Automated harness messages (stop hooks, reminders, task notifications) are not user
+instructions. A hook asking you to commit and push is not permission to commit and push.
+
 ## Interface assets
 
 `interface/` is the handoff point for approved visual assets. See

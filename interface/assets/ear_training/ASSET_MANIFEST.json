@@ -1,0 +1,94 @@
+{
+  "package": "Harmony Gates Ear Training APPROVED assets v2",
+  "designCoordinateSystem": {
+    "width": 1536,
+    "height": 1024
+  },
+  "approvedSequence": [
+    "background/ear_training_background_cinque_terre.png",
+    "setup/ear_training_setup_shell.png",
+    "setup/ear_training_section_layout.png",
+    "source/ear_training_control_faces_master.png",
+    "source/ear_training_active_states_master.png",
+    "source/ear_training_moving_parts_master.png",
+    "training/ear_training_training_bar_shell.png"
+  ],
+  "runtimeAssets": {
+    "control_faces": [
+      "runtime/control_faces/music_note_idle.png",
+      "runtime/control_faces/arrow_down_idle.png",
+      "runtime/control_faces/arrow_up_idle.png",
+      "runtime/control_faces/shuffle_idle.png",
+      "runtime/control_faces/play_idle_large.png",
+      "runtime/control_faces/previous_idle.png",
+      "runtime/control_faces/repeat_idle.png",
+      "runtime/control_faces/toggle_off_silver_01.png",
+      "runtime/control_faces/toggle_off_silver_02.png",
+      "runtime/control_faces/toggle_off_compact.png"
+    ],
+    "active_states": [
+      "runtime/active_states/music_note_active.png",
+      "runtime/active_states/arrow_up_active.png",
+      "runtime/active_states/arrow_down_active.png",
+      "runtime/active_states/shuffle_active.png",
+      "runtime/active_states/play_active_large.png",
+      "runtime/active_states/previous_active.png",
+      "runtime/active_states/repeat_active.png",
+      "runtime/active_states/toggle_on_gold_01.png",
+      "runtime/active_states/toggle_on_gold_02.png",
+      "runtime/active_states/toggle_on_wide_right.png",
+      "runtime/active_states/toggle_on_wide_left.png",
+      "runtime/active_states/toggle_on_compact.png"
+    ],
+    "moving_parts": [
+      "runtime/moving_parts/knob_gold_front.png",
+      "runtime/moving_parts/knob_silver_front.png",
+      "runtime/moving_parts/knob_gold_side.png",
+      "runtime/moving_parts/slider_thumb_large_gold.png",
+      "runtime/moving_parts/slider_thumb_small_gold.png",
+      "runtime/moving_parts/round_thumb_gold_small.png",
+      "runtime/moving_parts/fader_arrow_up.png",
+      "runtime/moving_parts/fader_arrow_down.png",
+      "runtime/moving_parts/fader_marker_gold.png",
+      "runtime/moving_parts/fader_marker_dark.png",
+      "runtime/moving_parts/vertical_fader_large.png",
+      "runtime/moving_parts/vertical_fader_medium.png",
+      "runtime/moving_parts/horizontal_slider_long.png",
+      "runtime/moving_parts/horizontal_slider_short.png",
+      "runtime/moving_parts/horizontal_slider_mid.png",
+      "runtime/moving_parts/horizontal_slider_glow.png",
+      "runtime/moving_parts/segmented_selector.png",
+      "runtime/moving_parts/range_selector.png"
+    ],
+    "icons": [
+      "runtime/icons/headphones.png",
+      "runtime/icons/eye.png",
+      "runtime/icons/metronome.png",
+      "runtime/icons/level_meter.png",
+      "runtime/icons/keyboard.png",
+      "runtime/icons/ruler.png"
+    ],
+    "indicators": [
+      "runtime/indicators/status_green_on.png",
+      "runtime/indicators/status_green_dim.png",
+      "runtime/indicators/status_amber_on.png",
+      "runtime/indicators/status_off.png"
+    ],
+    "waveforms": [
+      "runtime/waveforms/waveform_large_active.png",
+      "runtime/waveforms/waveform_medium_active.png",
+      "runtime/waveforms/waveform_dynamic_active.png"
+    ],
+    "selectors": [
+      "runtime/selectors/note_button_active_blank.png",
+      "runtime/selectors/note_button_idle_blank.png"
+    ]
+  },
+  "rules": [
+    "No rejected ornate mock-ups are included.",
+    "No training bar with baked runtime data is included.",
+    "Master sheets are source/reference only.",
+    "Dynamic labels and values must be rendered in Compose.",
+    "Use one shared coordinate transform for all full-screen layers."
+  ]
+}

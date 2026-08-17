@@ -1,224 +1,72 @@
 {
   "schemaVersion": 1,
   "screen": "ear_training",
-  "status": "draft",
-  "statusReason": "The control asset library and the functional inventory are final. Control bounds are pending the four full-screen setup plates and the training bar, which set the registration every hit region must match. SCREEN_DESIGN_WORKFLOW.md phase 2 allows a draft contract ahead of final artwork; every entry whose bounds are not yet derivable carries boundsStatus 'pending-layout-plate' rather than an invented rectangle.",
   "designSize": {
     "width": 1536,
     "height": 1024
   },
-  "coordinateRule": "Every full-screen layer, moving control asset, dynamic text region and hit region shares one design-to-screen transform. The app fits the 1536x1024 frame with ArtworkScreen/ArtworkGeometry and expresses all bounds as fractions of that fitted frame, so no layer scales independently. Control assets are placed by their own design-coordinate rectangle within the same frame.",
+  "coordinateRule": "Every layer, control, label and hit region is placed through one shared design-to-screen transform (DesignSurface/DesignScope in the app). The 1536x1024 frame is fitted into the window and centred; nothing is scaled independently. Bounds below are design pixels and are mirrored exactly by EarLayout.kt.",
   "assetRoot": "../assets/ear_training",
+  "sourceRule": "assets/ear_training/source/ holds the cutting sheets and the rejected ornate comp. Nothing under source/ is copied into app resources or rendered.",
+  "modes": ["setup", "training"],
   "layers": [
-    {
-      "id": "background",
-      "order": 0,
-      "asset": "background/ear_training_background_cinque_terre.png",
-      "assetStatus": "pending",
-      "visibleIn": ["setup", "training"],
-      "note": "The room. Preserved across both states; training reveals more of it."
-    },
-    {
-      "id": "setup_shell",
-      "order": 1,
-      "asset": "setup/ear_training_setup_shell.png",
-      "assetStatus": "pending",
-      "visibleIn": ["setup"],
-      "note": "Reusable console frame, shared with other setup screens."
-    },
-    {
-      "id": "section_layout",
-      "order": 2,
-      "asset": "setup/ear_training_section_layout.png",
-      "assetStatus": "pending",
-      "visibleIn": ["setup"],
-      "note": "Ear-training-specific interior. Establishes where every control sits."
-    },
-    {
-      "id": "control_faces",
-      "order": 3,
-      "asset": "setup/ear_training_control_faces.png",
-      "assetStatus": "pending",
-      "visibleIn": ["setup"],
-      "note": "Static housings. A housing that never moves stays baked here."
-    },
-    {
-      "id": "active_states",
-      "order": 4,
-      "asset": "setup/ear_training_active_states.png",
-      "assetStatus": "pending",
-      "visibleIn": ["setup"],
-      "note": "Illuminated/selected treatments, drawn above the faces and gated by state."
-    },
-    {
-      "id": "moving_controls",
-      "order": 5,
-      "asset": null,
-      "assetStatus": "present",
-      "visibleIn": ["setup", "training"],
-      "note": "Individual PNGs under controls/, positioned and animated per control. Never the master sheet."
-    },
-    {
-      "id": "training_bar",
-      "order": 2,
-      "asset": "training/ear_training_training_bar.png",
-      "assetStatus": "pending",
-      "visibleIn": ["training"],
-      "note": "Compact bar that replaces the whole setup console once an exercise starts."
-    },
-    {
-      "id": "dynamic_text",
-      "order": 6,
-      "asset": null,
-      "assetStatus": "present",
-      "visibleIn": ["setup", "training"],
-      "note": "Live Compose text. Nothing in this list is ever baked into artwork."
-    },
-    {
-      "id": "interaction",
-      "order": 7,
-      "asset": null,
-      "assetStatus": "present",
-      "visibleIn": ["setup", "training"],
-      "note": "Compose hit regions, at least the minimum touch target even where the drawn control is smaller."
-    }
+    { "id": "background", "order": 0, "asset": "background/ear_training_background_cinque_terre.png", "resource": "et_ear_training_background_cinque_terre", "visibleIn": ["setup", "training"], "fullFrame": true },
+    { "id": "setup_shell", "order": 1, "asset": "setup/ear_training_setup_shell.png", "resource": "et_ear_training_setup_shell", "visibleIn": ["setup"], "fullFrame": true },
+    { "id": "section_layout", "order": 2, "asset": "setup/ear_training_section_layout.png", "resource": "et_ear_training_section_layout", "visibleIn": ["setup"], "fullFrame": true },
+    { "id": "training_bar", "order": 2, "asset": "training/ear_training_training_bar_shell.png", "resource": "et_ear_training_training_bar_shell", "visibleIn": ["training"], "fullFrame": false, "bounds": { "x": 43, "y": 797, "width": 1450, "height": 200 } },
+    { "id": "moving_controls", "order": 3, "visibleIn": ["setup", "training"], "note": "Individual assets under runtime/, swapped by state. Never the master sheet." },
+    { "id": "dynamic_text", "order": 4, "visibleIn": ["setup", "training"] },
+    { "id": "interaction", "order": 5, "visibleIn": ["setup", "training"], "note": "Compose hit regions, inflated to a 48dp minimum around their own centre." }
   ],
   "controls": [
-    {
-      "id": "family_selector",
-      "type": "selector",
-      "stateKey": "family",
-      "action": "choose_family",
-      "visibleIn": ["setup"],
-      "options": ["REPRODUCE", "IDENTIFY_THEN_PLAY", "DIFFERENCE_DETECTION", "FUNCTION_HEARING"],
-      "idleAsset": "controls/selectors/note_button_idle_blank.png",
-      "activeAsset": "controls/selectors/note_button_active_blank.png",
-      "labelSource": "code",
-      "boundsStatus": "pending-layout-plate",
-      "provenance": "required",
-      "note": "The four authored ear families. Labels are EarTaskFamily.label, rendered as Compose text; nothing is baked."
-    },
-    {
-      "id": "play",
-      "type": "button",
-      "stateKey": "phase",
-      "action": "play_stimulus",
-      "visibleIn": ["setup", "training"],
-      "idleAsset": "controls/buttons/play_idle_large.png",
-      "activeAsset": "controls/buttons/play_active_large.png",
-      "boundsStatus": "pending-layout-plate",
-      "provenance": "required"
-    },
-    {
-      "id": "replay",
-      "type": "button",
-      "stateKey": "plays",
-      "action": "play_stimulus",
-      "visibleIn": ["training"],
-      "idleAsset": "controls/buttons/repeat_idle.png",
-      "activeAsset": "controls/buttons/repeat_active.png",
-      "enabledRule": "ReplayRule.permits(plays)",
-      "boundsStatus": "pending-layout-plate",
-      "provenance": "required",
-      "note": "07 §5 counts replays as assistance evidence, so the count is displayed and the control disables when the rule is spent."
-    },
-    {
-      "id": "next",
-      "type": "button",
-      "stateKey": "phase",
-      "action": "next_exercise",
-      "visibleIn": ["training"],
-      "idleAsset": "controls/buttons/arrow_up_idle.png",
-      "activeAsset": "controls/buttons/arrow_up_active.png",
-      "boundsStatus": "pending-layout-plate",
-      "provenance": "required"
-    },
-    {
-      "id": "skip",
-      "type": "button",
-      "stateKey": "phase",
-      "action": "skip_exercise",
-      "visibleIn": ["training"],
-      "idleAsset": "controls/buttons/shuffle_idle.png",
-      "activeAsset": "controls/buttons/shuffle_active.png",
-      "boundsStatus": "pending-layout-plate",
-      "provenance": "required"
-    },
-    {
-      "id": "midi_indicator",
-      "type": "indicator",
-      "stateKey": "midiConnected",
-      "action": null,
-      "visibleIn": ["setup", "training"],
-      "idleAsset": "controls/indicators/status_off.png",
-      "activeAsset": "controls/indicators/status_green_on.png",
-      "warnAsset": "controls/indicators/status_amber_on.png",
-      "boundsStatus": "pending-layout-plate",
-      "provenance": "required",
-      "note": "Green when receiving, amber when a keyboard is available but not connected, off when there is none."
-    },
-    {
-      "id": "start_session",
-      "type": "button",
-      "stateKey": "phase",
-      "action": "enter_training",
-      "visibleIn": ["setup"],
-      "idleAsset": "controls/buttons/music_note_idle.png",
-      "activeAsset": "controls/buttons/music_note_active.png",
-      "boundsStatus": "pending-layout-plate",
-      "provenance": "proposed",
-      "note": "The setup→training transition needs an explicit commit control; the engine itself starts a session as soon as a family is chosen."
-    },
-    {
-      "id": "back_to_setup",
-      "type": "button",
-      "stateKey": "phase",
-      "action": "exit_training",
-      "visibleIn": ["training"],
-      "idleAsset": "controls/buttons/previous_idle.png",
-      "activeAsset": "controls/buttons/previous_active.png",
-      "boundsStatus": "pending-layout-plate",
-      "provenance": "proposed"
-    }
+    { "id": "family_row_0", "type": "selector", "mode": "setup", "bounds": { "x": 158, "y": 258, "width": 289, "height": 72 }, "iconBounds": { "x": 172, "y": 270, "width": 48, "height": 48 }, "stateKey": "family", "action": "choose_family", "value": "REPRODUCE", "assetIdle": "runtime/control_faces/music_note_idle.png", "assetActive": "runtime/active_states/music_note_active.png", "labelSource": "EarTaskFamily.label" },
+    { "id": "family_row_1", "type": "selector", "mode": "setup", "bounds": { "x": 158, "y": 350, "width": 289, "height": 72 }, "iconBounds": { "x": 172, "y": 362, "width": 48, "height": 48 }, "stateKey": "family", "action": "choose_family", "value": "IDENTIFY_THEN_PLAY", "assetIdle": "runtime/control_faces/music_note_idle.png", "assetActive": "runtime/active_states/music_note_active.png", "labelSource": "EarTaskFamily.label" },
+    { "id": "family_row_2", "type": "selector", "mode": "setup", "bounds": { "x": 158, "y": 442, "width": 289, "height": 72 }, "iconBounds": { "x": 172, "y": 454, "width": 48, "height": 48 }, "stateKey": "family", "action": "choose_family", "value": "DIFFERENCE_DETECTION", "assetIdle": "runtime/control_faces/music_note_idle.png", "assetActive": "runtime/active_states/music_note_active.png", "labelSource": "EarTaskFamily.label" },
+    { "id": "family_row_3", "type": "selector", "mode": "setup", "bounds": { "x": 158, "y": 534, "width": 289, "height": 72 }, "iconBounds": { "x": 172, "y": 546, "width": 48, "height": 48 }, "stateKey": "family", "action": "choose_family", "value": "FUNCTION_HEARING", "assetIdle": "runtime/control_faces/music_note_idle.png", "assetActive": "runtime/active_states/music_note_active.png", "labelSource": "EarTaskFamily.label" },
+    { "id": "start", "type": "button", "mode": "setup", "bounds": { "x": 588, "y": 672, "width": 364, "height": 70 }, "stateKey": "canStart", "action": "start_training", "label": "START" },
+    { "id": "bar_play", "type": "button", "mode": "both", "bounds": { "x": 715, "y": 840, "width": 110, "height": 110 }, "stateKey": "phase", "action": "play_stimulus_or_start", "assetIdle": "runtime/control_faces/play_idle_large.png", "assetActive": "runtime/active_states/play_active_large.png" },
+    { "id": "bar_replay", "type": "button", "mode": "training", "bounds": { "x": 619, "y": 871, "width": 52, "height": 52 }, "stateKey": "canReplay", "action": "play_stimulus", "assetIdle": "runtime/control_faces/repeat_idle.png", "assetActive": "runtime/active_states/repeat_active.png", "note": "07 §5 counts replays as assistance evidence; disabled once the ReplayRule is spent." },
+    { "id": "bar_next", "type": "button", "mode": "training", "bounds": { "x": 867, "y": 871, "width": 52, "height": 52 }, "stateKey": "phase", "action": "next_or_skip", "assetIdle": "runtime/control_faces/shuffle_idle.png", "assetActive": "runtime/active_states/shuffle_active.png" },
+    { "id": "bar_left", "type": "button", "mode": "both", "bounds": { "x": 108, "y": 865, "width": 64, "height": 64 }, "stateKey": "mode", "action": "exit_to_setup_or_leave", "assetIdle": "runtime/control_faces/previous_idle.png" },
+    { "id": "bar_settings", "type": "button", "mode": "both", "bounds": { "x": 1266, "y": 871, "width": 52, "height": 52 }, "action": "open_settings", "assetIdle": "runtime/icons/level_meter.png" },
+    { "id": "bar_exit", "type": "button", "mode": "both", "bounds": { "x": 1372, "y": 864, "width": 66, "height": 66 }, "action": "leave_ear_training", "assetIdle": "runtime/icons/eye.png" },
+    { "id": "midi_lamp", "type": "indicator", "mode": "both", "bounds": { "x": 222, "y": 881, "width": 32, "height": 32 }, "stateKey": "midiConnected", "assetOff": "runtime/indicators/status_off.png", "assetWarn": "runtime/indicators/status_amber_on.png", "assetOn": "runtime/indicators/status_green_on.png", "note": "Paired with wording; correctness is never colour alone." }
   ],
   "dynamicText": [
-    { "id": "instruction", "source": "EarTrainingUiState.instruction", "visibleIn": ["setup", "training"], "boundsStatus": "pending-layout-plate" },
-    { "id": "progress", "source": "EarTrainingUiState.progressLabel", "visibleIn": ["training"], "boundsStatus": "pending-layout-plate" },
-    { "id": "family_name", "source": "EarTaskFamily.label", "visibleIn": ["setup", "training"], "boundsStatus": "pending-layout-plate" },
-    { "id": "plays", "source": "EarTrainingUiState.plays", "visibleIn": ["training"], "boundsStatus": "pending-layout-plate" },
-    { "id": "verdict", "source": "EvaluationResult.explanation.headline", "visibleIn": ["training"], "boundsStatus": "pending-layout-plate" },
-    { "id": "diagnosis", "source": "EvaluationResult.explanation.errors", "visibleIn": ["training"], "boundsStatus": "pending-layout-plate" },
-    { "id": "answer_symbol", "source": "StimulusSpec.chords.last().symbol", "visibleIn": ["training"], "boundsStatus": "pending-layout-plate", "note": "Revealed only after an answer: naming it is half of what identify-then-play tests." },
-    { "id": "correct_count", "source": "EarTrainingUiState.correctCount", "visibleIn": ["training"], "boundsStatus": "pending-layout-plate" },
-    { "id": "midi_status", "source": "EarTrainingUiState.midiStatus", "visibleIn": ["setup", "training"], "boundsStatus": "pending-layout-plate" }
+    { "id": "family_label", "mode": "setup", "boundsFor": "family_row_*", "bounds": { "x": 240, "y": 258, "width": 200, "height": 72 }, "pitch": 92, "source": "EarTaskFamily.label" },
+    { "id": "root_key", "mode": "setup", "bounds": { "x": 508, "y": 562, "width": 555, "height": 78 }, "source": "static: all 12 keys", "note": "The generator cycles all twelve; the panel states it rather than offering a choice the engine does not read." },
+    { "id": "session_length", "mode": "setup", "bounds": { "x": 1196, "y": 600, "width": 150, "height": 55 }, "source": "ExercisePolicy.sessionLength" },
+    { "id": "midi_status", "mode": "both", "bounds": { "x": 268, "y": 868, "width": 290, "height": 57 }, "source": "EarTrainingUiState.midiStatus" },
+    { "id": "bar_right_panel", "mode": "both", "bounds": { "x": 962, "y": 868, "width": 273, "height": 57 }, "source": "progressLabel in training, family label in setup" },
+    { "id": "instruction", "mode": "training", "bounds": { "x": 368, "y": 636, "width": 800, "height": 48 }, "source": "EarExercise.instruction" },
+    { "id": "verdict", "mode": "training", "bounds": { "x": 368, "y": 692, "width": 800, "height": 56 }, "source": "EvaluationResult headline, revealed chord symbol, primary error, difference description" },
+    { "id": "key_button", "mode": "training", "bounds": { "x": 700, "y": 514, "width": 136, "height": 104 }, "source": "StimulusSpec.key.tonic", "assetSet": "runtime/note_buttons/", "note": "Seventeen spellings ship as separate assets, so Db and C# are never rendered as one another. Shown only for FUNCTION_HEARING, where the key is part of the question." }
   ],
-  "notLoadBearing": {
-    "note": "Assets in the library that this screen does not use. Listed so a future pass does not read their presence as a missing feature — STEP 5: the package is a component library, not a specification.",
-    "assets": [
-      "controls/knobs/*",
-      "controls/faders/*",
-      "controls/sliders/*",
-      "controls/waveforms/*",
-      "controls/icons/ruler.png",
-      "controls/toggles/*"
+  "unbound": {
+    "note": "Part of the approved plate, drawn, and deliberately given no hit region: the ear-training engine has no state behind them. Where these features arrive, they belong in these panels rather than somewhere new.",
+    "regions": [
+      { "id": "interval_settings", "bounds": { "x": 508, "y": 268, "width": 555, "height": 77 } },
+      { "id": "mode", "bounds": { "x": 508, "y": 420, "width": 254, "height": 77 } },
+      { "id": "direction", "bounds": { "x": 793, "y": 420, "width": 270, "height": 77 } },
+      { "id": "option_row_0", "bounds": { "x": 1128, "y": 272, "width": 262, "height": 58 } },
+      { "id": "option_row_1", "bounds": { "x": 1128, "y": 340, "width": 262, "height": 58 } },
+      { "id": "option_row_2", "bounds": { "x": 1128, "y": 408, "width": 262, "height": 58 } },
+      { "id": "option_row_3", "bounds": { "x": 1128, "y": 476, "width": 262, "height": 58 } }
     ],
-    "reason": "Tempo, range, instrument choice, inversion pools and direction are read from the authored ExercisePolicy today and are not player-adjustable. Adding a knob for them would be inventing a feature the engine does not have."
+    "reason": "Intervals, melodic/harmonic mode, direction, instrument choice and reference/count-in options are not modelled by DefaultEarExerciseGenerator or ExercisePolicy. Drawing a live switch over a setting the engine cannot read would be a lie the player finds by pressing it."
   },
   "runtimeRules": [
-    "Do not render source/moving_parts_master.png. It is the cutting sheet.",
-    "Do not bake note names into artwork. note_button_*_blank.png carries the face; the pitch is Compose text, spelled from application state.",
-    "Do not bake exercise number, verdict, accuracy, counts, chord symbols or MIDI state into artwork.",
-    "A control housing that never moves belongs in control_faces; only independently animated or state-swapped pieces get a runtime asset.",
-    "Rotate one knob asset around its centre rather than shipping an image per angle.",
-    "Sliders keep a static rail; only the thumb moves.",
-    "The setup console is not visible during training — the compact bar replaces it, and the room is preserved.",
-    "Touch targets meet the minimum size even where the drawn control is smaller."
+    "Do not render source/ear_training_moving_parts_master.png or the other master sheets.",
+    "Do not bake exercise number, verdict, accuracy, counts, chord symbols, key names or MIDI state into artwork.",
+    "The setup console is not visible during training; the compact bar replaces it and the room is preserved.",
+    "The bar occupies the same design rectangle in both modes, so the console lifts away without the bar moving.",
+    "Touch targets are inflated to a 48dp minimum around the drawn control's centre."
   ],
   "engineContract": {
     "viewModel": "com.harmonygates.eartraining.EarTrainingViewModel",
     "state": "EarTrainingUiState",
-    "intents": ["Play", "Next", "Skip", "Restart", "ChooseFamily"],
-    "note": "Presentation is replaceable; this contract is not. Touch and MIDI both resolve to the same StateFlow, so artwork state can never drift from the exercise engine.",
-    "notPersisted": "Ear attempts are not written to the attempt store yet — AttemptRecord is built around ExerciseInstance, which EarExercise has no equivalent of. Mastery and gate completion are unaffected by an ear session."
+    "intents": ["Play", "Next", "Skip", "Restart", "StartTraining", "ExitToSetup", "ChooseFamily"],
+    "note": "Touch and MIDI both resolve into one StateFlow, so artwork state cannot drift from the exercise engine and switching modes does not restart a session.",
+    "notPersisted": "Ear attempts are not written to the attempt store: AttemptRecord is built around ExerciseInstance, which EarExercise has no equivalent of. Mastery and gate completion are unaffected."
   }
 }
