@@ -58,8 +58,8 @@ These are the honest list. The status doc has the full version.
 6. **The visual design is half done.** Two screens are approved as painted plates; the design
    system's tokens and components exist and are tested, and the remaining screens have not been
    designed.
-7. **Export and import have no button.** The service exists and is tested; no settings screen
-   calls it.
+7. ~~Export and import have no button.~~ Settings now has one for each, writing and reading a
+   JSON file through the system file picker.
 8. **Accessibility has been passed over one screen.** The exercise screen. The others have not
    been audited.
 9. **Region 0's calibration is a chord exercise,** not the note-on/off, sustain and latency

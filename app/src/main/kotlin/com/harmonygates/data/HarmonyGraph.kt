@@ -3,6 +3,8 @@ package com.harmonygates.data
 import com.harmonygates.BuildConfig
 
 import android.content.Context
+import com.harmonygates.core.data.backup.ProgressBackupService
+import com.harmonygates.core.data.backup.RoomProgressBackupStore
 import com.harmonygates.core.data.content.AssetContentSource
 import com.harmonygates.core.data.content.ContentRepository
 import com.harmonygates.core.data.content.DefaultContentRepository
@@ -34,6 +36,9 @@ object HarmonyGraph {
     @Volatile
     private var preferences: HarmonyPreferences? = null
 
+    @Volatile
+    private var progressBackup: ProgressBackupService? = null
+
     fun database(context: Context): HarmonyDatabase =
         database ?: synchronized(this) {
             database ?: HarmonyDatabase.open(context).also { database = it }
@@ -52,6 +57,13 @@ object HarmonyGraph {
     fun preferences(context: Context): HarmonyPreferences =
         preferences ?: synchronized(this) {
             preferences ?: HarmonyPreferences(context).also { preferences = it }
+        }
+
+    fun progressBackup(context: Context): ProgressBackupService =
+        progressBackup ?: synchronized(this) {
+            progressBackup ?: ProgressBackupService(
+                RoomProgressBackupStore(database(context), progress(context)),
+            ).also { progressBackup = it }
         }
 
     /**

@@ -4,6 +4,7 @@ import com.harmonygates.core.data.backup.BackupFormatException
 import com.harmonygates.core.data.backup.ProgressBackup
 import com.harmonygates.core.data.backup.ProgressBackupService
 import com.harmonygates.core.data.backup.ProgressBackupStore
+import com.harmonygates.core.data.backup.retargetedTo
 import com.harmonygates.core.data.db.AttemptEntity
 import com.harmonygates.core.data.db.GateProgressEntity
 import com.harmonygates.core.data.db.ProfileEntity
@@ -131,6 +132,34 @@ class ProgressBackupTest {
     @Test
     fun `exporting a profile that does not exist says so`() = runTest {
         assertFailsWith<BackupFormatException> { service.export(ProfileId("nobody"), 0) }
+    }
+
+    @Test
+    fun `retargeting a backup changes only its profile id`() = runTest {
+        store.seed()
+        val original = service.export(PROFILE, clockMillis = EXPORTED_AT)
+
+        val retargeted = original.retargetedTo(ProfileId("this-install"))
+
+        assertEquals("this-install", retargeted.profile.id)
+        assertEquals(original.profile.displayName, retargeted.profile.displayName)
+        assertEquals(original.sessions, retargeted.sessions)
+        assertEquals(original.attempts, retargeted.attempts)
+        assertEquals(original.gateCompletions, retargeted.gateCompletions)
+    }
+
+    @Test
+    fun `importing a retargeted backup restores under the local profile, not the exported one`() = runTest {
+        store.seed()
+        val text = service.exportToJson(PROFILE, clockMillis = EXPORTED_AT)
+        val local = ProfileId("this-install")
+
+        val restored = FakeBackupStore()
+        val backup = ProgressBackupService(restored).parse(text).retargetedTo(local)
+        val result = ProgressBackupService(restored).import(backup)
+
+        assertEquals(local, result.profile)
+        assertEquals("this-install", restored.profile?.id)
     }
 
     @Test

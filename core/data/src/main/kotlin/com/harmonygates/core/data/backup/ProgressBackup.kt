@@ -104,6 +104,20 @@ public data class ImportResult(
 public class BackupFormatException(message: String) : IllegalArgumentException(message)
 
 /**
+ * Re-targets a parsed backup at a different local profile before [ProgressBackupService.import].
+ *
+ * Every install creates its own profile with a random id and its own `createdAtEpochMillis`
+ * (`RoomProgressRepository.currentProfile`). Importing a file unchanged would write a *second*
+ * profile row under the id it was exported with, rather than restore the one this install
+ * already has — and because the repository reads back whichever profile row is oldest, that
+ * second row could sit there unread: the import would appear to succeed and the player's screen
+ * would never change. This app keeps exactly one profile per install, so a caller restoring a
+ * backup should always retarget it at the local `currentProfile()` id first.
+ */
+public fun ProgressBackup.retargetedTo(profile: ProfileId): ProgressBackup =
+    copy(profile = this.profile.copy(id = profile.value))
+
+/**
  * Storage an export reads and an import writes.
  *
  * A narrow interface rather than the database itself, so the rules above — what is exported,

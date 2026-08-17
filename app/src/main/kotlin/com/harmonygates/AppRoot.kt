@@ -45,11 +45,13 @@ import com.harmonygates.midi.MidiDiagnosticsRoute
 import com.harmonygates.placeholder.PlaceholderScreen
 import com.harmonygates.progress.ProgressRoute
 import com.harmonygates.progression.ProgressionRunRoute
+import com.harmonygates.settings.SettingsRoute
 
 enum class AppScreen {
     Home,
     TheoryLab,
     MidiSetup,
+    Settings,
     ChordGate,
     ProgressionRun,
     Campaign,
@@ -81,7 +83,7 @@ fun AppRoot() {
     fun navigate(destination: HomeDestination) {
         when (destination) {
             HomeDestination.TheoryLab -> screen = AppScreen.TheoryLab
-            HomeDestination.Settings -> screen = AppScreen.MidiSetup
+            HomeDestination.Settings -> screen = AppScreen.Settings
             HomeDestination.ProgressionLab -> screen = AppScreen.ProgressionRun
             HomeDestination.Campaign,
             HomeDestination.NextGate,
@@ -139,6 +141,10 @@ fun AppRoot() {
 
             AppScreen.TheoryLab -> HarmonyLabRoute(modifier = Modifier.padding(insets))
             AppScreen.MidiSetup -> MidiDiagnosticsRoute(modifier = Modifier.padding(insets))
+            AppScreen.Settings -> SettingsRoute(
+                onOpenMidiSetup = { screen = AppScreen.MidiSetup },
+                modifier = Modifier.padding(insets),
+            )
             AppScreen.ChordGate -> ChordGateSession(gateId = gate, modifier = Modifier.padding(insets))
             AppScreen.ProgressionRun -> ProgressionRunRoute(onNavigate = ::navigate)
             AppScreen.Campaign -> CampaignRoute(

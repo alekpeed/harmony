@@ -102,11 +102,8 @@ enum class HomeDestination(
     Home(isImplemented = true, arrivesInPhase = 1),
 
     /**
-     * MIDI setup and diagnostics, from Phase 2.
-     *
-     * The approved home frame has no MIDI region of its own, and MIDI setup genuinely belongs
-     * under settings, so the Settings control opens it. When the full settings screen arrives
-     * in Phase 6 this becomes a row inside it rather than the whole destination.
+     * Settings, from Phase 2. MIDI setup and diagnostics is a row inside it; progress
+     * export/import (Phase 14's `ProgressBackupService`, finally reachable) is the other.
      */
     Settings(isImplemented = true, arrivesInPhase = 2),
 

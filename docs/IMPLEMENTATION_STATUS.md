@@ -105,10 +105,15 @@ Phase 14 lists seven deliverables. Three are done and four cannot be done here:
 
 1. **Four of seven deliverables need hardware.** They are the same four that have been blocked
    since phase 4, and they remain the release blocker.
-2. **Export and import are not reachable from any screen.** The service and its Room store both
-   exist and are tested; no settings screen calls them.
+2. ~~Export and import are not reachable from any screen.~~ Wired up post-phase: Settings now
+   has an Export and an Import button calling `ProgressBackupService` directly, with an import
+   always retargeted at this install's own profile first (`ProgressBackup.retargetedTo` —
+   otherwise a restored file's own profile id would write a second, unread profile row rather
+   than replace this device's). No settings-screen test harness exists in this environment to
+   exercise the Compose/ViewModel wiring; `ProgressBackupTest` covers the retargeting itself.
 3. **Only the exercise screen has had an accessibility pass.** The campaign, progress, MIDI
-   diagnostics and progression screens have not been audited.
+   diagnostics and progression screens have not been audited. Settings has not been audited
+   either, now that it exists.
 4. **Restoration is wired into the chord gate only.** The progression run has the same problem
    and not the same fix.
 
