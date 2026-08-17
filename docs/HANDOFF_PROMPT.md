@@ -1,6 +1,55 @@
-# Handoff: Android tablet full-screen artwork app
+# Handoff: Android tablet full-screen artwork app — resolved
 
-Paste everything below the line into ChatGPT. It is self-contained.
+This was written to be pasted into ChatGPT as a stuck problem. It did not end up needing that:
+all four symptoms below were root-caused and fixed in this repository the same day, most of it
+before this file was even committed. Kept as the record of what was actually wrong — "already
+tried and it didn't work" is worth less once the problem is gone, but "here is what it actually
+was" is worth keeping.
+
+## What was wrong, and what fixed it
+
+**1. Status bar and taskbar drawn over the full-bleed artwork on a normal launch.**
+`goFullScreen()` was reapplied in `onResume` and `onWindowFocusChanged` only. Returning from the
+notification shade or a permission dialog goes through neither, so a hidden bar could come back
+with nothing re-asking for it to hide — "it does it sometimes." Fixed by re-hiding on every
+relevant lifecycle callback (`5a15d02`), and made non-fatal regardless: `ArtworkScreen` no longer
+assumes the hide succeeded. It measures live `WindowInsets.safeDrawing` on every pass (`26b03ff`),
+so if a bar is visible anyway, the artwork contracts around it instead of letting the bar draw
+over a painted control.
+
+**2. Identical APK, different window depending on launch source.**
+`android:configChanges="orientation|screenSize|screenLayout|..."` told Android to never recreate
+the activity when its window changed shape, and `android:launchMode="singleTask"` let a new
+launch reuse a task whose bounds belonged to a previous, differently sized invocation. Together,
+an activity opened by a package installer or a file-transfer app could end up laid out for a
+window it was no longer in. Both attributes are gone from the manifest (`ff039e9`). Separately,
+`ArtworkScreen` stopped sizing its frame with `Modifier.aspectRatio` against a container that
+could report a stale size, and now derives the frame directly from the `BoxWithConstraints`
+constraints reaching that exact composition (`26b03ff`) — a resize produces a correct frame on
+the next measure pass whether or not the activity itself was recreated.
+
+**3. Portrait left a large dead band under a letterboxed landscape frame.**
+`HarmonyLandscape`, which used to rotate the whole interface 90° to compensate, is deleted — it
+could not tell a portrait tablet from a small portrait-shaped window and made the second case
+worse, exactly as flagged in "already tried" below. `RequireLandscape` (now `RotateToLandscape.kt`,
+`5a15d02`) measures its own live constraints and, when the window is taller than it is wide, shows
+a "Turn the tablet" message instead of fitting the 1536×1024 frame into whatever space is left.
+
+**4. Tapping into Campaign or Progress crashed with no trace.**
+Root cause found: `CampaignViewModel` and `ProgressViewModel` declared `Application` plus Kotlin
+default constructor parameters (e.g.
+`private val progress: ProgressRepository = HarmonyGraph.progress(application)`). Android's
+default `ViewModelProvider` factory builds an `AndroidViewModel` by reflecting for a constructor
+whose only parameter is `Application`; a Kotlin default parameter does not generate that overload,
+so the factory found no matching constructor and every entry into either Room/DataStore-backed
+screen threw before a line of the screen's own code ran. Fixed by moving the dependency lookups
+into the constructor body instead of the signature (`6655135`, `de68ca5`). Separately, `CrashLog`
+(`5a15d02`) now writes the stack trace to disk as it happens, and `AppRoot` shows it, selectable,
+on the next launch — so whatever crashes next says which line.
+
+## Original handoff text
+
+Kept verbatim below for the record.
 
 ---
 
