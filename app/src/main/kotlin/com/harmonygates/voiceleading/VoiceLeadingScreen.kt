@@ -3,9 +3,14 @@ package com.harmonygates.voiceleading
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,6 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.harmonygates.R
@@ -27,6 +33,14 @@ import com.harmonygates.artwork.Plate
 import com.harmonygates.core.designsystem.theme.HarmonyTheme
 import com.harmonygates.core.music.performance.FeedbackModel
 import com.harmonygates.exercise.describe
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
+import com.harmonygates.voiceleadingmenu.VoiceLeadingDifficulty
+import com.harmonygates.voiceleadingmenu.VoiceLeadingExercise
+import com.harmonygates.voiceleadingmenu.VoiceLeadingMenu
+import com.harmonygates.voiceleadingmenu.VoiceLeadingMenuState
+import com.harmonygates.voiceleadingmenu.VoiceLeadingMotion
+import com.harmonygates.voiceleadingmenu.VoiceLeadingRange
 
 /**
  * Voice Leading, wearing the approved control library.
@@ -64,6 +78,14 @@ fun VoiceLeadingScreen(
     onExit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // The menu owns its own expand/collapse and selections, exactly as supplied. It is the setup
+    // surface: START EXERCISE hands the whole configuration to the engine and collapses, which is
+    // what reveals the practice surface beneath. Saved across configuration change so rotating the
+    // tablet does not reset a chosen setup.
+    var menuState by rememberSaveable(stateSaver = VoiceLeadingMenuSaver) {
+        mutableStateOf(VoiceLeadingMenuState())
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         DesignSurface {
             // Environment only. Nothing about the exercise lives in this image.
@@ -71,11 +93,22 @@ fun VoiceLeadingScreen(
 
             NavBar(state, onExit)
 
-            when (state.mode) {
-                VoiceLeadingMode.SETUP -> SetupSurface(state, onIntent)
-                VoiceLeadingMode.PRACTICE -> PracticeSurface(state, onIntent)
+            // Only the practice surface is drawn behind the menu now; the menu is the setup UI,
+            // and drawing the old panel of chips underneath it would be two ways to say the same
+            // thing with one of them hidden.
+            if (state.mode == VoiceLeadingMode.PRACTICE) {
+                PracticeSurface(state, onIntent)
             }
         }
+
+        VoiceLeadingMenu(
+            state = menuState,
+            onStateChange = { menuState = it },
+            onStartExercise = { onIntent(VoiceLeadingIntent.StartFromMenu(it)) },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 18.dp),
+        )
     }
 }
 
@@ -104,115 +137,6 @@ private fun DesignScope.NavBar(state: VoiceLeadingUiState, onExit: () -> Unit) {
     DesignImage(VoiceLeadingLayout.IconButton, home)
     DesignImage(VoiceLeadingLayout.IconHome, home.inflated(-14f))
     DesignHit(home, "Leave voice leading", onExit)
-}
-
-// --- Setup, on the landing template ---------------------------------------------------------------
-
-@Composable
-private fun DesignScope.SetupSurface(
-    state: VoiceLeadingUiState,
-    onIntent: (VoiceLeadingIntent) -> Unit,
-) {
-    val intro = VoiceLeadingLayout.ModuleIntro
-    DesignImage(VoiceLeadingLayout.PanelControl, intro)
-    Label(
-        text = "Move between chords with the least motion that works.",
-        rect = DesignRect(intro.x + 34f, intro.y + 40f, intro.width - 68f, 120f),
-        size = 24f,
-        colour = HarmonyTheme.colors.textPrimary,
-        align = TextAlign.Start,
-        lines = 3,
-    )
-    Label(
-        text = "The app plays where your hand starts. Play the next chord, moving as little as " +
-            "you can. Every move is measured against the smoothest one available.",
-        rect = DesignRect(intro.x + 34f, intro.y + 158f, intro.width - 68f, 120f),
-        size = 17f,
-        colour = HarmonyTheme.colors.onSurfaceMuted,
-        align = TextAlign.Start,
-        lines = 4,
-    )
-
-    // Progress region: what a run will be, before it is one.
-    val progress = VoiceLeadingLayout.Progress
-    DesignImage(VoiceLeadingLayout.PanelStats, progress)
-    Label(
-        text = state.template.title,
-        rect = DesignRect(progress.x + 34f, progress.y + 46f, progress.width - 68f, 54f),
-        size = 30f,
-        colour = HarmonyTheme.colors.textPrimary,
-        weight = FontWeight.SemiBold,
-        align = TextAlign.Start,
-    )
-    Label(
-        text = "${state.style.label} · ${state.availableStyles.size} voicings available",
-        rect = DesignRect(progress.x + 34f, progress.y + 108f, progress.width - 68f, 44f),
-        size = 18f,
-        colour = HarmonyTheme.colors.onSurfaceMuted,
-        align = TextAlign.Start,
-    )
-    state.message?.let { message ->
-        Label(
-            text = message,
-            rect = DesignRect(progress.x + 34f, progress.y + 160f, progress.width - 68f, 80f),
-            size = 16f,
-            colour = HarmonyTheme.colors.feedbackWarning,
-            align = TextAlign.Start,
-            lines = 3,
-        )
-    }
-
-    // Practice modes: the two selectors plus the button that commits them.
-    val modes = VoiceLeadingLayout.PracticeModes
-    DesignImage(VoiceLeadingLayout.PanelExerciseLarge, modes)
-    Label(
-        text = "Progression",
-        rect = DesignRect(modes.x + 40f, modes.y + 22f, 300f, 36f),
-        size = 18f,
-        colour = HarmonyTheme.colors.onSurfaceMuted,
-        align = TextAlign.Start,
-    )
-    state.availableTemplates.forEachIndexed { index, template ->
-        Chip(
-            rect = VoiceLeadingLayout.chip(modes, column = index, row = 0),
-            label = template.title,
-            selected = template.id == state.template.id,
-            description = "${template.title} progression",
-            onClick = { onIntent(VoiceLeadingIntent.ChooseProgression(template)) },
-        )
-    }
-
-    Label(
-        text = "Voicing",
-        rect = DesignRect(modes.x + 40f, modes.y + 140f, 300f, 36f),
-        size = 18f,
-        colour = HarmonyTheme.colors.onSurfaceMuted,
-        align = TextAlign.Start,
-    )
-    state.availableStyles.forEachIndexed { index, style ->
-        Chip(
-            rect = VoiceLeadingLayout.chip(modes, column = index, row = 1)
-                .let { DesignRect(it.x, it.y + 76f, it.width, it.height) },
-            label = style.label,
-            selected = style == state.style,
-            description = "${style.label} voicing",
-            onClick = { onIntent(VoiceLeadingIntent.ChooseStyle(style)) },
-        )
-    }
-
-    PrimaryButton(
-        rect = DesignRect(
-            x = modes.x + 40f,
-            y = modes.y + modes.height - VoiceLeadingLayout.PRIMARY_BUTTON_HEIGHT - 40f,
-            width = VoiceLeadingLayout.PRIMARY_BUTTON_WIDTH,
-            height = VoiceLeadingLayout.PRIMARY_BUTTON_HEIGHT,
-        ),
-        label = "Start",
-        description = "Start the voice leading run",
-        onClick = { onIntent(VoiceLeadingIntent.StartExercise) },
-    )
-
-    MidiPill(state, VoiceLeadingLayout.MidiStatusLanding)
 }
 
 // --- Practice, on the practice template ------------------------------------------------------------
@@ -663,6 +587,35 @@ private fun noteName(midi: Int): String = NOTE_NAMES[midi.mod(NOTE_NAMES.size)]
 private val NOTE_NAMES = listOf("C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B")
 
 private const val MAX_TOKENS = 6
+
+/**
+ * Keeps the menu's selections across rotation.
+ *
+ * `rememberSaveable` needs a Saver for a type it does not know how to bundle, and losing a
+ * half-configured setup because the tablet moved would be its own bug.
+ */
+private val VoiceLeadingMenuSaver: Saver<VoiceLeadingMenuState, Any> = listSaver(
+    save = {
+        listOf(
+            it.exercise.name, it.key, it.motion.name, it.range.name, it.difficulty.name,
+            it.tempoBpm, it.repetitions, it.metronome, it.showHints, it.collapsed,
+        )
+    },
+    restore = {
+        VoiceLeadingMenuState(
+            exercise = VoiceLeadingExercise.valueOf(it[0] as String),
+            key = it[1] as String,
+            motion = VoiceLeadingMotion.valueOf(it[2] as String),
+            range = VoiceLeadingRange.valueOf(it[3] as String),
+            difficulty = VoiceLeadingDifficulty.valueOf(it[4] as String),
+            tempoBpm = it[5] as Int,
+            repetitions = it[6] as Int,
+            metronome = it[7] as Boolean,
+            showHints = it[8] as Boolean,
+            collapsed = it[9] as Boolean,
+        )
+    },
+)
 
 @Preview(showBackground = true, widthDp = 1024, heightDp = 683)
 @Composable

@@ -27,6 +27,8 @@ import com.harmonygates.core.music.time.SystemMonotonicClock
 import com.harmonygates.core.music.voiceleading.VoiceLeadingAnalysis
 import com.harmonygates.core.music.voiceleading.VoiceLeadingAnalyzer
 import com.harmonygates.core.music.voicing.Voicing
+import com.harmonygates.voiceleadingmenu.VoiceLeadingExercise
+import com.harmonygates.voiceleadingmenu.VoiceLeadingMenuState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,6 +49,9 @@ sealed interface VoiceLeadingIntent {
     data object Skip : VoiceLeadingIntent
 
     data object StartExercise : VoiceLeadingIntent
+
+    /** Start from the setup menu, carrying its complete configuration. */
+    data class StartFromMenu(val menu: VoiceLeadingMenuState) : VoiceLeadingIntent
 
     data object ExitToSetup : VoiceLeadingIntent
 
@@ -105,6 +110,8 @@ data class VoiceLeadingUiState(
     val attempted: Int = 0,
     val correct: Int = 0,
     val message: String? = null,
+    /** The setup menu's configuration, kept whole even where the engine cannot yet read it. */
+    val menu: VoiceLeadingMenuState? = null,
 ) {
     val progress: Float get() = if (stepCount == 0) 0f else stepNumber.toFloat() / stepCount
     val accuracy: Float? get() = if (attempted == 0) null else correct.toFloat() / attempted
@@ -181,6 +188,7 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
             attempted = current.attempted,
             correct = current.correct,
             message = current.message,
+            menu = current.menu,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), VoiceLeadingUiState())
 
@@ -230,6 +238,7 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
             VoiceLeadingIntent.PlaySource -> playSource()
             VoiceLeadingIntent.Next, VoiceLeadingIntent.Skip -> advance()
             VoiceLeadingIntent.StartExercise -> begin()
+            is VoiceLeadingIntent.StartFromMenu -> beginFromMenu(intent.menu)
             VoiceLeadingIntent.ExitToSetup -> returnToSetup()
             is VoiceLeadingIntent.ChooseProgression -> {
                 if (run.value.mode == VoiceLeadingMode.SETUP) {
@@ -244,21 +253,74 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-    private fun begin() {
+    private fun begin() = start(run.value.template, run.value.style, run.value.key, moves = null)
+
+    /**
+     * Starts from the setup menu, honouring everything the engine can act on.
+     *
+     * The menu offers more than the engine reads today. Key, exercise shape, repetition count and
+     * tempo all reach the run; voice motion, register, difficulty, metronome and hints do not,
+     * because nothing in `DefaultProgressionGenerator` or the evaluator consumes them yet. Rather
+     * than quietly drop them, the whole [VoiceLeadingMenuState] is kept on the run state and
+     * surfaced in the UI state, so the configuration a player chose survives and the day the
+     * engine grows those knobs the value is already there.
+     */
+    private fun beginFromMenu(menu: VoiceLeadingMenuState) {
+        val key = SpelledPitchClass.parseOrNull(menu.key) ?: DEFAULT_KEY
+        run.value = run.value.copy(menu = menu, key = key, style = styleFor(menu.exercise))
+        start(
+            template = run.value.template,
+            style = styleFor(menu.exercise),
+            key = key,
+            moves = menu.repetitions,
+            tempoBpm = menu.tempoBpm,
+        )
+    }
+
+    /**
+     * The menu's exercise names map onto the voicing shapes the generator can build.
+     *
+     * Drop 2, triad movement and common-tone work are named in the menu and are not shapes
+     * `VoicingStyle` distinguishes, so they run as any correct voicing rather than being refused:
+     * the motion measurement is still the point, and an unbuildable shape would just be a dead
+     * option. The choice itself is preserved on the state either way.
+     */
+    private fun styleFor(exercise: VoiceLeadingExercise): VoicingStyle = when (exercise) {
+        VoiceLeadingExercise.GuideTones -> VoicingStyle.GUIDE_TONES
+        VoiceLeadingExercise.Shells -> VoicingStyle.SHELL
+        VoiceLeadingExercise.SeventhChords -> VoicingStyle.ROOTLESS_A
+        VoiceLeadingExercise.Triads -> VoicingStyle.ROOT_POSITION
+        VoiceLeadingExercise.DropTwo, VoiceLeadingExercise.CommonTone -> VoicingStyle.ANY_VOICING
+    }
+
+    private fun start(
+        template: ProgressionTemplate,
+        style: VoicingStyle,
+        key: SpelledPitchClass,
+        moves: Int?,
+        tempoBpm: Int? = null,
+    ) {
         val current = run.value
-        val progression = progressionFor(current.template, current.style)
-        if (progression == null || progression.size < 2) {
+        val placed = progressionFor(template, style, key)
+        if (placed == null || placed.size < 2) {
             run.value = current.copy(
                 message = "That progression could not be placed in this key with this voicing.",
             )
             return
         }
+        // A repetition count longer than the progression cycles it, so asking for sixteen moves
+        // through a four-chord ii-V-I keeps going round rather than stopping after three.
+        val progression = tempoBpm?.let { placed.copy(tempoBpm = it) } ?: placed
         run.value = current.copy(
             mode = VoiceLeadingMode.PRACTICE,
             phase = VoiceLeadingPhase.READY,
             progression = progression,
-            // Each pair of adjacent chords is one move, so a four-chord run asks three questions.
-            stepCount = progression.size - 1,
+            template = template,
+            style = style,
+            key = key,
+            // Each pair of adjacent chords is one move, so a four-chord run asks three questions
+            // unless the menu asked for a specific number.
+            stepCount = moves ?: (progression.size - 1),
             index = 0,
             attempted = 0,
             correct = 0,
@@ -283,8 +345,8 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
     private fun present(index: Int) {
         val current = run.value
         val progression = current.progression ?: return
-        val sourceEvent = progression.eventAt(index) ?: return
-        val targetEvent = progression.eventAt(index + 1) ?: return
+        val sourceEvent = progression.eventAt(index.mod(progression.size)) ?: return
+        val targetEvent = progression.eventAt((index + 1).mod(progression.size)) ?: return
 
         val source = realizer.generateVoicings(sourceEvent.chord, sourceEvent.policy).firstOrNull()
         if (source == null) {
@@ -355,8 +417,12 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
         present(next)
     }
 
-    private fun progressionFor(template: ProgressionTemplate, style: VoicingStyle): Progression? =
-        when (val placed = generator.generate(template, KeyContext(DEFAULT_KEY), style)) {
+    private fun progressionFor(
+        template: ProgressionTemplate,
+        style: VoicingStyle,
+        key: SpelledPitchClass,
+    ): Progression? =
+        when (val placed = generator.generate(template, KeyContext(key), style)) {
             is SpellingResult.Spelled -> placed.value
             is SpellingResult.Overflow -> null
         }
@@ -381,6 +447,7 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
         val phase: VoiceLeadingPhase = VoiceLeadingPhase.READY,
         val template: ProgressionTemplate = ProgressionTemplates.MajorTwoFiveOne,
         val style: VoicingStyle = VoicingStyle.ROOTLESS_A,
+        val key: SpelledPitchClass = DEFAULT_KEY,
         val progression: Progression? = null,
         val index: Int = 0,
         val stepCount: Int = 0,
@@ -394,6 +461,7 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
         val attempted: Int = 0,
         val correct: Int = 0,
         val message: String? = null,
+        val menu: VoiceLeadingMenuState? = null,
     )
 
     private companion object {
