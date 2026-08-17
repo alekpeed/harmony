@@ -1,5 +1,6 @@
 package com.harmonygates
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
@@ -21,14 +22,15 @@ import com.harmonygates.core.designsystem.theme.HarmonyTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         CrashLog.install(this, System.currentTimeMillis())
+        // Belt and braces with the manifest: some launchers hand an activity a window before the
+        // manifest request is applied, and asking again here costs nothing.
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         goFullScreen()
         setContent {
             HarmonyTheme(reducedMotion = animationsAreOff()) {
-                RequireLandscape {
-                    AppRoot()
-                }
+                AppRoot()
             }
         }
     }

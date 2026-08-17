@@ -19,10 +19,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HarmonyGates">
 
+        <property
+            android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_ORIENTATION"
+            android:value="true" />
+
         <!--
-          Landscape is requested because every approved frame is composed for a landscape tablet.
-          Android 16 may decline that request on large screens, so RequireLandscape remains the
-          runtime guard instead of attempting to rotate or stretch the artwork.
+          Landscape, locked. Every approved frame is composed at 1536x1024 and there is no
+          portrait design, so the app does not follow the tablet: turning it sideways or upside
+          down must not change what is on screen.
+
+          targetSdk 36 is the complication. Android 16 ignores an activity's orientation request
+          on large screens, which is how a portrait window reached this app at all. The
+          PROPERTY_COMPAT_ALLOW_RESTRICTED_ORIENTATION property below opts back out of that
+          change; it is honoured where the platform supports it and harmlessly ignored where it
+          does not, so `landscape` is still the request and this is the thing that makes the
+          platform respect it.
 
           Do not opt out of activity recreation for orientation/screen-size/density changes here.
           The activity contains saveable Compose state, and recreation is the reliable boundary
@@ -40,7 +51,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:screenOrientation="sensorLandscape"
+            android:screenOrientation="landscape"
             android:resizeableActivity="true"
             android:windowSoftInputMode="adjustNothing"
             tools:ignore="LockedOrientationActivity,DiscouragedApi"
