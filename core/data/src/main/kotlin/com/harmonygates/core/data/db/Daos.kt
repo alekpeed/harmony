@@ -154,6 +154,18 @@ public interface GateProgressDao {
 }
 
 @Dao
+public interface RelativePitchLevelStatDao {
+    @Upsert
+    public suspend fun upsert(stat: RelativePitchLevelStatEntity)
+
+    @Query("SELECT * FROM relative_pitch_level_stats WHERE profileId = :profileId")
+    public fun observeAll(profileId: String): Flow<List<RelativePitchLevelStatEntity>>
+
+    @Query("SELECT * FROM relative_pitch_level_stats WHERE profileId = :profileId AND levelId = :levelId")
+    public suspend fun find(profileId: String, levelId: String): RelativePitchLevelStatEntity?
+}
+
+@Dao
 public interface UnlockDao {
     @Upsert
     public suspend fun upsertAll(unlocks: List<UnlockEntity>)

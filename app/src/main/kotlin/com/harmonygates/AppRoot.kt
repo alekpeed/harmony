@@ -46,6 +46,7 @@ import com.harmonygates.midi.MidiDiagnosticsRoute
 import com.harmonygates.placeholder.PlaceholderScreen
 import com.harmonygates.progress.ProgressRoute
 import com.harmonygates.progression.ProgressionRunRoute
+import com.harmonygates.relativepitch.RelativePitchRoute
 import com.harmonygates.settings.SettingsRoute
 import com.harmonygates.library.LibraryRoute
 import com.harmonygates.menu.MenuScreen
@@ -58,6 +59,7 @@ enum class AppScreen {
     MidiSetup,
     Settings,
     ChordGate,
+    RelativePitch,
     EarTraining,
     SightReading,
     VoiceLeading,
@@ -94,7 +96,9 @@ fun AppRoot() {
         when (destination) {
             HomeDestination.TheoryLab -> screen = AppScreen.TheoryLab
             HomeDestination.Settings -> screen = AppScreen.Settings
-            HomeDestination.EarTraining -> screen = AppScreen.EarTraining
+            // The ladder is the entry point now; it hands off to the keyboard console
+            // (AppScreen.EarTraining) itself once its last two levels are reached.
+            HomeDestination.EarTraining -> screen = AppScreen.RelativePitch
             HomeDestination.VoicingLab -> screen = AppScreen.VoiceLeading
             HomeDestination.SightReading -> screen = AppScreen.SightReading
             HomeDestination.Library -> screen = AppScreen.Library
@@ -167,9 +171,13 @@ fun AppRoot() {
                 modifier = Modifier.padding(insets),
             )
             AppScreen.ChordGate -> ChordGateSession(gateId = gate, modifier = Modifier.padding(insets))
-            // Full-bleed, like Home and Progression Run: the artwork insets itself.
-            AppScreen.EarTraining -> EarTrainingRoute(
+            AppScreen.RelativePitch -> RelativePitchRoute(
                 onExit = { screen = AppScreen.Home },
+                onOpenFullTrainer = { screen = AppScreen.EarTraining },
+                modifier = Modifier.padding(insets),
+            )
+            AppScreen.EarTraining -> EarTrainingRoute(
+                onExit = { screen = AppScreen.RelativePitch },
                 onOpenSettings = { screen = AppScreen.Settings },
             )
             AppScreen.VoiceLeading -> VoiceLeadingRoute(onExit = { screen = AppScreen.Home })

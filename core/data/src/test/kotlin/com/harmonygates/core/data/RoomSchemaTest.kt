@@ -67,6 +67,7 @@ class RoomSchemaTest {
                 "gate_progress",
                 "unlocks",
                 "review_items",
+                "relative_pitch_level_stats",
             ),
             tables.toSet(),
         )

@@ -7,17 +7,14 @@ import com.harmonygates.core.music.exercise.ExercisePolicy
 import com.harmonygates.core.music.exercise.ExerciseRequirement
 import com.harmonygates.core.music.key.Functions
 import com.harmonygates.core.music.key.KeyContext
-import com.harmonygates.core.music.pitch.MidiNote
-import com.harmonygates.core.music.pitch.SpelledPitchClass
 import com.harmonygates.core.music.pitch.SpellingResult
 import com.harmonygates.core.music.random.DefaultSeededRandomFactory
 import com.harmonygates.core.music.random.RandomSource
 import com.harmonygates.core.music.random.SeededRandomFactory
 import com.harmonygates.core.music.realize.ChordRealizer
+import com.harmonygates.core.music.realize.ComfortableVoicing
 import com.harmonygates.core.music.realize.DefaultChordRealizer
 import com.harmonygates.core.music.voicing.Voicing
-import com.harmonygates.core.music.voicing.VoicingPolicy
-import kotlin.math.abs
 
 /** How a stimulus should be rendered. Chosen by the gate, not by the generator. */
 public data class StimulusSettings(
@@ -223,36 +220,11 @@ public class DefaultEarExerciseGenerator(
 
     private fun voicingFor(chord: ChordSpec, policy: ExercisePolicy): Voicing? = preferredVoicing(chord, policy)
 
-    /**
-     * The voicing a player would actually want to hear: the tightest (closed) shape available,
-     * placed in the octave closest to [COMFORTABLE_BASS_MIDI].
-     *
-     * `ChordRealizer.generateVoicings` enumerates a candidate in every octave the policy's pitch
-     * range admits and orders them tightest-span-first, lowest-bass-second — a tie-break built
-     * for chord-gate reading (lower is safer to sight-read), not for playback. Taken as-is here,
-     * that tie-break always won at the *bottom* of a two-octave range: an ear-training stimulus
-     * a full octave and more below middle C, which is both harder to sing back and, on a
-     * synthesised tone, noticeably harsher than the same chord a register or two higher. This
-     * re-ranks by distance from a comfortable target instead of by raw pitch.
-     */
     private fun preferredVoicing(
         chord: ChordSpec,
         policy: ExercisePolicy,
         matching: (Voicing) -> Boolean = { true },
-    ): Voicing? {
-        val candidates = realizer.generateVoicings(chord, policyFor(policy)).filter(matching)
-        if (candidates.isEmpty()) return null
-        val tightest = candidates.minOf { it.metadata.spanSemitones }
-        return candidates
-            .filter { it.metadata.spanSemitones == tightest }
-            .minByOrNull { abs(it.bass.value - COMFORTABLE_BASS_MIDI) }
-    }
-
-    private fun policyFor(policy: ExercisePolicy): VoicingPolicy =
-        policy.voicingPolicy ?: VoicingPolicy(
-            requiredDegrees = emptySet(),
-            pitchRange = policy.pitchRange,
-        )
+    ): Voicing? = ComfortableVoicing.preferredVoicing(chord, realizer, policy.pitchRange, matching)
 
     private fun requirementFor(chord: ChordSpec) = ExerciseRequirement.PitchSet(
         pitchClasses = realizer.chordTones(chord).toSet(),
@@ -282,16 +254,9 @@ public class DefaultEarExerciseGenerator(
         // the same way `chordFrom` does, rather than let an unspellable key crash the exercise.
         if (realizer.trySpell(spec) !is SpellingResult.Spelled) return null
         val spelling = realizer.spelledDegrees(spec)[degree] ?: return null
-        val note = nearestNote(spelling, COMFORTABLE_BASS_MIDI, policy.pitchRange)
+        val note = ComfortableVoicing.nearestNote(spelling, policy.pitchRange)
         val voicing = realizer.analyze(spec, listOf(note))
         return StimulusEvent(voicing = voicing, atMillis = 0, velocities = listOf(settings.velocity))
-    }
-
-    /** The instance of [pitchClass] closest to [target], within [range]. */
-    private fun nearestNote(pitchClass: SpelledPitchClass, target: Int, range: IntRange): MidiNote {
-        val degreeClass = pitchClass.pitchClass.value
-        val octaves = range.filter { it.mod(SEMITONES_PER_OCTAVE) == degreeClass }
-        return MidiNote(octaves.minByOrNull { abs(it - target) } ?: target.coerceIn(range))
     }
 
     /**
@@ -309,10 +274,6 @@ public class DefaultEarExerciseGenerator(
     )
 
     private companion object {
-        /** Middle C. The register a reference note or a close voicing is placed nearest to. */
-        const val COMFORTABLE_BASS_MIDI = 60
-        const val SEMITONES_PER_OCTAVE = 12
-
         /** How long the reference note rings before the chord it introduces replaces it. */
         const val ANCHOR_DURATION_MILLIS = 700L
     }

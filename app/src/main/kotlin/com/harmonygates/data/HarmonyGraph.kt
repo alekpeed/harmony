@@ -12,6 +12,8 @@ import com.harmonygates.core.data.db.HarmonyDatabase
 import com.harmonygates.core.data.prefs.HarmonyPreferences
 import com.harmonygates.core.data.progress.ProgressRepository
 import com.harmonygates.core.data.progress.RoomProgressRepository
+import com.harmonygates.core.data.relativepitch.RelativePitchProgressRepository
+import com.harmonygates.core.data.relativepitch.RoomRelativePitchProgressRepository
 
 /**
  * The app's singletons, in one place.
@@ -39,6 +41,9 @@ object HarmonyGraph {
     @Volatile
     private var progressBackup: ProgressBackupService? = null
 
+    @Volatile
+    private var relativePitchProgress: RelativePitchProgressRepository? = null
+
     fun database(context: Context): HarmonyDatabase =
         database ?: synchronized(this) {
             database ?: HarmonyDatabase.open(context).also { database = it }
@@ -64,6 +69,12 @@ object HarmonyGraph {
             progressBackup ?: ProgressBackupService(
                 RoomProgressBackupStore(database(context), progress(context)),
             ).also { progressBackup = it }
+        }
+
+    fun relativePitchProgress(context: Context): RelativePitchProgressRepository =
+        relativePitchProgress ?: synchronized(this) {
+            relativePitchProgress ?: RoomRelativePitchProgressRepository(database(context))
+                .also { relativePitchProgress = it }
         }
 
     /**

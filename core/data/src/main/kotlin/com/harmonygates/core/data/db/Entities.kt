@@ -185,6 +185,35 @@ public data class GateProgressEntity(
     val sessionsPlayed: Int,
 )
 
+/**
+ * Accuracy evidence for one rung of the relative-pitch ladder (`core.music.relativepitch`).
+ *
+ * Whether a level counts as mastered, and therefore whether the one after it is unlocked, is
+ * decided from these two counters every time the ladder is drawn — the same "evidence, not a
+ * flag" rule [GateProgressEntity] follows, so a stored status can never disagree with what it was
+ * computed from.
+ */
+@Entity(
+    tableName = "relative_pitch_level_stats",
+    primaryKeys = ["profileId", "levelId"],
+    foreignKeys = [
+        ForeignKey(
+            entity = ProfileEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["profileId"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("profileId")],
+)
+public data class RelativePitchLevelStatEntity(
+    val profileId: String,
+    val levelId: String,
+    val attempts: Int,
+    val correct: Int,
+    val lastAnsweredAtEpochMillis: Long,
+)
+
 /** A reward that has been earned. Kept so an unlock survives a content edit that removes it. */
 @Entity(
     tableName = "unlocks",
