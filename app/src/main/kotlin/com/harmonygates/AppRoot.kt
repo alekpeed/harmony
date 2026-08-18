@@ -47,6 +47,9 @@ import com.harmonygates.placeholder.PlaceholderScreen
 import com.harmonygates.progress.ProgressRoute
 import com.harmonygates.progression.ProgressionRunRoute
 import com.harmonygates.settings.SettingsRoute
+import com.harmonygates.library.LibraryRoute
+import com.harmonygates.menu.MenuScreen
+import com.harmonygates.sightreading.SightReadingRoute
 import com.harmonygates.voiceleading.VoiceLeadingRoute
 
 enum class AppScreen {
@@ -56,7 +59,10 @@ enum class AppScreen {
     Settings,
     ChordGate,
     EarTraining,
+    SightReading,
     VoiceLeading,
+    Library,
+    Menu,
     ProgressionRun,
     Campaign,
     Progress,
@@ -90,6 +96,15 @@ fun AppRoot() {
             HomeDestination.Settings -> screen = AppScreen.Settings
             HomeDestination.EarTraining -> screen = AppScreen.EarTraining
             HomeDestination.VoicingLab -> screen = AppScreen.VoiceLeading
+            HomeDestination.SightReading -> screen = AppScreen.SightReading
+            HomeDestination.Library -> screen = AppScreen.Library
+            HomeDestination.Menu -> screen = AppScreen.Menu
+            // One exercise drawn from what you are weakest at. The planner already orders a
+            // session that way, so the daily challenge is quick practice with no gate around it.
+            HomeDestination.DailyChallenge -> {
+                gate = null
+                screen = AppScreen.ChordGate
+            }
             HomeDestination.ProgressionLab -> screen = AppScreen.ProgressionRun
             HomeDestination.Campaign,
             HomeDestination.NextGate,
@@ -158,6 +173,19 @@ fun AppRoot() {
                 onOpenSettings = { screen = AppScreen.Settings },
             )
             AppScreen.VoiceLeading -> VoiceLeadingRoute(onExit = { screen = AppScreen.Home })
+            AppScreen.SightReading -> SightReadingRoute(
+                onExit = { screen = AppScreen.Home },
+                modifier = Modifier.padding(insets),
+            )
+            AppScreen.Library -> LibraryRoute(
+                onExit = { screen = AppScreen.Home },
+                modifier = Modifier.padding(insets),
+            )
+            AppScreen.Menu -> MenuScreen(
+                onNavigate = ::navigate,
+                onExit = { screen = AppScreen.Home },
+                modifier = Modifier.padding(insets),
+            )
             AppScreen.ProgressionRun -> ProgressionRunRoute(onNavigate = ::navigate)
             AppScreen.Campaign -> CampaignRoute(
                 modifier = Modifier.padding(insets),

@@ -113,26 +113,16 @@ enum class HomeDestination(
     /** Quick practice runs the same loop with no gate around it. */
     QuickPractice(isImplemented = true, arrivesInPhase = 4),
 
-    Menu(
-        isImplemented = false,
-        arrivesInPhase = 7,
-        summary = "A slide-out menu for everything the sidebar does not have room for.",
-        engineStatus = "Every destination it would list is already reachable from the home " +
-            "screen, so this is a convenience rather than a door.",
-    ),
+    /** Everything the app can do, listed. Generated from this enum, so it cannot fall behind. */
+    Menu(isImplemented = true, arrivesInPhase = 7),
 
     /** The campaign map, from Phase 6. Next Gate and Resume open it at the gate to play. */
     Campaign(isImplemented = true, arrivesInPhase = 6),
     NextGate(isImplemented = true, arrivesInPhase = 6),
     Resume(isImplemented = true, arrivesInPhase = 6),
 
-    DailyChallenge(
-        isImplemented = false,
-        arrivesInPhase = 13,
-        summary = "One exercise a day, drawn from what you are weakest at.",
-        engineStatus = "The mastery model already records per-skill weakness and schedules " +
-            "review, so the selection this needs is a query rather than new code.",
-    ),
+    /** Quick practice, which the planner already orders weakest-first. */
+    DailyChallenge(isImplemented = true, arrivesInPhase = 13),
 
     /** Mastery and attempt history, from Phase 5. */
     Progress(isImplemented = true, arrivesInPhase = 5),
@@ -142,14 +132,8 @@ enum class HomeDestination(
      * authored families through the synthesised practice tone. Attempts are not yet recorded.
      */
     EarTraining(isImplemented = true, arrivesInPhase = 8),
-    SightReading(
-        isImplemented = false,
-        arrivesInPhase = 9,
-        summary = "Read a line of notation and play it in time.",
-        engineStatus = "Built and tested: exact rational durations, a Compose staff renderer, " +
-            "and an evaluator that scores pitch and rhythm separately. Three gates are " +
-            "authored. What is missing is the screen that puts a clock on it.",
-    ),
+    /** Read a line and play it in time. Phase 9's engine, with a clock on it. */
+    SightReading(isImplemented = true, arrivesInPhase = 9),
     /** Progression Run: the track, from Phase 10. */
     ProgressionLab(isImplemented = true, arrivesInPhase = 10),
     /**
@@ -157,13 +141,8 @@ enum class HomeDestination(
      * the engine has been able to score since Phase 1. Moves are not recorded yet.
      */
     VoicingLab(isImplemented = true, arrivesInPhase = 10),
-    Library(
-        isImplemented = false,
-        arrivesInPhase = 13,
-        summary = "The chord and progression vocabulary, to browse rather than be tested on.",
-        engineStatus = "Thirty chord formulas and eleven progressions are already data the app " +
-            "reads at startup. This is a reader for them.",
-    ),
+    /** The chord and progression vocabulary, to browse rather than be tested on. */
+    Library(isImplemented = true, arrivesInPhase = 13),
 }
 
 /**
