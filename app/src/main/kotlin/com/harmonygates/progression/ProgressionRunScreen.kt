@@ -1,61 +1,60 @@
 package com.harmonygates.progression
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.booleanResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.harmonygates.R
-import com.harmonygates.core.designsystem.progression.ChordOrbUiModel
-import com.harmonygates.core.designsystem.progression.ProgressionTrack
+import com.harmonygates.core.designsystem.component.FeedbackTone
+import com.harmonygates.core.designsystem.component.FilterChip
+import com.harmonygates.core.designsystem.component.HarmonyChordSymbol
+import com.harmonygates.core.designsystem.component.HarmonyLabelledValue
+import com.harmonygates.core.designsystem.component.HarmonyPanel
+import com.harmonygates.core.designsystem.component.HarmonyStatusChip
+import com.harmonygates.core.designsystem.component.PrimaryButton
+import com.harmonygates.core.designsystem.component.SecondaryButton
+import com.harmonygates.core.designsystem.progression.OrbState
 import com.harmonygates.core.designsystem.theme.HarmonyTheme
+import com.harmonygates.core.music.performance.FeedbackModel
 import com.harmonygates.core.music.progression.ProgressionRunStatus
 import com.harmonygates.core.music.progression.ProgressionTemplates
 import com.harmonygates.core.music.progression.VoicingStyle
+import com.harmonygates.exercise.describe
 import com.harmonygates.home.HomeDestination
 
 /**
- * Three-layer production screen:
- * 1. clean full-screen room plate;
- * 2. moving chord track plus a deliberately small live practice HUD;
- * 3. transient navigation/setup drawers opened only on request.
+ * Progression Run, plain.
+ *
+ * This used to draw the room plate with the moving orb track over it and hide every control in
+ * two transient drawers. The plate and `interface/maps/progression-run.json` are untouched — the
+ * map is still what [ProgressionRunViewModel] reads its slot window from — but the visual design
+ * is being reworked, so the run is shown as a lane of chord chips with its controls on the page.
+ *
+ * The run engine, the MIDI capture and the judging are unchanged: none of that ever lived in the
+ * artwork.
  */
 @Composable
 fun ProgressionRunRoute(
@@ -66,446 +65,393 @@ fun ProgressionRunRoute(
     val state by viewModel.state.collectAsStateWithLifecycle()
     ProgressionRunScreen(
         state = state,
-        track = viewModel.track,
         onIntent = viewModel::onIntent,
         onNavigate = onNavigate,
         modifier = modifier,
     )
 }
 
-private enum class Drawer { Navigation, Setup }
-
 @Composable
 fun ProgressionRunScreen(
     state: ProgressionRunUiState,
-    track: TrackSpec,
     onIntent: (ProgressionRunIntent) -> Unit,
     onNavigate: (HomeDestination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var drawer by remember { mutableStateOf<Drawer?>(null) }
-    var resumeAfterSetup by remember { mutableStateOf(false) }
+    var showSetup by remember { mutableStateOf(false) }
 
-    fun closeSetup() {
-        drawer = null
-        if (resumeAfterSetup && state.run.status == ProgressionRunStatus.PAUSED) {
-            onIntent(ProgressionRunIntent.TogglePlaying)
-        }
-        resumeAfterSetup = false
-    }
-
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(HarmonyTheme.colors.background),
-    ) {
-        BackgroundPlate()
-
-        ProgressionTrack(
-            geometry = track.geometry,
-            orbs = animatedOrbs(state, track),
-            designAspectRatio = track.aspectRatio,
-            showPath = false,
-        )
-
-        PracticeHud(
-            state = state,
-            onMenu = { drawer = Drawer.Navigation },
-            onSetup = {
-                resumeAfterSetup = state.run.status == ProgressionRunStatus.RUNNING
-                if (resumeAfterSetup) onIntent(ProgressionRunIntent.TogglePlaying)
-                drawer = Drawer.Setup
-            },
-            onPlayPause = { onIntent(ProgressionRunIntent.TogglePlaying) },
-        )
-
-        drawer?.let { openDrawer ->
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(HarmonyTheme.colors.background.copy(alpha = 0.42f))
-                    .clickable {
-                        if (openDrawer == Drawer.Setup) closeSetup() else drawer = null
-                    },
-            )
-            when (openDrawer) {
-                Drawer.Navigation -> NavigationDrawer(
-                    onNavigate = { destination ->
-                        drawer = null
-                        onNavigate(destination)
-                    },
-                    onDismiss = { drawer = null },
-                    modifier = Modifier.align(Alignment.CenterStart),
-                )
-                Drawer.Setup -> SetupDrawer(
-                    state = state,
-                    onIntent = onIntent,
-                    onDone = ::closeSetup,
-                    onDismiss = ::closeSetup,
-                    modifier = Modifier.align(Alignment.CenterEnd),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun BackgroundPlate() {
-    if (!booleanResource(R.bool.progression_run_background_available)) return
-    Image(
-        painter = painterResource(R.drawable.progression_run_background),
-        contentDescription = null,
-        modifier = Modifier.fillMaxSize(),
-        contentScale = ContentScale.Crop,
-    )
-}
-
-@Composable
-private fun animatedOrbs(state: ProgressionRunUiState, track: TrackSpec): List<ChordOrbUiModel> {
-    val progress = remember { Animatable(1f) }
-    val easing = remember(track.easing) {
-        CubicBezierEasing(track.easing[0], track.easing[1], track.easing[2], track.easing[3])
-    }
-    LaunchedEffect(state.run.advanceCount) {
-        progress.snapTo(0f)
-        progress.animateTo(1f, tween(durationMillis = track.advanceDurationMs, easing = easing))
-    }
-    val offset = 1f - progress.value
-    return state.orbs.map { orb -> orb.copy(slot = orb.slot + offset) }
-}
-
-@Composable
-private fun BoxScope.PracticeHud(
-    state: ProgressionRunUiState,
-    onMenu: () -> Unit,
-    onSetup: () -> Unit,
-    onPlayPause: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top,
-    ) {
-        HudPanel {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                OutlinedButton(onClick = onMenu) { Text("MENU") }
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(
-                        "PROGRESSION RUN",
-                        color = HarmonyTheme.colors.accent,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        state.setup.template.title,
-                        color = HarmonyTheme.colors.onSurface,
-                        fontSize = HarmonyTheme.typography.caption,
-                    )
-                    Text(
-                        "${keyLabel(state)}  ·  ${state.setup.tempoBpm} BPM",
-                        color = HarmonyTheme.colors.onSurfaceMuted,
-                        fontSize = HarmonyTheme.typography.caption,
-                    )
-                }
-            }
-        }
-
-        HudPanel {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        state.progressLabel.ifBlank { "Ready" },
-                        color = HarmonyTheme.colors.onSurface,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        "${state.midiStatus}  ·  ${state.accuracyPercent}%  ·  ${state.elapsedLabel}",
-                        color = if (state.midiConnected) {
-                            HarmonyTheme.colors.accent
-                        } else {
-                            HarmonyTheme.colors.onSurfaceMuted
-                        },
-                        fontSize = HarmonyTheme.typography.caption,
-                    )
-                    Text(
-                        "Clean ${state.run.clean}  ·  Runs ${state.runsCompleted}",
-                        color = HarmonyTheme.colors.onSurfaceMuted,
-                        fontSize = HarmonyTheme.typography.caption,
-                    )
-                }
-                OutlinedButton(onClick = onPlayPause) {
-                    Text(if (state.run.status == ProgressionRunStatus.RUNNING) "PAUSE" else "PLAY")
-                }
-                Button(onClick = onSetup) { Text("SETUP") }
-            }
-        }
-    }
-
-    state.activeSymbol?.let { symbol ->
-        HudPanel(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 14.dp),
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    "PLAY",
-                    color = HarmonyTheme.colors.onSurfaceMuted,
-                    fontSize = HarmonyTheme.typography.caption,
-                )
-                Text(
-                    symbol,
-                    color = HarmonyTheme.colors.accent,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = HarmonyTheme.typography.heading,
-                )
-                state.activeFunction?.let { function ->
-                    Text(
-                        function,
-                        color = HarmonyTheme.colors.onSurfaceMuted,
-                        fontSize = HarmonyTheme.typography.caption,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun HudPanel(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(18.dp))
-            .background(HarmonyTheme.colors.background.copy(alpha = 0.78f))
-            .border(
-                1.dp,
-                HarmonyTheme.colors.outline.copy(alpha = 0.75f),
-                RoundedCornerShape(18.dp),
-            )
-            .padding(horizontal = 12.dp, vertical = 9.dp),
-    ) {
-        content()
-    }
-}
-
-@Composable
-private fun NavigationDrawer(
-    onNavigate: (HomeDestination) -> Unit,
-    onDismiss: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
     Column(
         modifier = modifier
-            .fillMaxHeight()
-            .width(330.dp)
-            .background(HarmonyTheme.colors.surface.copy(alpha = 0.98f))
-            .padding(18.dp)
+            .fillMaxSize()
+            .safeDrawingPadding()
+            .padding(HarmonyTheme.spacing.large)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.medium),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                "HARMONY GATES",
-                color = HarmonyTheme.colors.accent,
-                fontWeight = FontWeight.Bold,
-                fontSize = HarmonyTheme.typography.heading,
-            )
-            OutlinedButton(onClick = onDismiss) { Text("CLOSE") }
-        }
-        Spacer(Modifier.height(8.dp))
-        NavButton("Home") { onNavigate(HomeDestination.Home) }
-        NavButton("Chord Gates") { onNavigate(HomeDestination.ChordGate) }
-        NavButton("Theory Lab") { onNavigate(HomeDestination.TheoryLab) }
-        NavButton("My Journey / Map") { onNavigate(HomeDestination.Campaign) }
-        NavButton("Quick Practice") { onNavigate(HomeDestination.QuickPractice) }
-        NavButton("Progress / Stats") { onNavigate(HomeDestination.Progress) }
-        NavButton("Profile") { onNavigate(HomeDestination.Profile) }
-        NavButton("Settings / MIDI") { onNavigate(HomeDestination.Settings) }
+        Header(
+            state = state,
+            showSetup = showSetup,
+            onToggleSetup = { showSetup = !showSetup },
+            onNavigate = onNavigate,
+        )
+
+        Lane(state)
+
+        NowPlaying(state)
+
+        Transport(state, onIntent)
+
+        state.lastResult?.let { Feedback(it.explanation) }
+
+        if (showSetup) Setup(state, onIntent)
     }
 }
 
 @Composable
-private fun NavButton(label: String, onClick: () -> Unit) {
-    OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) { Text(label) }
+private fun Header(
+    state: ProgressionRunUiState,
+    showSetup: Boolean,
+    onToggleSetup: () -> Unit,
+    onNavigate: (HomeDestination) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.medium),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "Progression Run",
+            color = HarmonyTheme.colors.onSurface,
+            fontSize = HarmonyTheme.typography.heading,
+            fontWeight = FontWeight.SemiBold,
+        )
+        HarmonyStatusChip(
+            label = state.midiStatus,
+            tone = if (state.midiConnected) FeedbackTone.CORRECT else FeedbackTone.INCORRECT,
+        )
+        Box(Modifier.weight(1f))
+        SecondaryButton(
+            label = if (showSetup) "Hide setup" else "Setup",
+            onClick = onToggleSetup,
+        )
+        SecondaryButton(label = "Settings", onClick = { onNavigate(HomeDestination.Settings) })
+        SecondaryButton(label = "Leave", onClick = { onNavigate(HomeDestination.Home) })
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.large),
+    ) {
+        HarmonyLabelledValue(
+            label = "Progress",
+            value = state.progressLabel.ifBlank { "Ready" },
+            modifier = Modifier.weight(1f),
+        )
+        HarmonyLabelledValue(
+            label = "Accuracy",
+            value = "${state.accuracyPercent}%",
+            modifier = Modifier.weight(1f),
+        )
+        HarmonyLabelledValue(
+            label = "Elapsed",
+            value = state.elapsedLabel,
+            modifier = Modifier.weight(1f),
+        )
+        HarmonyLabelledValue(
+            label = "Clean / runs",
+            value = "${state.run.clean} / ${state.runsCompleted}",
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+/**
+ * The run, left to right.
+ *
+ * The engine hands over a window of chords around the active one, each carrying the slot it sits
+ * in — negative behind, zero active, positive ahead. Sorting by that slot is all the ordering the
+ * lane needs, and it is the same number the orb track used to position a circle with.
+ */
+@Composable
+private fun Lane(state: ProgressionRunUiState) {
+    if (state.orbs.isEmpty()) return
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        items(state.orbs.sortedBy { it.slot }, key = { it.eventId }) { orb ->
+            ChordChip(
+                symbol = orb.chordSymbol,
+                functionLabel = orb.functionLabel,
+                state = orb.state,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ChordChip(symbol: String, functionLabel: String?, state: OrbState) {
+    val colors = HarmonyTheme.colors
+    val accent = when (state) {
+        OrbState.ACTIVE -> colors.accentPrimary
+        OrbState.CORRECT -> colors.feedbackSuccess
+        OrbState.INCORRECT -> colors.feedbackError
+        OrbState.PREVIOUS -> colors.outline
+        OrbState.UPCOMING -> colors.outline
+    }
+    val shape = RoundedCornerShape(HarmonyTheme.shapes.radiusMedium)
+
+    Column(
+        modifier = Modifier
+            .background(
+                if (state == OrbState.ACTIVE) colors.surfaceOverlay else colors.surface,
+                shape,
+            )
+            .border(HarmonyTheme.spacing.hairline, accent, shape)
+            .padding(
+                horizontal = HarmonyTheme.spacing.medium,
+                vertical = HarmonyTheme.spacing.small,
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.tight),
+    ) {
+        Text(
+            text = symbol,
+            color = if (state == OrbState.UPCOMING) colors.textSecondary else colors.textPrimary,
+            fontSize = HarmonyTheme.typography.title,
+            fontWeight = FontWeight.SemiBold,
+        )
+        functionLabel?.let {
+            Text(text = it, color = colors.textSecondary, fontSize = HarmonyTheme.typography.caption)
+        }
+    }
+}
+
+@Composable
+private fun NowPlaying(state: ProgressionRunUiState) {
+    HarmonyPanel(modifier = Modifier.fillMaxWidth()) {
+        Column(verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
+            Text(
+                text = if (state.countingIn) "Counting in" else "Play",
+                color = HarmonyTheme.colors.onSurfaceMuted,
+                fontSize = HarmonyTheme.typography.caption,
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.medium),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                HarmonyChordSymbol(symbol = state.activeSymbol ?: "—")
+                state.activeFunction?.let {
+                    Text(
+                        text = it,
+                        color = HarmonyTheme.colors.onSurfaceMuted,
+                        fontSize = HarmonyTheme.typography.body,
+                    )
+                }
+            }
+            Text(
+                text = state.instruction
+                    ?: "${state.setup.template.title} · ${keyLabel(state)} · ${state.setup.tempoBpm} BPM",
+                color = HarmonyTheme.colors.onSurfaceMuted,
+                fontSize = HarmonyTheme.typography.body,
+            )
+        }
+    }
+}
+
+@Composable
+private fun Transport(state: ProgressionRunUiState, onIntent: (ProgressionRunIntent) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        PrimaryButton(
+            label = if (state.run.status == ProgressionRunStatus.RUNNING) "Pause" else "Play",
+            onClick = { onIntent(ProgressionRunIntent.TogglePlaying) },
+        )
+        SecondaryButton(label = "Back", onClick = { onIntent(ProgressionRunIntent.Previous) })
+        SecondaryButton(label = "Skip", onClick = { onIntent(ProgressionRunIntent.Next) })
+        SecondaryButton(label = "Restart", onClick = { onIntent(ProgressionRunIntent.Restart) })
+    }
+}
+
+@Composable
+private fun Feedback(explanation: FeedbackModel) {
+    val tone = when (explanation.headline) {
+        FeedbackModel.Headline.CORRECT, FeedbackModel.Headline.CORRECT_VARIATION -> FeedbackTone.CORRECT
+        FeedbackModel.Headline.ALMOST -> FeedbackTone.PARTIAL
+        FeedbackModel.Headline.NOT_YET -> FeedbackTone.INCORRECT
+        else -> FeedbackTone.NEUTRAL
+    }
+    HarmonyPanel(modifier = Modifier.fillMaxWidth()) {
+        Column(verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
+            HarmonyStatusChip(label = headlineText(explanation.headline), tone = tone)
+            explanation.errors.take(MAX_REASONS).forEach { error ->
+                Text(
+                    text = describe(error),
+                    color = HarmonyTheme.colors.onSurfaceMuted,
+                    fontSize = HarmonyTheme.typography.body,
+                )
+            }
+        }
+    }
 }
 
 @Suppress("LongMethod")
 @Composable
-private fun SetupDrawer(
-    state: ProgressionRunUiState,
-    onIntent: (ProgressionRunIntent) -> Unit,
-    onDone: () -> Unit,
-    onDismiss: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxHeight()
-            .width(430.dp)
-            .background(HarmonyTheme.colors.surface.copy(alpha = 0.985f))
-            .padding(18.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column {
-                Text(
-                    "PRACTICE SETUP",
-                    color = HarmonyTheme.colors.accent,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = HarmonyTheme.typography.heading,
-                )
-                Text(
-                    "Configure the run, then collapse this drawer.",
-                    color = HarmonyTheme.colors.onSurfaceMuted,
-                    fontSize = HarmonyTheme.typography.caption,
-                )
+private fun Setup(state: ProgressionRunUiState, onIntent: (ProgressionRunIntent) -> Unit) {
+    HarmonyPanel(modifier = Modifier.fillMaxWidth()) {
+        Column(verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small)) {
+            SectionLabel("Progression")
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+                verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+            ) {
+                ProgressionTemplates.all.forEach { template ->
+                    FilterChip(
+                        label = template.title,
+                        selected = template == state.setup.template,
+                        onToggle = { onIntent(ProgressionRunIntent.ChooseTemplate(template)) },
+                    )
+                }
             }
-            OutlinedButton(onClick = onDismiss) { Text("CLOSE") }
-        }
 
-        SectionLabel("Progression")
-        ProgressionTemplates.all.forEach { template ->
-            ChoiceButton(
-                label = template.title,
-                selected = template == state.setup.template,
-            ) { onIntent(ProgressionRunIntent.ChooseTemplate(template)) }
-        }
-
-        SectionLabel("Voicing")
-        VoicingStyle.entries.forEach { style ->
-            ChoiceButton(
-                label = style.label,
-                selected = style == state.setup.style,
-            ) { onIntent(ProgressionRunIntent.ChooseStyle(style)) }
-        }
-
-        SectionLabel("Key")
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("All 12 keys", color = HarmonyTheme.colors.onSurface, modifier = Modifier.weight(1f))
-            Switch(
-                checked = state.setup.allKeys,
-                onCheckedChange = { onIntent(ProgressionRunIntent.ToggleAllKeys) },
-            )
-        }
-        if (!state.setup.allKeys) {
-            state.availableKeys.forEach { key ->
-                ChoiceButton(
-                    label = key,
-                    selected = state.setup.key.toString() == key,
-                ) { onIntent(ProgressionRunIntent.ChooseKey(key)) }
+            SectionLabel("Voicing")
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+                verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+            ) {
+                VoicingStyle.entries.forEach { style ->
+                    FilterChip(
+                        label = style.label,
+                        selected = style == state.setup.style,
+                        onToggle = { onIntent(ProgressionRunIntent.ChooseStyle(style)) },
+                    )
+                }
             }
-        }
 
-        SectionLabel("Tempo")
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                "${state.setup.tempoBpm} BPM",
-                color = HarmonyTheme.colors.onSurface,
-                fontWeight = FontWeight.Bold,
-            )
-            Button(onClick = { onIntent(ProgressionRunIntent.IncreaseTempo) }) { Text("+5 BPM") }
-        }
-        Text(
-            "Tempo wraps to 40 BPM after 240 BPM.",
-            color = HarmonyTheme.colors.onSurfaceMuted,
-            fontSize = HarmonyTheme.typography.caption,
-        )
+            SectionLabel("Key")
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+                verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+            ) {
+                FilterChip(
+                    label = "All 12 keys",
+                    selected = state.setup.allKeys,
+                    onToggle = { onIntent(ProgressionRunIntent.ToggleAllKeys) },
+                )
+                state.availableKeys.forEach { key ->
+                    FilterChip(
+                        label = key,
+                        selected = !state.setup.allKeys && state.setup.key.toString() == key,
+                        onToggle = { onIntent(ProgressionRunIntent.ChooseKey(key)) },
+                    )
+                }
+            }
 
-        SectionLabel("Run behavior")
-        ToggleRow("Loop progression", state.setup.loop) { onIntent(ProgressionRunIntent.ToggleLoop) }
-        ToggleRow("Show Roman numerals", state.setup.showRomanNumerals) {
-            onIntent(ProgressionRunIntent.ToggleRomanNumerals)
-        }
-        ToggleRow("Count in", state.countIn) { onIntent(ProgressionRunIntent.ToggleCountIn) }
-        if (state.countIn) {
+            SectionLabel("Tempo")
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                OutlinedButton(onClick = { onIntent(ProgressionRunIntent.DecreaseCountBars) }) { Text("−") }
-                Text("${state.countBars} bars", color = HarmonyTheme.colors.onSurface)
-                OutlinedButton(onClick = { onIntent(ProgressionRunIntent.IncreaseCountBars) }) { Text("+") }
+                Text(
+                    text = "${state.setup.tempoBpm} BPM",
+                    color = HarmonyTheme.colors.onSurface,
+                    fontSize = HarmonyTheme.typography.body,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                // The engine steps by five and wraps at the top rather than clamping, so one
+                // button covers the whole range without a second one to walk back down.
+                SecondaryButton(
+                    label = "+5 BPM",
+                    onClick = { onIntent(ProgressionRunIntent.IncreaseTempo) },
+                )
+            }
+
+            SectionLabel("Run")
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+                verticalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+            ) {
+                FilterChip(
+                    label = "Loop",
+                    selected = state.setup.loop,
+                    onToggle = { onIntent(ProgressionRunIntent.ToggleLoop) },
+                )
+                FilterChip(
+                    label = "Roman numerals",
+                    selected = state.setup.showRomanNumerals,
+                    onToggle = { onIntent(ProgressionRunIntent.ToggleRomanNumerals) },
+                )
+                FilterChip(
+                    label = "Count in",
+                    selected = state.countIn,
+                    onToggle = { onIntent(ProgressionRunIntent.ToggleCountIn) },
+                )
+                FilterChip(
+                    label = "Auto-start next run",
+                    selected = state.autoNextGate,
+                    onToggle = { onIntent(ProgressionRunIntent.ToggleAutoNextGate) },
+                )
+            }
+
+            if (state.countIn) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(HarmonyTheme.spacing.small),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    SecondaryButton(
+                        label = "−",
+                        onClick = { onIntent(ProgressionRunIntent.DecreaseCountBars) },
+                    )
+                    Text(
+                        text = "${state.countBars} bars",
+                        color = HarmonyTheme.colors.onSurface,
+                        fontSize = HarmonyTheme.typography.body,
+                    )
+                    SecondaryButton(
+                        label = "+",
+                        onClick = { onIntent(ProgressionRunIntent.IncreaseCountBars) },
+                    )
+                }
             }
         }
-        ToggleRow("Auto-start next run", state.autoNextGate) {
-            onIntent(ProgressionRunIntent.ToggleAutoNextGate)
-        }
-
-        Spacer(Modifier.height(8.dp))
-        Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
-            Text("DONE")
-        }
-        OutlinedButton(
-            onClick = { onIntent(ProgressionRunIntent.Restart) },
-            modifier = Modifier.fillMaxWidth(),
-        ) { Text("RESTART RUN") }
     }
 }
 
 @Composable
 private fun SectionLabel(label: String) {
     Text(
-        label,
-        color = HarmonyTheme.colors.accent,
-        fontWeight = FontWeight.Bold,
+        text = label,
+        color = HarmonyTheme.colors.onSurfaceMuted,
         fontSize = HarmonyTheme.typography.caption,
     )
 }
 
-@Composable
-private fun ChoiceButton(label: String, selected: Boolean, onClick: () -> Unit) {
-    if (selected) {
-        Button(onClick = onClick, modifier = Modifier.fillMaxWidth()) { Text(label) }
-    } else {
-        OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) { Text(label) }
-    }
-}
-
-@Composable
-private fun ToggleRow(label: String, checked: Boolean, onToggle: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onToggle)
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(label, color = HarmonyTheme.colors.onSurface)
-        Switch(checked = checked, onCheckedChange = { onToggle() })
-    }
+private fun headlineText(headline: FeedbackModel.Headline): String = when (headline) {
+    FeedbackModel.Headline.CORRECT -> "Correct"
+    FeedbackModel.Headline.CORRECT_VARIATION -> "Correct"
+    FeedbackModel.Headline.ALMOST -> "Almost"
+    FeedbackModel.Headline.NOT_YET -> "Not yet"
+    FeedbackModel.Headline.NOTHING_PLAYED -> "Nothing played"
+    FeedbackModel.Headline.DEVICE_LOST -> "Keyboard disconnected"
 }
 
 private fun keyLabel(state: ProgressionRunUiState): String =
     if (state.setup.allKeys) "12 keys" else state.setup.key.toString()
+
+private const val MAX_REASONS = 3
+
+@Preview(showBackground = true, widthDp = 1024, heightDp = 700)
+@Composable
+private fun ProgressionRunScreenPreview() {
+    HarmonyTheme {
+        ProgressionRunScreen(
+            state = ProgressionRunUiState(),
+            onIntent = {},
+            onNavigate = {},
+        )
+    }
+}
