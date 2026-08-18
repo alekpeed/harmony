@@ -8,50 +8,456 @@
   "coordinateRule": "Every layer, control, label and hit region is placed through one shared design-to-screen transform (DesignSurface/DesignScope in the app). The 1536x1024 frame is fitted into the window and centred; nothing is scaled independently. Bounds below are design pixels and are mirrored exactly by EarLayout.kt.",
   "assetRoot": "../assets/ear_training",
   "sourceRule": "assets/ear_training/source/ holds the cutting sheets and the rejected ornate comp. Nothing under source/ is copied into app resources or rendered.",
-  "modes": ["setup", "training"],
+  "modes": [
+    "setup",
+    "training"
+  ],
   "layers": [
-    { "id": "background", "order": 0, "asset": "background/ear_training_background_cinque_terre.png", "resource": "et_ear_training_background_cinque_terre", "visibleIn": ["setup", "training"], "fullFrame": true },
-    { "id": "setup_shell", "order": 1, "asset": "setup/ear_training_setup_shell.png", "resource": "et_ear_training_setup_shell", "visibleIn": ["setup"], "fullFrame": true },
-    { "id": "section_layout", "order": 2, "asset": "setup/ear_training_section_layout.png", "resource": "et_ear_training_section_layout", "visibleIn": ["setup"], "fullFrame": true },
-    { "id": "training_bar", "order": 2, "asset": "training/ear_training_training_bar_shell.png", "resource": "et_ear_training_training_bar_shell", "visibleIn": ["training"], "fullFrame": false, "bounds": { "x": 43, "y": 797, "width": 1450, "height": 200 } },
-    { "id": "moving_controls", "order": 3, "visibleIn": ["setup", "training"], "note": "Individual assets under runtime/, swapped by state. Never the master sheet." },
-    { "id": "dynamic_text", "order": 4, "visibleIn": ["setup", "training"] },
-    { "id": "interaction", "order": 5, "visibleIn": ["setup", "training"], "note": "Compose hit regions, inflated to a 48dp minimum around their own centre." }
+    {
+      "id": "background",
+      "order": 0,
+      "asset": "background/ear_training_background_cinque_terre.png",
+      "resource": "et_ear_training_background_cinque_terre",
+      "visibleIn": [
+        "setup",
+        "training"
+      ],
+      "fullFrame": true
+    },
+    {
+      "id": "setup_shell",
+      "order": 1,
+      "asset": "setup/ear_training_setup_shell.png",
+      "resource": "et_ear_training_setup_shell",
+      "visibleIn": [
+        "setup"
+      ],
+      "fullFrame": true
+    },
+    {
+      "id": "section_layout",
+      "order": 2,
+      "asset": "setup/ear_training_section_layout.png",
+      "resource": "et_ear_training_section_layout",
+      "visibleIn": [
+        "setup"
+      ],
+      "fullFrame": true
+    },
+    {
+      "id": "training_bar",
+      "order": 2,
+      "asset": "training/ear_training_training_bar_shell.png",
+      "resource": "et_ear_training_training_bar_shell",
+      "visibleIn": [
+        "training"
+      ],
+      "fullFrame": false,
+      "bounds": {
+        "x": 43,
+        "y": 797,
+        "width": 1450,
+        "height": 200
+      }
+    },
+    {
+      "id": "moving_controls",
+      "order": 3,
+      "visibleIn": [
+        "setup",
+        "training"
+      ],
+      "note": "Individual assets under runtime/, swapped by state. Never the master sheet."
+    },
+    {
+      "id": "dynamic_text",
+      "order": 4,
+      "visibleIn": [
+        "setup",
+        "training"
+      ]
+    },
+    {
+      "id": "interaction",
+      "order": 5,
+      "visibleIn": [
+        "setup",
+        "training"
+      ],
+      "note": "Compose hit regions, inflated to a 48dp minimum around their own centre."
+    }
   ],
   "controls": [
-    { "id": "family_row_0", "type": "selector", "mode": "setup", "bounds": { "x": 158, "y": 258, "width": 289, "height": 72 }, "iconBounds": { "x": 172, "y": 270, "width": 48, "height": 48 }, "stateKey": "family", "action": "choose_family", "value": "REPRODUCE", "assetIdle": "runtime/control_faces/music_note_idle.png", "assetActive": "runtime/active_states/music_note_active.png", "labelSource": "EarTaskFamily.label" },
-    { "id": "family_row_1", "type": "selector", "mode": "setup", "bounds": { "x": 158, "y": 350, "width": 289, "height": 72 }, "iconBounds": { "x": 172, "y": 362, "width": 48, "height": 48 }, "stateKey": "family", "action": "choose_family", "value": "IDENTIFY_THEN_PLAY", "assetIdle": "runtime/control_faces/music_note_idle.png", "assetActive": "runtime/active_states/music_note_active.png", "labelSource": "EarTaskFamily.label" },
-    { "id": "family_row_2", "type": "selector", "mode": "setup", "bounds": { "x": 158, "y": 442, "width": 289, "height": 72 }, "iconBounds": { "x": 172, "y": 454, "width": 48, "height": 48 }, "stateKey": "family", "action": "choose_family", "value": "DIFFERENCE_DETECTION", "assetIdle": "runtime/control_faces/music_note_idle.png", "assetActive": "runtime/active_states/music_note_active.png", "labelSource": "EarTaskFamily.label" },
-    { "id": "family_row_3", "type": "selector", "mode": "setup", "bounds": { "x": 158, "y": 534, "width": 289, "height": 72 }, "iconBounds": { "x": 172, "y": 546, "width": 48, "height": 48 }, "stateKey": "family", "action": "choose_family", "value": "FUNCTION_HEARING", "assetIdle": "runtime/control_faces/music_note_idle.png", "assetActive": "runtime/active_states/music_note_active.png", "labelSource": "EarTaskFamily.label" },
-    { "id": "start", "type": "button", "mode": "setup", "bounds": { "x": 588, "y": 672, "width": 364, "height": 70 }, "stateKey": "canStart", "action": "start_training", "label": "START" },
-    { "id": "bar_play", "type": "button", "mode": "both", "bounds": { "x": 715, "y": 840, "width": 110, "height": 110 }, "stateKey": "phase", "action": "play_stimulus_or_start", "assetIdle": "runtime/control_faces/play_idle_large.png", "assetActive": "runtime/active_states/play_active_large.png" },
-    { "id": "bar_replay", "type": "button", "mode": "training", "bounds": { "x": 619, "y": 871, "width": 52, "height": 52 }, "stateKey": "canReplay", "action": "play_stimulus", "assetIdle": "runtime/control_faces/repeat_idle.png", "assetActive": "runtime/active_states/repeat_active.png", "note": "07 §5 counts replays as assistance evidence; disabled once the ReplayRule is spent." },
-    { "id": "bar_next", "type": "button", "mode": "training", "bounds": { "x": 867, "y": 871, "width": 52, "height": 52 }, "stateKey": "phase", "action": "next_or_skip", "assetIdle": "runtime/control_faces/shuffle_idle.png", "assetActive": "runtime/active_states/shuffle_active.png" },
-    { "id": "bar_left", "type": "button", "mode": "both", "bounds": { "x": 108, "y": 865, "width": 64, "height": 64 }, "stateKey": "mode", "action": "exit_to_setup_or_leave", "assetIdle": "runtime/control_faces/previous_idle.png" },
-    { "id": "bar_settings", "type": "button", "mode": "both", "bounds": { "x": 1266, "y": 871, "width": 52, "height": 52 }, "action": "open_settings", "assetIdle": "runtime/icons/level_meter.png" },
-    { "id": "bar_exit", "type": "button", "mode": "both", "bounds": { "x": 1372, "y": 864, "width": 66, "height": 66 }, "action": "leave_ear_training", "assetIdle": "runtime/icons/eye.png" },
-    { "id": "midi_lamp", "type": "indicator", "mode": "both", "bounds": { "x": 222, "y": 881, "width": 32, "height": 32 }, "stateKey": "midiConnected", "assetOff": "runtime/indicators/status_off.png", "assetWarn": "runtime/indicators/status_amber_on.png", "assetOn": "runtime/indicators/status_green_on.png", "note": "Paired with wording; correctness is never colour alone." }
+    {
+      "id": "family_row_0",
+      "type": "selector",
+      "mode": "setup",
+      "bounds": {
+        "x": 158,
+        "y": 258,
+        "width": 289,
+        "height": 72
+      },
+      "iconBounds": {
+        "x": 172,
+        "y": 270,
+        "width": 48,
+        "height": 48
+      },
+      "stateKey": "family",
+      "action": "choose_family",
+      "value": "REPRODUCE",
+      "assetIdle": "runtime/control_faces/music_note_idle.png",
+      "assetActive": "runtime/active_states/music_note_active.png",
+      "labelSource": "EarTaskFamily.label"
+    },
+    {
+      "id": "family_row_1",
+      "type": "selector",
+      "mode": "setup",
+      "bounds": {
+        "x": 158,
+        "y": 350,
+        "width": 289,
+        "height": 72
+      },
+      "iconBounds": {
+        "x": 172,
+        "y": 362,
+        "width": 48,
+        "height": 48
+      },
+      "stateKey": "family",
+      "action": "choose_family",
+      "value": "IDENTIFY_THEN_PLAY",
+      "assetIdle": "runtime/control_faces/music_note_idle.png",
+      "assetActive": "runtime/active_states/music_note_active.png",
+      "labelSource": "EarTaskFamily.label"
+    },
+    {
+      "id": "family_row_2",
+      "type": "selector",
+      "mode": "setup",
+      "bounds": {
+        "x": 158,
+        "y": 442,
+        "width": 289,
+        "height": 72
+      },
+      "iconBounds": {
+        "x": 172,
+        "y": 454,
+        "width": 48,
+        "height": 48
+      },
+      "stateKey": "family",
+      "action": "choose_family",
+      "value": "DIFFERENCE_DETECTION",
+      "assetIdle": "runtime/control_faces/music_note_idle.png",
+      "assetActive": "runtime/active_states/music_note_active.png",
+      "labelSource": "EarTaskFamily.label"
+    },
+    {
+      "id": "family_row_3",
+      "type": "selector",
+      "mode": "setup",
+      "bounds": {
+        "x": 158,
+        "y": 534,
+        "width": 289,
+        "height": 72
+      },
+      "iconBounds": {
+        "x": 172,
+        "y": 546,
+        "width": 48,
+        "height": 48
+      },
+      "stateKey": "family",
+      "action": "choose_family",
+      "value": "FUNCTION_HEARING",
+      "assetIdle": "runtime/control_faces/music_note_idle.png",
+      "assetActive": "runtime/active_states/music_note_active.png",
+      "labelSource": "EarTaskFamily.label"
+    },
+    {
+      "id": "start",
+      "type": "button",
+      "mode": "setup",
+      "bounds": {
+        "x": 588,
+        "y": 672,
+        "width": 364,
+        "height": 70
+      },
+      "stateKey": "canStart",
+      "action": "start_training",
+      "label": "START"
+    },
+    {
+      "id": "bar_play",
+      "type": "button",
+      "mode": "both",
+      "bounds": {
+        "x": 715,
+        "y": 840,
+        "width": 110,
+        "height": 110
+      },
+      "stateKey": "phase",
+      "action": "play_stimulus_or_start",
+      "assetIdle": "runtime/control_faces/play_idle_large.png",
+      "assetActive": "runtime/active_states/play_active_large.png"
+    },
+    {
+      "id": "bar_replay",
+      "type": "button",
+      "mode": "training",
+      "bounds": {
+        "x": 619,
+        "y": 871,
+        "width": 52,
+        "height": 52
+      },
+      "stateKey": "canReplay",
+      "action": "play_stimulus",
+      "assetIdle": "runtime/control_faces/repeat_idle.png",
+      "assetActive": "runtime/active_states/repeat_active.png",
+      "note": "07 \u00a75 counts replays as assistance evidence; disabled once the ReplayRule is spent."
+    },
+    {
+      "id": "bar_next",
+      "type": "button",
+      "mode": "training",
+      "bounds": {
+        "x": 867,
+        "y": 871,
+        "width": 52,
+        "height": 52
+      },
+      "stateKey": "phase",
+      "action": "next_or_skip",
+      "assetIdle": "runtime/control_faces/shuffle_idle.png",
+      "assetActive": "runtime/active_states/shuffle_active.png"
+    },
+    {
+      "id": "bar_left",
+      "type": "button",
+      "mode": "both",
+      "bounds": {
+        "x": 108,
+        "y": 865,
+        "width": 64,
+        "height": 64
+      },
+      "stateKey": "mode",
+      "action": "exit_to_setup_or_leave",
+      "assetIdle": "runtime/control_faces/previous_idle.png"
+    },
+    {
+      "id": "bar_settings",
+      "type": "button",
+      "mode": "both",
+      "bounds": {
+        "x": 1266,
+        "y": 871,
+        "width": 52,
+        "height": 52
+      },
+      "action": "open_settings",
+      "assetIdle": "runtime/icons/level_meter.png"
+    },
+    {
+      "id": "bar_exit",
+      "type": "button",
+      "mode": "both",
+      "bounds": {
+        "x": 1372,
+        "y": 864,
+        "width": 66,
+        "height": 66
+      },
+      "action": "leave_ear_training",
+      "assetIdle": "runtime/icons/eye.png"
+    },
+    {
+      "id": "midi_lamp",
+      "type": "indicator",
+      "mode": "both",
+      "bounds": {
+        "x": 222,
+        "y": 881,
+        "width": 32,
+        "height": 32
+      },
+      "stateKey": "midiConnected",
+      "assetOff": "runtime/indicators/status_off.png",
+      "assetWarn": "runtime/indicators/status_amber_on.png",
+      "assetOn": "runtime/indicators/status_green_on.png",
+      "note": "Paired with wording; correctness is never colour alone."
+    }
   ],
   "dynamicText": [
-    { "id": "family_label", "mode": "setup", "boundsFor": "family_row_*", "bounds": { "x": 240, "y": 258, "width": 200, "height": 72 }, "pitch": 92, "source": "EarTaskFamily.label" },
-    { "id": "root_key", "mode": "setup", "bounds": { "x": 508, "y": 562, "width": 555, "height": 78 }, "source": "static: all 12 keys", "note": "The generator cycles all twelve; the panel states it rather than offering a choice the engine does not read." },
-    { "id": "session_length", "mode": "setup", "bounds": { "x": 1196, "y": 600, "width": 150, "height": 55 }, "source": "ExercisePolicy.sessionLength" },
-    { "id": "midi_status", "mode": "both", "bounds": { "x": 268, "y": 868, "width": 290, "height": 57 }, "source": "EarTrainingUiState.midiStatus" },
-    { "id": "bar_right_panel", "mode": "both", "bounds": { "x": 962, "y": 868, "width": 273, "height": 57 }, "source": "progressLabel in training, family label in setup" },
-    { "id": "instruction", "mode": "training", "bounds": { "x": 368, "y": 636, "width": 800, "height": 48 }, "source": "EarExercise.instruction" },
-    { "id": "verdict", "mode": "training", "bounds": { "x": 368, "y": 692, "width": 800, "height": 56 }, "source": "EvaluationResult headline, revealed chord symbol, primary error, difference description" },
-    { "id": "key_button", "mode": "training", "bounds": { "x": 700, "y": 514, "width": 136, "height": 104 }, "source": "StimulusSpec.key.tonic", "assetSet": "runtime/note_buttons/", "note": "Seventeen spellings ship as separate assets, so Db and C# are never rendered as one another. Shown only for FUNCTION_HEARING, where the key is part of the question." }
+    {
+      "id": "family_label",
+      "mode": "setup",
+      "boundsFor": "family_row_*",
+      "bounds": {
+        "x": 240,
+        "y": 258,
+        "width": 200,
+        "height": 72
+      },
+      "pitch": 92,
+      "source": "EarTaskFamily.label"
+    },
+    {
+      "id": "root_key",
+      "mode": "setup",
+      "bounds": {
+        "x": 508,
+        "y": 562,
+        "width": 555,
+        "height": 78
+      },
+      "source": "static: all 12 keys",
+      "note": "The generator cycles all twelve; the panel states it rather than offering a choice the engine does not read."
+    },
+    {
+      "id": "session_length",
+      "mode": "setup",
+      "bounds": {
+        "x": 1196,
+        "y": 600,
+        "width": 150,
+        "height": 55
+      },
+      "source": "ExercisePolicy.sessionLength"
+    },
+    {
+      "id": "midi_status",
+      "mode": "both",
+      "bounds": {
+        "x": 268,
+        "y": 868,
+        "width": 290,
+        "height": 57
+      },
+      "source": "EarTrainingUiState.midiStatus"
+    },
+    {
+      "id": "bar_right_panel",
+      "mode": "both",
+      "bounds": {
+        "x": 962,
+        "y": 868,
+        "width": 273,
+        "height": 57
+      },
+      "source": "progressLabel in training, family label in setup"
+    },
+    {
+      "id": "instruction",
+      "mode": "training",
+      "bounds": {
+        "x": 368,
+        "y": 636,
+        "width": 800,
+        "height": 48
+      },
+      "source": "EarExercise.instruction"
+    },
+    {
+      "id": "verdict",
+      "mode": "training",
+      "bounds": {
+        "x": 368,
+        "y": 692,
+        "width": 800,
+        "height": 56
+      },
+      "source": "EvaluationResult headline, revealed chord symbol, primary error, difference description"
+    },
+    {
+      "id": "key_button",
+      "mode": "training",
+      "bounds": {
+        "x": 700,
+        "y": 514,
+        "width": 136,
+        "height": 104
+      },
+      "source": "StimulusSpec.key.tonic",
+      "assetSet": "runtime/note_buttons/",
+      "note": "Seventeen spellings ship as separate assets, so Db and C# are never rendered as one another. Shown only for FUNCTION_HEARING, where the key is part of the question."
+    }
   ],
   "unbound": {
     "note": "Part of the approved plate, drawn, and deliberately given no hit region: the ear-training engine has no state behind them. Where these features arrive, they belong in these panels rather than somewhere new.",
     "regions": [
-      { "id": "interval_settings", "bounds": { "x": 508, "y": 268, "width": 555, "height": 77 } },
-      { "id": "mode", "bounds": { "x": 508, "y": 420, "width": 254, "height": 77 } },
-      { "id": "direction", "bounds": { "x": 793, "y": 420, "width": 270, "height": 77 } },
-      { "id": "option_row_0", "bounds": { "x": 1128, "y": 272, "width": 262, "height": 58 } },
-      { "id": "option_row_1", "bounds": { "x": 1128, "y": 340, "width": 262, "height": 58 } },
-      { "id": "option_row_2", "bounds": { "x": 1128, "y": 408, "width": 262, "height": 58 } },
-      { "id": "option_row_3", "bounds": { "x": 1128, "y": 476, "width": 262, "height": 58 } }
+      {
+        "id": "interval_settings",
+        "bounds": {
+          "x": 508,
+          "y": 268,
+          "width": 555,
+          "height": 77
+        }
+      },
+      {
+        "id": "mode",
+        "bounds": {
+          "x": 508,
+          "y": 420,
+          "width": 254,
+          "height": 77
+        }
+      },
+      {
+        "id": "direction",
+        "bounds": {
+          "x": 793,
+          "y": 420,
+          "width": 270,
+          "height": 77
+        }
+      },
+      {
+        "id": "option_row_0",
+        "bounds": {
+          "x": 1128,
+          "y": 272,
+          "width": 262,
+          "height": 58
+        }
+      },
+      {
+        "id": "option_row_1",
+        "bounds": {
+          "x": 1128,
+          "y": 340,
+          "width": 262,
+          "height": 58
+        }
+      },
+      {
+        "id": "option_row_2",
+        "bounds": {
+          "x": 1128,
+          "y": 408,
+          "width": 262,
+          "height": 58
+        }
+      },
+      {
+        "id": "option_row_3",
+        "bounds": {
+          "x": 1128,
+          "y": 476,
+          "width": 262,
+          "height": 58
+        }
+      }
     ],
     "reason": "Intervals, melodic/harmonic mode, direction, instrument choice and reference/count-in options are not modelled by DefaultEarExerciseGenerator or ExercisePolicy. Drawing a live switch over a setting the engine cannot read would be a lie the player finds by pressing it."
   },
@@ -65,8 +471,16 @@
   "engineContract": {
     "viewModel": "com.harmonygates.eartraining.EarTrainingViewModel",
     "state": "EarTrainingUiState",
-    "intents": ["Play", "Next", "Skip", "Restart", "StartTraining", "ExitToSetup", "ChooseFamily"],
+    "intents": [
+      "Play",
+      "Next",
+      "Skip",
+      "Restart",
+      "StartTraining",
+      "ExitToSetup",
+      "ChooseFamily"
+    ],
     "note": "Touch and MIDI both resolve into one StateFlow, so artwork state cannot drift from the exercise engine and switching modes does not restart a session.",
-    "notPersisted": "Ear attempts are not written to the attempt store: AttemptRecord is built around ExerciseInstance, which EarExercise has no equivalent of. Mastery and gate completion are unaffected."
+    "persistence": "Ear attempts are written through RecordedAttempts, which derives the ExerciseInstance the store requires. The attempt and verdict come from the capture and the evaluator, so they are the same evidence a chord gate stores."
   }
 }

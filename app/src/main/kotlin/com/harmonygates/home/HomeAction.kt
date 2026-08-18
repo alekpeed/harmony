@@ -129,7 +129,7 @@ enum class HomeDestination(
     Profile(isImplemented = true, arrivesInPhase = 5),
     /**
      * Ear training, from Phase 8. The screen arrived after the engine, and plays the four
-     * authored families through the synthesised practice tone. Attempts are not yet recorded.
+     * authored families through the synthesised practice tone.
      */
     EarTraining(isImplemented = true, arrivesInPhase = 8),
     /** Read a line and play it in time. Phase 9's engine, with a clock on it. */
@@ -138,7 +138,7 @@ enum class HomeDestination(
     ProgressionLab(isImplemented = true, arrivesInPhase = 10),
     /**
      * Voice Leading. The screen that shows a starting voicing and asks for the next one, which
-     * the engine has been able to score since Phase 1. Moves are not recorded yet.
+     * the engine has been able to score since Phase 1.
      */
     VoicingLab(isImplemented = true, arrivesInPhase = 10),
     /** The chord and progression vocabulary, to browse rather than be tested on. */

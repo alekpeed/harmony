@@ -199,7 +199,7 @@ private fun DesignScope.TrainingControls(
                 weight = FontWeight.SemiBold,
             )
             DesignLabel(
-                text = "Ear sessions are not recorded yet: this changes no mastery and opens no gate.",
+                text = "Recorded. This session counts towards your mastery.",
                 rect = EarLayout.TrainingVerdict,
                 size = 17f,
                 colour = HarmonyTheme.colors.onSurfaceMuted,

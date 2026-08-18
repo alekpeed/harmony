@@ -27,6 +27,11 @@ import com.harmonygates.core.music.time.SystemMonotonicClock
 import com.harmonygates.core.music.voiceleading.VoiceLeadingAnalysis
 import com.harmonygates.core.music.voiceleading.VoiceLeadingAnalyzer
 import com.harmonygates.core.music.voicing.Voicing
+import com.harmonygates.core.data.progress.ProfileId
+import com.harmonygates.core.data.progress.ProgressRepository
+import com.harmonygates.data.HarmonyGraph
+import com.harmonygates.data.RecordedAttempts
+import java.util.UUID
 import com.harmonygates.voiceleadingmenu.VoiceLeadingExercise
 import com.harmonygates.voiceleadingmenu.VoiceLeadingMenuState
 import kotlinx.coroutines.Job
@@ -136,9 +141,10 @@ data class VoiceLeadingUiState(
  * The same authority rule as the other screens: touch and MIDI both resolve into this one
  * StateFlow, so nothing the artwork shows can disagree with the engine.
  *
- * **Not persisted.** Like ear training, an attempt here has no `ExerciseInstance` to hang an
- * `AttemptRecord` on, so a run reports how it went and is then forgotten. Mastery and gate
- * completion are untouched.
+ * **Recorded.** Each move is written through `RecordedAttempts`, so the mastery ledger sees the
+ * same evidence it would from any other loop. What is stored is the chord judgement; the motion
+ * measurement is shown to the player rather than filed, because mastery is about whether the
+ * harmony was right.
  */
 class VoiceLeadingViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -152,6 +158,8 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
     private val generator = DefaultProgressionGenerator()
     private val realizer = DefaultChordRealizer()
     private val player = AudioTrackPlayer(viewModelScope)
+    private val progress: ProgressRepository = HarmonyGraph.progress(application)
+    private var profile: ProfileId? = null
 
     private val run = MutableStateFlow(VoiceLeadingRun())
     private var playbackJob: Job? = null
@@ -193,7 +201,10 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), VoiceLeadingUiState())
 
     init {
-        viewModelScope.launch { midi.start() }
+        viewModelScope.launch {
+            midi.start()
+            profile = runCatching { progress.currentProfile(HarmonyGraph.CONTENT_VERSION) }.getOrNull()
+        }
         viewModelScope.launch {
             capture.attempts.collect { attempt ->
                 val current = run.value
@@ -217,6 +228,26 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
                     null
                 } else {
                     runCatching { analyzer.analyze(source.pitches, played) }.getOrNull()
+                }
+
+                // Voice leading moves are evidence like any other: same capture, same evaluator,
+                // so the same mastery ledger.
+                profile?.let { id ->
+                    runCatching {
+                        RecordedAttempts.record(
+                            progress = progress,
+                            profile = id,
+                            sessionId = current.sessionId,
+                            definitionId = VOICE_LEADING_DEFINITION,
+                            skillIds = RecordedAttempts.fallbackSkills(VOICE_LEADING_SKILL),
+                            chord = target.chord,
+                            requirement = requirement,
+                            attempt = attempt,
+                            result = result,
+                            seed = current.index.toLong(),
+                            targetNotes = source.pitches.map { it.value },
+                        )
+                    }
                 }
 
                 run.value = run.value.copy(
@@ -325,7 +356,23 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
             attempted = 0,
             correct = 0,
             message = null,
+            sessionId = UUID.randomUUID().toString(),
         )
+        val opened = run.value
+        profile?.let { id ->
+            viewModelScope.launch {
+                runCatching {
+                    RecordedAttempts.startSession(
+                        progress = progress,
+                        profile = id,
+                        sessionId = opened.sessionId,
+                        policyId = VOICE_LEADING_DEFINITION,
+                        seed = 0,
+                        planned = opened.stepCount,
+                    )
+                }
+            }
+        }
         present(0)
     }
 
@@ -412,6 +459,9 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
             playbackJob?.cancel()
             capture.cancel()
             run.value = current.copy(phase = VoiceLeadingPhase.COMPLETE)
+            viewModelScope.launch {
+                runCatching { RecordedAttempts.endSession(progress, current.sessionId) }
+            }
             return
         }
         present(next)
@@ -462,6 +512,7 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
         val correct: Int = 0,
         val message: String? = null,
         val menu: VoiceLeadingMenuState? = null,
+        val sessionId: String = "",
     )
 
     private companion object {
@@ -469,6 +520,8 @@ class VoiceLeadingViewModel(application: Application) : AndroidViewModel(applica
         const val SOURCE_RING_MILLIS = 1_400L
         const val SOURCE_VELOCITY = 78
         const val PRACTICE_INSTRUMENT = "instrument.practice_tone"
+        const val VOICE_LEADING_DEFINITION = "policy.voiceleading.smooth"
+        const val VOICE_LEADING_SKILL = "skill.voiceleading.smooth"
 
         val DEFAULT_KEY: SpelledPitchClass = requireNotNull(SpelledPitchClass.parseOrNull("C"))
 

@@ -158,8 +158,7 @@ private fun DesignScope.PracticeSurface(
             weight = FontWeight.SemiBold,
         )
         Label(
-            text = "${state.correct} of ${state.attempted} correct. Runs are not recorded yet, " +
-                "so nothing here changes your mastery.",
+            text = "${state.correct} of ${state.attempted} correct. Recorded towards your mastery.",
             rect = DesignRect(stage.x + 40f, stage.y + 280f, stage.width - 80f, 90f),
             size = 20f,
             colour = HarmonyTheme.colors.onSurfaceMuted,

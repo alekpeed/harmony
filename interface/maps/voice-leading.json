@@ -160,7 +160,7 @@
       "ChooseStyle"
     ],
     "evaluation": "DefaultPerformanceEvaluator against ExerciseRequirement.VoiceLeadingTarget decides the chord; VoiceLeadingAnalyzer measures the move (total motion, largest leap, common tones, per-voice motion) and it is compared with the smoothest voicing the policy allows.",
-    "notPersisted": "No ExerciseInstance exists for a voice-leading move, so no AttemptRecord is written. Mastery and gate completion are unaffected."
+    "persistence": "Voice leading moves are written through RecordedAttempts. The chord judgement is stored; the motion measurement is shown rather than filed."
   },
   "regions": {
     "shared": {

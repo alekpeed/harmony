@@ -22,7 +22,11 @@ import com.harmonygates.core.music.performance.DefaultPerformanceEvaluator
 import com.harmonygates.core.music.performance.EvaluationResult
 import com.harmonygates.core.music.pitch.SpelledPitchClass
 import com.harmonygates.core.music.time.SystemMonotonicClock
+import com.harmonygates.core.data.progress.ProfileId
+import com.harmonygates.core.data.progress.ProgressRepository
 import com.harmonygates.data.HarmonyGraph
+import com.harmonygates.data.RecordedAttempts
+import java.util.UUID
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -126,15 +130,16 @@ data class EarTrainingUiState(
  * `StateFlow`, so the illustrated console can never drift from the exercise engine, and swapping
  * artwork state cannot restart a session.
  *
- * **Not persisted.** `ProgressRepository.recordAttempt` wants an `AttemptRecord` built around an
- * `ExerciseInstance`, which an `EarExercise` has no equivalent of. Rather than invent a
- * half-convincing one, an ear session reports how it went and is then forgotten — the same place
- * Progression Run stood at the end of Phase 10. Mastery and gate completion are unaffected by
- * what happens here.
+ * **Recorded.** Every judged answer is written through `RecordedAttempts`, which builds the
+ * `ExerciseInstance` the attempt store wants out of what this loop already has. The attempt and
+ * the verdict are the real ones from the capture and the evaluator, so an ear answer is the same
+ * grade of evidence as a chord gate's and moves mastery the same way.
  */
 class EarTrainingViewModel(application: Application) : AndroidViewModel(application) {
 
     private val content = HarmonyGraph.content(application)
+    private val progress: ProgressRepository = HarmonyGraph.progress(application)
+    private var profile: ProfileId? = null
     private val midi: MidiInputSource = AndroidMidiInputSource(application, viewModelScope)
     private val soundingNotes: StateFlow<List<Int>> = midi.activeNotes
         .map { notes -> notes.soundingAscending.map { it.value } }
@@ -182,6 +187,7 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
     init {
         viewModelScope.launch {
             midi.start()
+            profile = runCatching { progress.currentProfile(HarmonyGraph.CONTENT_VERSION) }.getOrNull()
             loadPolicies()
         }
         viewModelScope.launch {
@@ -192,6 +198,29 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
                 if (current.phase != EarPhase.LISTENING) return@collect
 
                 val result = evaluator.evaluate(exercise.requirement, attempt, policy.onsetPolicy)
+
+                // The same evidence a chord gate stores, from the same evaluator. An ear answer
+                // now moves mastery instead of being reported and discarded.
+                val chord = exercise.stimulus.chords.last()
+                profile?.let { id ->
+                    runCatching {
+                        RecordedAttempts.record(
+                            progress = progress,
+                            profile = id,
+                            sessionId = current.sessionId,
+                            definitionId = policy.id.value,
+                            skillIds = RecordedAttempts.policySkills(policy, FALLBACK_SKILL),
+                            chord = chord,
+                            requirement = exercise.requirement,
+                            attempt = attempt,
+                            result = result,
+                            seed = exercise.stimulus.seed,
+                            presentation = policy.presentation,
+                            targetNotes = exercise.stimulus.events.last().voicing.pitches.map { it.value },
+                        )
+                    }
+                }
+
                 session.value = current.copy(
                     phase = EarPhase.FEEDBACK,
                     result = result,
@@ -279,7 +308,23 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
             // A different session every time it is started, so practising the same family twice
             // is not the same sixteen chords twice.
             baseSeed = System.currentTimeMillis(),
+            sessionId = UUID.randomUUID().toString(),
         )
+        val opened = session.value
+        profile?.let { id ->
+            viewModelScope.launch {
+                runCatching {
+                    RecordedAttempts.startSession(
+                        progress = progress,
+                        profile = id,
+                        sessionId = opened.sessionId,
+                        policyId = policy.id.value,
+                        seed = opened.baseSeed,
+                        planned = policy.sessionLength,
+                    )
+                }
+            }
+        }
         presentExercise(0)
     }
 
@@ -418,6 +463,9 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
             playbackJob?.cancel()
             capture.cancel()
             session.value = current.copy(phase = EarPhase.COMPLETED, exercise = null)
+            viewModelScope.launch {
+                runCatching { RecordedAttempts.endSession(progress, current.sessionId) }
+            }
             return
         }
         presentExercise(next)
@@ -467,6 +515,7 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
         val keySpelling: String? = null,
         val message: String? = null,
         val baseSeed: Long = 0,
+        val sessionId: String = "",
     )
 
     private companion object {
@@ -478,5 +527,8 @@ class EarTrainingViewModel(application: Application) : AndroidViewModel(applicat
         const val SEED_STRIDE = 1_000L
 
         val KEYS = listOf("C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B")
+
+        /** Used only if a policy names no skills, which the authored ear policies all do. */
+        const val FALLBACK_SKILL = "skill.ear.reproduce"
     }
 }
