@@ -142,6 +142,53 @@ class EarTrainingTest {
     }
 
     @Test
+    fun `reproduce opens with a reference note before the chord, not the chord cold`() {
+        val exercise = assertNotNull(generate(EarTaskFamily.REPRODUCE, seed = 21))
+        val events = exercise.stimulus.events
+
+        assertEquals(2, events.size, "A reference note, then the chord")
+        assertEquals(1, events[0].voicing.pitches.size, "The reference is a single note")
+        assertEquals(
+            exercise.stimulus.chords.single().root.pitchClass,
+            events[0].voicing.pitches.single().pitchClass,
+            "The reference note is the chord's own root",
+        )
+        assertTrue(events[1].atMillis > events[0].atMillis, "The chord follows the reference")
+        assertTrue(events[1].voicing.pitches.size > 1, "The chord itself is more than one note")
+    }
+
+    @Test
+    fun `function hearing's reference is the key's tonic, not the target chord's root`() {
+        // F: a ii-V-I in F can land on Gm, C7 or Bb — none of them F. The reference has to come
+        // from the key, or a non-tonic function has nothing to be heard relative to.
+        val exercise = assertNotNull(
+            generate(EarTaskFamily.FUNCTION_HEARING, seed = 6, key = KeyContext(root("F"))),
+        )
+        val anchor = exercise.stimulus.events.first()
+
+        assertEquals(1, anchor.voicing.pitches.size)
+        assertEquals(root("F").pitchClass, anchor.voicing.pitches.single().pitchClass)
+    }
+
+    @Test
+    fun `a stimulus chord sits in a comfortable register, not pinned to the bottom of the range`() {
+        // Voicing generation orders candidates tightest-span-first, lowest-bass-second, which
+        // — taken as the first result outright — always landed at the very bottom of the pitch
+        // range: a stimulus a full octave and more below middle C, harsher than the same chord
+        // played higher and harder to sing back. The generator now re-ranks by distance from a
+        // comfortable target instead.
+        val bassNotes = (1L..40L).mapNotNull { seed ->
+            generate(EarTaskFamily.REPRODUCE, seed = seed)?.stimulus?.events?.last()?.voicing?.bass?.value
+        }
+
+        assertTrue(bassNotes.isNotEmpty())
+        assertTrue(
+            bassNotes.average() > MIDDLE_C - 12,
+            "Average stimulus bass was ${bassNotes.average()}, still hugging the bottom of the range",
+        )
+    }
+
+    @Test
     fun `difference detection plays two chords that differ in one way`() {
         val exercise = assertNotNull(generate(EarTaskFamily.DIFFERENCE_DETECTION, seed = 8))
         val stimulus = exercise.stimulus
@@ -301,6 +348,7 @@ class EarTrainingTest {
     private companion object {
         const val SCREEN_RETRY_BUDGET = 8
         const val BASE_SEED = 5_000L
+        const val MIDDLE_C = 60
         val KEYS = listOf("C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B")
     }
 }
